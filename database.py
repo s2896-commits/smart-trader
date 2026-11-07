@@ -11,7 +11,7 @@ GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
 
 START_CAPITAL = 60.0
-FEE_PCT = 0.10  # رسوم + انزلاق تقديري لكل جهة (شراء/بيع) بالنسبة المئوية
+FEE_PCT = 0.10
 LOCK = threading.RLock()
 _dirty = False
 _last_backup = 0.0
@@ -23,21 +23,16 @@ DEFAULT_CFG = {
     "banned": {}, "ban_ref": {}, "ai_report": "المشرف يجمع البيانات...",
 }
 
-
 def now():
     return datetime.now(TZ)
-
 
 def fmt(dt):
     return dt.strftime("%Y-%m-%d %H:%M")
 
-
 def parse(s):
     return datetime.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=TZ)
 
-
 def run(sql, args=()):
-    """تنفيذ استعلام واحد بشكل آمن بين الخيوط، ويرجع الصفوف كقواميس."""
     with LOCK:
         c = sqlite3.connect(DB_NAME, timeout=20)
         c.row_factory = sqlite3.Row
@@ -50,8 +45,6 @@ def run(sql, args=()):
         finally:
             c.close()
 
-
-# ---------- الإعدادات ----------
 def get_ai_config():
     cfg = DEFAULT_CFG.copy()
     try:
@@ -61,7 +54,6 @@ def get_ai_config():
         pass
     return cfg
 
-
 def save_ai_config(cfg):
     try:
         with LOCK, open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -69,16 +61,12 @@ def save_ai_config(cfg):
     except Exception as e:
         print(f"AI config save error: {e}")
 
-
-# ---------- النسخ الاحتياطي (GitHub) ----------
 def is_cloud_connected():
     return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
-
 
 def _gh():
     return (f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}",
             {"Authorization": f"token {GITHUB_TOKEN}"})
-
 
 def restore_db_from_github():
     if not is_cloud_connected() or os.path.exists(DB_NAME):
@@ -90,16 +78,14 @@ def restore_db_from_github():
             j = r.json()
             if j.get("content"):
                 data = base64.b64decode(j["content"])
-            else:  # الملفات الكبيرة (>1MB) لا ترجع المحتوى مباشرة
+            else:
                 data = requests.get(j["download_url"], headers=h, timeout=30).content
             with open(DB_NAME, "wb") as f:
                 f.write(data)
     except Exception as e:
         print(f"Restore error: {e}")
 
-
 def backup_db_to_github(force=False):
-    """يرفع نسخة سليمة من القاعدة. الرفع محدود بمرة كل 5 دقائق إلا عند force."""
     global _dirty, _last_backup
     if not is_cloud_connected() or not os.path.exists(DB_NAME):
         return
@@ -109,8 +95,9 @@ def backup_db_to_github(force=False):
         tmp = DB_NAME + ".bak"
         with LOCK:
             src, dst = sqlite3.connect(DB_NAME), sqlite3.connect(tmp)
-            src.backup(dst)  # نسخة متسقة حتى لو القاعدة قيد الكتابة
-            dst.close(); src.close()
+            src.backup(dst)
+            dst.close()
+            src.close()
         with open(tmp, "rb") as f:
             content = base64.b64encode(f.read()).decode()
         url, h = _gh()
@@ -124,11 +111,9 @@ def backup_db_to_github(force=False):
     except Exception as e:
         print(f"Backup error: {e}")
 
-
 def backup_if_dirty(force=False):
     if _dirty or force:
         backup_db_to_github(force=force)
-
 
 def init_db():
     restore_db_from_github()
@@ -139,23 +124,14 @@ def init_db():
         reason TEXT, status TEXT, pnl_sar REAL DEFAULT 0.0, lesson TEXT,
         is_historical INTEGER DEFAULT 0)''')
 
-
-# ---------- الصفقات ----------
 def calc_pnl(entry, exit_, invested):
-    """صافي الربح بالريال بعد الرسوم. النسبة المئوية لا تتأثر بعملة الأصل."""
     return round(invested * (exit_ - entry) / entry - invested * FEE_PCT / 100 * 2, 2)
-
 
 def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
               exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
               lesson="", invest_amount=6.0):
     global _dirty
-    def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
-              exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
-              lesson="", invest_amount=6.0):
-    global _dirty
-    # حساب الكمية التقريبية
-    invest_usd = invest_amount / 3.75 if symbol.endswith("-USD") or not symbol.endswith(".SR") else invest_amount
+    invest_usd = invest_amount / 3.75 if (symbol.endswith("-USD") or not symbol.endswith(".SR")) else invest_amount
     qty = round(invest_usd / float(price), 4) if float(price) > 0 else 1.0
 
     run('''INSERT INTO trades (symbol, asset_type, entry_price, exit_price, qty, invested_sar,
@@ -167,14 +143,6 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
          round(pnl_sar, 2), lesson, is_historical))
     if not is_historical:
         _dirty = True
-
-        (symbol, asset_type, round(float(price), 4),
-         round(float(exit_price), 4) if exit_price else None, invest_amount,
-         entry_time or fmt(now()), exit_time, reason, status,
-         round(pnl_sar, 2), lesson, is_historical))
-    if not is_historical:
-        _dirty = True
-
 
 def update_open_trades(prices):
     global _dirty
@@ -206,14 +174,11 @@ def update_open_trades(prices):
             (round(cur, 4), fmt(t_now), st, pnl, lesson, t["id"]))
         _dirty = True
 
-
 def open_symbols():
     return [r["symbol"] for r in run("SELECT symbol FROM trades WHERE status='OPEN' AND is_historical=0")]
 
-
 def on_cooldown(symbol, minutes):
-    r = run("SELECT exit_time FROM trades WHERE symbol=? AND is_historical=0 AND status!='OPEN' "
-            "ORDER BY id DESC LIMIT 1", (symbol,))
+    r = run("SELECT exit_time FROM trades WHERE symbol=? AND is_historical=0 AND status!='OPEN' ORDER BY id DESC LIMIT 1", (symbol,))
     if not r or not r[0]["exit_time"]:
         return False
     try:
@@ -221,12 +186,9 @@ def on_cooldown(symbol, minutes):
     except Exception:
         return False
 
-
 def get_trades(historical=0, limit=60):
     return run("SELECT * FROM trades WHERE is_historical=? ORDER BY id DESC LIMIT ?", (historical, limit))
 
-
-# ---------- الإحصائيات (تُحسب من كل الصفقات، وليس آخر 60 فقط) ----------
 def _stats(closed):
     closed = sorted(closed, key=lambda t: t["exit_time"] or "")
     n = len(closed)
@@ -246,7 +208,6 @@ def _stats(closed):
             "expectancy": round(cum / n, 3) if n else None,
             "max_dd": round(dd, 2), "curve": curve}
 
-
 def get_summary():
     live = run("SELECT * FROM trades WHERE is_historical=0")
     closed = [t for t in live if t["status"] != "OPEN"]
@@ -259,12 +220,10 @@ def get_summary():
             "wallet": round(START_CAPITAL + st["pnl"] + floating, 2),
             "cash": round(max(0.0, START_CAPITAL + st["pnl"] - invested), 2)}
 
-
 def get_lab():
     hist = run("SELECT * FROM trades WHERE is_historical=1")
     st = _stats([t for t in hist if t["status"] != "OPEN"])
     st["trades"] = get_trades(1, 100)
     return st
-
 
 init_db()
