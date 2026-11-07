@@ -10,8 +10,11 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
 
+def is_cloud_connected():
+    return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
+
 def restore_db_from_github():
-    if not GITHUB_TOKEN or os.path.exists(DB_NAME):
+    if not is_cloud_connected() or os.path.exists(DB_NAME):
         return
     try:
         url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}"
@@ -25,7 +28,7 @@ def restore_db_from_github():
         print(f"Restore error: {e}")
 
 def backup_db_to_github():
-    if not GITHUB_TOKEN or not os.path.exists(DB_NAME):
+    if not is_cloud_connected() or not os.path.exists(DB_NAME):
         return
     try:
         url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}"
@@ -58,9 +61,9 @@ def init_db():
         reason TEXT,
         status TEXT,
         pnl_sar REAL DEFAULT 0.0,
-        lesson TEXT
+        lesson TEXT,
+        is_historical INTEGER DEFAULT 0
     )''')
-    # ترقية تلقائية لو كانت قاعدة البيانات قديمة
     c.execute("PRAGMA table_info(trades)")
     cols = [col[1] for col in c.fetchall()]
     if "qty" not in cols:
@@ -69,22 +72,31 @@ def init_db():
         c.execute("ALTER TABLE trades ADD COLUMN invested_sar REAL DEFAULT 20.0")
     if "pnl_sar" not in cols:
         c.execute("ALTER TABLE trades ADD COLUMN pnl_sar REAL DEFAULT 0.0")
+    if "is_historical" not in cols:
+        c.execute("ALTER TABLE trades ADD COLUMN is_historical INTEGER DEFAULT 0")
     conn.commit()
     conn.close()
 
-def log_trade(symbol, asset_type, price, reason, is_historical=False, entry_time=None, exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0, lesson=""):
+def clear_old_backtest():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    now = entry_time if entry_time else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("DELETE FROM trades WHERE is_historical = 1")
+    conn.commit()
+    conn.close()
+
+def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None, exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0, lesson=""):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    now = entry_time if entry_time else datetime.now().strftime("%Y-%m-%d %H:%M")
     invest_sar = 20.0
     invest_usd = invest_sar / 3.75
     qty = round(invest_usd / price, 4) if price > 0 else 1.0
 
     c.execute('''INSERT INTO trades 
-        (symbol, asset_type, entry_price, exit_price, qty, invested_sar, entry_time, exit_time, reason, status, pnl_sar, lesson) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (symbol, asset_type, entry_price, exit_price, qty, invested_sar, entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
         (symbol, asset_type, round(price, 4), round(exit_price, 4) if exit_price else None, 
-         qty, invest_sar, now, exit_time, reason, status, round(pnl_sar, 2), lesson))
+         qty, invest_sar, now, exit_time, reason, status, round(pnl_sar, 2), lesson, is_historical))
     conn.commit()
     conn.close()
     if not is_historical:
@@ -94,9 +106,9 @@ def update_open_trades(current_prices):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM trades WHERE status = 'OPEN'")
+    c.execute("SELECT * FROM trades WHERE status = 'OPEN' AND is_historical = 0")
     open_trades = [dict(r) for r in c.fetchall()]
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
     closed_any = False
 
     for t in open_trades:
@@ -110,17 +122,17 @@ def update_open_trades(current_prices):
             live_pnl_sar = round(diff_usd * 3.75, 2)
 
             if change_pct >= 1.5:
-                lesson = "هدف محقق (+1.5%): الزخم والسيولة حققا الهدف بنجاح."
+                lesson = "أغلقت على ربح (+1.5%): الزخم حقق الهدف المحدد."
                 c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='WON', pnl_sar=?, lesson=? WHERE id=?",
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
             elif change_pct <= -1.0:
-                lesson = "تفعيل حماية الوقف (-1%): إغلاق لحفظ بقية الـ 60 ريال."
+                lesson = "وقف خسارة (-1%): حماية رأس المال من استمرار الهبوط."
                 c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='LOST', pnl_sar=?, lesson=? WHERE id=?",
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
             else:
-                lesson = f"متابعة: التغير ({change_pct:+.2f}%) | السعر: {round(curr, 4)}$"
+                lesson = f"السعر الحالي: {round(curr, 4)}$ ({change_pct:+.2f}%) | الهدف +1.5%"
                 c.execute("UPDATE trades SET pnl_sar=?, lesson=? WHERE id=?",
                           (live_pnl_sar, lesson, t['id']))
     conn.commit()
@@ -132,7 +144,7 @@ def get_all_trades():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM trades ORDER BY id DESC LIMIT 50")
+    c.execute("SELECT * FROM trades ORDER BY id DESC LIMIT 60")
     rows = [dict(row) for row in c.fetchall()]
     conn.close()
     return rows
