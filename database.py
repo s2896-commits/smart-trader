@@ -1,7 +1,10 @@
 ﻿import sqlite3
+import os
 from datetime import datetime
 
-DB_NAME = "L:/Smart_Trader/trades.db"
+# مسار ديناميكي يحفظ الملف بنفس مجلد المشروع أينما كان
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.path.join(BASE_DIR, "trades.db")
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -46,7 +49,6 @@ def update_open_trades(current_prices):
             entry = t['entry_price']
             change_pct = ((curr - entry) / entry) * 100
 
-            # هدف ربح +1.5% أو وقف خسارة -1%
             if change_pct >= 1.5:
                 pnl = round((curr - entry) * 10, 2)
                 lesson = "دخول موفق: السيولة العالية دعمت استمرار الصعود للهدف."
@@ -65,7 +67,7 @@ def get_all_trades():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT * FROM trades ORDER BY id DESC")
-    rows = [dict(r) for r in c.fetchall()]
+    rows = [dict(row) for row in cursor.fetchall()] if (cursor := c) else []
     conn.close()
     return rows
 
