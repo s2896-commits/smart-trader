@@ -1,164 +1,166 @@
+import threading
+from datetime import datetime, timedelta, time as dtime
+from zoneinfo import ZoneInfo
+import pandas as pd
 import yfinance as yf
 import database as db
 
 WATCHLIST = {
-    # العملات الرقمية (شغالة 24/7 في الويكند)
-    "BTC-USD": "بيتكوين (كريبتو)",
-    "ETH-USD": "إيثيريوم (كريبتو)",
-    "SOL-USD": "سولانا (كريبتو)",
-    "BNB-USD": "بينانس (كريبتو)",
-    "XRP-USD": "ريبل (كريبتو)",
-    "DOGE-USD": "دوج كوين (كريبتو)",
-    "ADA-USD": "كاردانو (كريبتو)",
-    "AVAX-USD": "أفالانش (كريبتو)",
-    
-    # السوق السعودي (يفتح غداً الأحد 10 صباحاً)
-    "4300.SR": "دار الأركان (تاسي)",
-    "2222.SR": "أرامكو (تاسي)",
-    "2010.SR": "سابك (تاسي)",
-    "4110.SR": "باتك (تاسي)",
-
-    # السوق الأمريكي (يفتح الإثنين 5:30 مساءً)
-    "PLTR": "بالنتير (أمريكي)",
-    "SOFI": "سوفاي (أمريكي)",
-    "RIVN": "ريفيان (أمريكي)"
+    "BTC-USD": "بيتكوين (كريبتو)", "ETH-USD": "إيثيريوم (كريبتو)",
+    "SOL-USD": "سولانا (كريبتو)", "BNB-USD": "بينانس (كريبتو)",
+    "XRP-USD": "ريبل (كريبتو)", "DOGE-USD": "دوج كوين (كريبتو)",
+    "ADA-USD": "كاردانو (كريبتو)", "AVAX-USD": "أفالانش (كريبتو)",
+    "4300.SR": "دار الأركان (تاسي)", "2222.SR": "أرامكو (تاسي)",
+    "2010.SR": "سابك (تاسي)", "4110.SR": "باتك (تاسي)",
+    "PLTR": "بالنتير (أمريكي)", "SOFI": "سوفاي (أمريكي)", "RIVN": "ريفيان (أمريكي)",
 }
+TZ_SA, TZ_US = ZoneInfo("Asia/Riyadh"), ZoneInfo("America/New_York")
+_scan_lock = threading.Lock()
+_last_bar = {}
 
-def ai_supervisor_optimize():
-    trades = db.get_all_trades()
-    cfg = db.get_ai_config()
-    
-    closed = [t for t in trades if t['status'] in ('WON', 'LOST') and t.get('is_historical', 0) == 0]
-    won = [t for t in closed if t['status'] == 'WON']
-    lost = [t for t in closed if t['status'] == 'LOST']
-    win_rate = (len(won) / len(closed)) * 100 if closed else 100.0
 
-    loss_counts = {}
-    for t in lost:
-        sym = t['symbol']
-        loss_counts[sym] = loss_counts.get(sym, 0) + 1
-    
-    banned = [sym for sym, cnt in loss_counts.items() if cnt >= 3 and sym not in [w['symbol'] for w in won]]
-    cfg['banned_symbols'] = banned
-    cfg['rsi_min'] = 30
-    cfg['rsi_max'] = 58
-    cfg['tp_pct'] = 1.2
-    cfg['sl_pct'] = -1.2
-    cfg['ai_report'] = (
-        f"⚡ المشرف الذكي نشط: يراقب 15 أصلاً بنظام الدخول المتدرج (6 ر.س للصفقة). "
-        f"نطاق الصيد المرن (RSI بين 30 و 58) لتفادي القمم مع اقتناص الفرص الحية."
-    )
+def asset_class(s):
+    return "crypto" if s.endswith("-USD") else "tasi" if s.endswith(".SR") else "us"
+
+
+def market_status():
+    sa, us = datetime.now(TZ_SA), datetime.now(TZ_US)
+    return {"crypto": True,
+            "tasi": sa.weekday() in (6, 0, 1, 2, 3) and dtime(10, 0) <= sa.time() < dtime(15, 0),
+            "us": us.weekday() < 5 and dtime(9, 30) <= us.time() < dtime(16, 0)}
+
+
+# ---------- المؤشرات (مشتركة بين التداول الحي والمحاكاة) ----------
+def indicators(close):
+    d = close.diff()
+    up = d.clip(lower=0).ewm(alpha=1 / 14, adjust=False).mean()
+    dn = (-d.clip(upper=0)).ewm(alpha=1 / 14, adjust=False).mean()
+    rsi = 100 - 100 / (1 + up / dn.replace(0, 1e-9))
+    return close.rolling(20).mean(), rsi
+
+
+def is_entry(price, prev, sma, rsi, cfg):
+    """اتجاه صاعد (فوق SMA20) + شمعة خضراء + RSI داخل النطاق."""
+    return bool(price > sma and price >= prev and cfg["rsi_min"] <= rsi <= cfg["rsi_max"])
+
+
+def fetch(period, interval):
+    df = yf.download(list(WATCHLIST), period=period, interval=interval,
+                     group_by="ticker", progress=False, threads=True,
+                     auto_adjust=True, timeout=25)
+    out = {}
+    for s in WATCHLIST:
+        try:
+            d = df[s].dropna(subset=["Close"])
+            if len(d) >= 40:
+                out[s] = d
+        except Exception:
+            pass
+    return out
+
+
+def is_fresh(d, minutes=45):
+    """آخر شمعة حديثة؟ (يمنع التداول على أسعار قديمة عند إغلاق السوق)"""
+    last = d.index[-1]
+    return pd.Timestamp.now(tz=last.tz) - last < pd.Timedelta(minutes=minutes)
+
+
+# ---------- المشرف: إحصائيات حقيقية + حظر مؤقت ----------
+def supervisor():
+    cfg, t = db.get_ai_config(), db.now()
+    cfg["banned"] = {s: u for s, u in cfg["banned"].items() if u > db.fmt(t)}
+    recent = db.run("SELECT id, symbol, status FROM trades WHERE is_historical=0 "
+                    "AND status!='OPEN' ORDER BY id DESC LIMIT 80")
+    by = {}
+    for r in recent:
+        if r["id"] > cfg["ban_ref"].get(r["symbol"], 0):
+            by.setdefault(r["symbol"], []).append(r)
+    for s, rows in by.items():
+        if s not in cfg["banned"] and [r["status"] for r in rows[:3]].count("LOST") == 3:
+            cfg["banned"][s] = db.fmt(t + timedelta(hours=24))
+            cfg["ban_ref"][s] = rows[0]["id"]
+    st = db.get_summary()["stats"]
+    wr = f"{st['win_rate']}%" if st["n"] else "—"
+    note = "العيّنة صغيرة: لا تعديل للمعايير قبل 30 صفقة مغلقة." if st["n"] < 30 else "العيّنة كافية للمراجعة."
+    ban = f" | محظور 24س: {', '.join(cfg['banned'])}" if cfg["banned"] else ""
+    cfg["ai_report"] = f"{st['n']} صفقة مغلقة | نجاح {wr}{ban}. {note}"
     db.save_ai_config(cfg)
     return cfg
 
+
+# ---------- الفحص الحي ----------
 def analyze_and_trade():
-    cfg = ai_supervisor_optimize()
-    current_prices = {}
-    trades = db.get_all_trades()
-    open_trades = [t for t in trades if t['status'] == 'OPEN' and t.get('is_historical', 0) == 0]
-    open_symbols = [t['symbol'] for t in open_trades]
-    currently_invested = sum([float(t.get('invested_sar') or 6.0) for t in open_trades])
+    if not _scan_lock.acquire(blocking=False):  # يمنع الفحص المتزامن ← لا صفقات مكررة
+        return
+    try:
+        cfg = supervisor()
+        data = fetch("5d", "15m")
+        prices = {s: float(d["Close"].iloc[-1]) for s, d in data.items() if is_fresh(d)}
+        db.update_open_trades(prices)
+        if cfg["paused"]:
+            return
+        summ = db.get_summary()
+        cash, size = summ["cash"], cfg["trade_size"]
+        open_syms = db.open_symbols()
+        counts = {}
+        for s in open_syms:
+            counts[asset_class(s)] = counts.get(asset_class(s), 0) + 1
+        for s, d in data.items():
+            if s not in prices or s in open_syms or s in cfg["banned"]:
+                continue
+            if cash < size or len(open_syms) >= cfg["max_open"]:
+                break
+            if counts.get(asset_class(s), 0) >= cfg["max_per_class"] or db.on_cooldown(s, cfg["cooldown_min"]):
+                continue
+            c = d["Close"].iloc[:-1]  # الشموع المغلقة فقط (آخر شمعة لا تزال تتشكل)
+            if _last_bar.get(s) == c.index[-1]:
+                continue
+            _last_bar[s] = c.index[-1]
+            sma, rsi = indicators(c)
+            if is_entry(c.iloc[-1], c.iloc[-2], sma.iloc[-1], rsi.iloc[-1], cfg):
+                db.log_trade(s, WATCHLIST[s], prices[s],
+                             f"زخم صاعد: فوق SMA20 + RSI {rsi.iloc[-1]:.0f}", invest_amount=size)
+                open_syms.append(s)
+                counts[asset_class(s)] = counts.get(asset_class(s), 0) + 1
+                cash -= size
+    finally:
+        _scan_lock.release()
 
-    for symbol, asset_type in WATCHLIST.items():
+
+# ---------- محاكاة تاريخية صادقة ----------
+def run_backtest():
+    """نفس شروط الدخول الحية. الدخول عند افتتاح الشمعة التالية، والترتيب الزمني
+    للهدف/الوقف محترم (إذا لمس الاثنين في نفس الشمعة نعتبر الوقف أولاً)، مع الرسوم."""
+    cfg = db.get_ai_config()
+    db.run("DELETE FROM trades WHERE is_historical=1")
+    data = fetch("6mo", "1h")
+    hold = int(cfg["max_hold_h"])
+    for s, label in WATCHLIST.items():
+        d = data.get(s)
+        if d is None or len(d) < 60:
+            continue
         try:
-            df = yf.Ticker(symbol).history(period="5d", interval="15m")
-            if df.empty or len(df) < 30:
-                continue
-
-            close = df['Close']
-            curr_price = float(close.iloc[-1])
-            prev_price = float(close.iloc[-2])
-            current_prices[symbol] = curr_price
-
-            # التوقف إذا وصلنا سقف المحفظة (54 ريال مستثمرة) أو الأصل محظور
-            if currently_invested >= 54.0 or symbol in cfg.get('banned_symbols', []):
-                continue
-
-            sma20 = float(close.rolling(20).mean().iloc[-1])
-            delta = close.diff()
-            gain = (delta.where(delta > 0, 0)).rolling(14).mean().iloc[-1]
-            loss = (-delta.where(delta < 0, 0)).rolling(14).mean().iloc[-1]
-            rs = gain / loss if loss != 0 else 1
-            rsi = 100 - (100 / (1 + rs))
-
-            if symbol not in open_symbols:
-                # المسار 1: صعود زخم آمن (السعر فوق المتوسط + شمعة خضراء + RSI غير متضخم تحت 58)
-                if curr_price > sma20 and curr_price >= prev_price and (32 <= rsi <= 58):
-                    reason = f"زخم صاعد مرن (6 ر.س): فوق متوسط 20 + RSI آمن ({round(rsi, 1)})"
-                    db.log_trade(symbol, asset_type, curr_price, reason, is_historical=0, invest_amount=6.0)
-                    open_symbols.append(symbol)
-                    currently_invested += 6.0
-
-                # المسار 2: اقتناص ارتداد من هبوط (RSI منخفض تحت 38 مع بداية شمعة خضراء)
-                elif rsi < 38 and curr_price > prev_price:
-                    reason = f"ارتداد مبكر (6 ر.س): بداية صعود من منطقة خصم (RSI {round(rsi, 1)})"
-                    db.log_trade(symbol, asset_type, curr_price, reason, is_historical=0, invest_amount=6.0)
-                    open_symbols.append(symbol)
-                    currently_invested += 6.0
+            sma, rsi = indicators(d["Close"])
+            o, h, l, c = (d[k].values for k in ("Open", "High", "Low", "Close"))
+            idx, i = d.index, 25
+            while i < len(d) - 2:
+                if not is_entry(c[i], c[i - 1], sma.iloc[i], rsi.iloc[i], cfg):
+                    i += 1
+                    continue
+                entry = o[i + 1]
+                tp, sl = entry * (1 + cfg["tp_pct"] / 100), entry * (1 + cfg["sl_pct"] / 100)
+                for j in range(i + 1, min(i + 1 + hold, len(d))):
+                    if l[j] <= sl:
+                        ex, why = sl, "وقف الخسارة"; break
+                    if h[j] >= tp:
+                        ex, why = tp, "هدف الربح"; break
+                else:
+                    ex, why = c[j], "خروج بالوقت"
+                pnl = db.calc_pnl(entry, ex, cfg["trade_size"])
+                db.log_trade(s, label, entry, f"زخم (RSI {rsi.iloc[i]:.0f})", 1,
+                             idx[i + 1].strftime("%Y-%m-%d %H:%M"), idx[j].strftime("%Y-%m-%d %H:%M"),
+                             ex, "WON" if pnl > 0 else "LOST", pnl,
+                             f"{why} بعد {j - i} ساعة", cfg["trade_size"])
+                i = j + 1
         except Exception as e:
-            print(f"Scan error {symbol}: {e}")
-
-    db.update_open_trades(current_prices)
-    return current_prices
-
-def run_historical_backtest():
-    db.clear_old_backtest()
-    sample_assets = {
-        "BTC-USD": "بيتكوين (كريبتو)",
-        "SOL-USD": "سولانا (كريبتو)",
-        "XRP-USD": "ريبل (كريبتو)",
-        "DOGE-USD": "دوج كوين (كريبتو)",
-        "PLTR": "بالنتير (أمريكي)",
-        "4300.SR": "دار الأركان (تاسي)"
-    }
-
-    for symbol, asset_type in sample_assets.items():
-        try:
-            df = yf.Ticker(symbol).history(period="1mo", interval="1h")
-            if df.empty or len(df) < 35:
-                continue
-
-            close = df['Close']
-            sma20 = close.rolling(20).mean()
-            delta = close.diff()
-            gain = (delta.where(delta > 0, 0)).rolling(14).mean()
-            loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-            rs = gain / loss
-            rsi = 100 - (100 / (1 + rs))
-
-            count = 0
-            for i in range(25, len(df)-8, 12):
-                if count >= 2:
-                    break
-                p_entry = float(close.iloc[i])
-                p_prev = float(close.iloc[i-1])
-                r_val = float(rsi.iloc[i])
-                s20_val = float(sma20.iloc[i])
-                t_entry = df.index[i].strftime("%Y-%m-%d %H:%M")
-
-                if p_entry > p_prev and ((p_entry > s20_val and 32 <= r_val <= 56) or r_val < 35):
-                    future = close.iloc[i+1 : i+8]
-                    gain_pct = ((float(future.max()) - p_entry) / p_entry) * 100
-                    loss_pct = ((float(future.min()) - p_entry) / p_entry) * 100
-                    qty = round((6.0 / 3.75) / p_entry, 4)
-
-                    if gain_pct >= 1.2:
-                        pnl = round(((p_entry * 1.012) - p_entry) * qty * 3.75, 2)
-                        t_exit = df.index[i+3].strftime("%Y-%m-%d %H:%M")
-                        lesson = f"دخول متدرج ناجح (6 ر.س): اقتناص عند RSI ({round(r_val,1)}) حقق +1.2%."
-                        db.log_trade(symbol, asset_type, p_entry, f"فحص ذكي مرن (RSI {round(r_val,1)})",
-                                     is_historical=1, entry_time=t_entry, exit_time=t_exit, exit_price=p_entry*1.012,
-                                     status="WON", pnl_sar=pnl, lesson=lesson, invest_amount=6.0)
-                        count += 1
-                    elif loss_pct <= -1.2:
-                        pnl = round(((p_entry * 0.988) - p_entry) * qty * 3.75, 2)
-                        t_exit = df.index[i+2].strftime("%Y-%m-%d %H:%M")
-                        lesson = f"خسارة ميكرو محمية: تراجع السعر وتفعل الوقف بخسارة ({pnl} ر.س) فقط."
-                        db.log_trade(symbol, asset_type, p_entry, f"اختبار زخم (RSI {round(r_val,1)})",
-                                     is_historical=1, entry_time=t_entry, exit_time=t_exit, exit_price=p_entry*0.988,
-                                     status="LOST", pnl_sar=pnl, lesson=lesson, invest_amount=6.0)
-                        count += 1
-        except Exception as e:
-            print(f"Backtest error {symbol}: {e}")
-
-    db.backup_db_to_github()
+            print(f"Backtest error {s}: {e}")
