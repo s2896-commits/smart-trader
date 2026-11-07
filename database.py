@@ -1,10 +1,8 @@
-import sqlite3
-import os
-import json
-import base64
-import requests
-from datetime import datetime
+import sqlite3, os, json, base64, threading, time, requests
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
+TZ = ZoneInfo("Asia/Riyadh")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "trades.db")
 AI_CONFIG_FILE = os.path.join(BASE_DIR, "ai_supervisor.json")
@@ -12,164 +10,261 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
 
-# الحجم الميكرو الجديد: 6 ريال لكل مركز (10% فقط من الـ 60 ريال)
-MICRO_POSITION_SAR = 6.0
+START_CAPITAL = 60.0
+FEE_PCT = 0.10  # رسوم + انزلاق تقديري لكل جهة (شراء/بيع) بالنسبة المئوية
+LOCK = threading.RLock()
+_dirty = False
+_last_backup = 0.0
 
-DEFAULT_AI_CONFIG = {
-    "rsi_min": 32,
-    "rsi_max": 50,
-    "tp_pct": 1.3,
-    "sl_pct": -1.2,
-    "banned_symbols": [],
-    "ai_report": "نظام الحجم المتدرج نشط: الدخول بـ 6 ر.س لكل عملية مع فحص الاتجاه العام قبل التنفيذ."
+DEFAULT_CFG = {
+    "rsi_min": 30, "rsi_max": 58, "tp_pct": 1.2, "sl_pct": -1.2,
+    "trade_size": 6.0, "max_open": 8, "max_per_class": 3,
+    "max_hold_h": 24, "cooldown_min": 60, "paused": False,
+    "banned": {}, "ban_ref": {}, "ai_report": "المشرف يجمع البيانات...",
 }
 
-def get_ai_config():
-    if os.path.exists(AI_CONFIG_FILE):
+
+def now():
+    return datetime.now(TZ)
+
+
+def fmt(dt):
+    return dt.strftime("%Y-%m-%d %H:%M")
+
+
+def parse(s):
+    return datetime.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=TZ)
+
+
+def run(sql, args=()):
+    """تنفيذ استعلام واحد بشكل آمن بين الخيوط، ويرجع الصفوف كقواميس."""
+    with LOCK:
+        c = sqlite3.connect(DB_NAME, timeout=20)
+        c.row_factory = sqlite3.Row
         try:
-            with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return DEFAULT_AI_CONFIG.copy()
+            c.execute("PRAGMA journal_mode=WAL")
+            cur = c.execute(sql, args)
+            rows = [dict(r) for r in cur.fetchall()] if cur.description else []
+            c.commit()
+            return rows
+        finally:
+            c.close()
+
+
+# ---------- الإعدادات ----------
+def get_ai_config():
+    cfg = DEFAULT_CFG.copy()
+    try:
+        with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
+            cfg.update(json.load(f))
+    except Exception:
+        pass
+    return cfg
+
 
 def save_ai_config(cfg):
     try:
-        with open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
+        with LOCK, open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False)
     except Exception as e:
         print(f"AI config save error: {e}")
 
+
+# ---------- النسخ الاحتياطي (GitHub) ----------
 def is_cloud_connected():
     return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
+
+
+def _gh():
+    return (f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}",
+            {"Authorization": f"token {GITHUB_TOKEN}"})
+
 
 def restore_db_from_github():
     if not is_cloud_connected() or os.path.exists(DB_NAME):
         return
     try:
-        url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}"
-        headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-        r = requests.get(url, headers=headers, timeout=10)
+        url, h = _gh()
+        r = requests.get(url, headers=h, timeout=15)
         if r.status_code == 200:
-            content = base64.b64decode(r.json()['content'])
-            with open(DB_NAME, 'wb') as f:
-                f.write(content)
+            j = r.json()
+            if j.get("content"):
+                data = base64.b64decode(j["content"])
+            else:  # الملفات الكبيرة (>1MB) لا ترجع المحتوى مباشرة
+                data = requests.get(j["download_url"], headers=h, timeout=30).content
+            with open(DB_NAME, "wb") as f:
+                f.write(data)
     except Exception as e:
         print(f"Restore error: {e}")
 
-def backup_db_to_github():
+
+def backup_db_to_github(force=False):
+    """يرفع نسخة سليمة من القاعدة. الرفع محدود بمرة كل 5 دقائق إلا عند force."""
+    global _dirty, _last_backup
     if not is_cloud_connected() or not os.path.exists(DB_NAME):
         return
+    if not force and time.time() - _last_backup < 300:
+        return
     try:
-        url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}"
-        headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-        with open(DB_NAME, 'rb') as f:
-            content = base64.b64encode(f.read()).decode('utf-8')
-        r = requests.get(url, headers=headers, timeout=10)
-        sha = r.json().get('sha') if r.status_code == 200 else None
+        tmp = DB_NAME + ".bak"
+        with LOCK:
+            src, dst = sqlite3.connect(DB_NAME), sqlite3.connect(tmp)
+            src.backup(dst)  # نسخة متسقة حتى لو القاعدة قيد الكتابة
+            dst.close(); src.close()
+        with open(tmp, "rb") as f:
+            content = base64.b64encode(f.read()).decode()
+        url, h = _gh()
+        r = requests.get(url, headers=h, timeout=15)
         data = {"message": "Auto-save trades DB", "content": content}
-        if sha:
-            data["sha"] = sha
-        requests.put(url, headers=headers, json=data, timeout=10)
+        if r.status_code == 200:
+            data["sha"] = r.json().get("sha")
+        res = requests.put(url, headers=h, json=data, timeout=30)
+        if res.status_code in (200, 201):
+            _dirty, _last_backup = False, time.time()
     except Exception as e:
         print(f"Backup error: {e}")
 
+
+def backup_if_dirty(force=False):
+    if _dirty or force:
+        backup_db_to_github(force=force)
+
+
 def init_db():
     restore_db_from_github()
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS trades (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        symbol TEXT,
-        asset_type TEXT,
-        entry_price REAL,
-        exit_price REAL,
-        qty REAL DEFAULT 1.0,
-        invested_sar REAL DEFAULT 6.0,
-        entry_time TEXT,
-        exit_time TEXT,
-        reason TEXT,
-        status TEXT,
-        pnl_sar REAL DEFAULT 0.0,
-        lesson TEXT,
-        is_historical INTEGER DEFAULT 0
-    )''')
-    conn.commit()
-    conn.close()
+    run('''CREATE TABLE IF NOT EXISTS trades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
+        entry_price REAL, exit_price REAL, qty REAL DEFAULT 1.0,
+        invested_sar REAL DEFAULT 6.0, entry_time TEXT, exit_time TEXT,
+        reason TEXT, status TEXT, pnl_sar REAL DEFAULT 0.0, lesson TEXT,
+        is_historical INTEGER DEFAULT 0)''')
 
-def clear_old_backtest():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("DELETE FROM trades WHERE is_historical = 1")
-    conn.commit()
-    conn.close()
 
-def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None, exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0, lesson="", invest_amount=6.0):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    now = entry_time if entry_time else datetime.now().strftime("%Y-%m-%d %H:%M")
-    invest_usd = invest_amount / 3.75
-    qty = round(invest_usd / price, 4) if price > 0 else 1.0
+# ---------- الصفقات ----------
+def calc_pnl(entry, exit_, invested):
+    """صافي الربح بالريال بعد الرسوم. النسبة المئوية لا تتأثر بعملة الأصل."""
+    return round(invested * (exit_ - entry) / entry - invested * FEE_PCT / 100 * 2, 2)
 
-    c.execute('''INSERT INTO trades 
-        (symbol, asset_type, entry_price, exit_price, qty, invested_sar, entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (symbol, asset_type, round(price, 4), round(exit_price, 4) if exit_price else None, 
-         qty, invest_amount, now, exit_time, reason, status, round(pnl_sar, 2), lesson, is_historical))
-    conn.commit()
-    conn.close()
+
+def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
+              exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
+              lesson="", invest_amount=6.0):
+    global _dirty
+    def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
+              exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
+              lesson="", invest_amount=6.0):
+    global _dirty
+    # حساب الكمية التقريبية
+    invest_usd = invest_amount / 3.75 if symbol.endswith("-USD") or not symbol.endswith(".SR") else invest_amount
+    qty = round(invest_usd / float(price), 4) if float(price) > 0 else 1.0
+
+    run('''INSERT INTO trades (symbol, asset_type, entry_price, exit_price, qty, invested_sar,
+           entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+        (symbol, asset_type, round(float(price), 4),
+         round(float(exit_price), 4) if exit_price else None, qty, invest_amount,
+         entry_time or fmt(now()), exit_time, reason, status,
+         round(pnl_sar, 2), lesson, is_historical))
     if not is_historical:
-        backup_db_to_github()
+        _dirty = True
 
-def update_open_trades(current_prices):
+        (symbol, asset_type, round(float(price), 4),
+         round(float(exit_price), 4) if exit_price else None, invest_amount,
+         entry_time or fmt(now()), exit_time, reason, status,
+         round(pnl_sar, 2), lesson, is_historical))
+    if not is_historical:
+        _dirty = True
+
+
+def update_open_trades(prices):
+    global _dirty
     cfg = get_ai_config()
-    tp_target = cfg.get("tp_pct", 1.3)
-    sl_target = cfg.get("sl_pct", -1.2)
+    t_now = now()
+    for t in run("SELECT * FROM trades WHERE status='OPEN' AND is_historical=0"):
+        cur = prices.get(t["symbol"])
+        if cur is None:
+            continue
+        entry = t["entry_price"]
+        pct = (cur - entry) / entry * 100
+        pnl = calc_pnl(entry, cur, t["invested_sar"])
+        try:
+            age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
+        except Exception:
+            age_h = 0
+        if pct >= cfg["tp_pct"]:
+            st, lesson = "WON", f"وصل هدف الربح (+{cfg['tp_pct']}%)."
+        elif pct <= cfg["sl_pct"]:
+            st, lesson = "LOST", f"فعّل وقف الخسارة ({cfg['sl_pct']}%) — خسارة محسوبة ({pnl} ر.س)."
+        elif age_h >= cfg["max_hold_h"]:
+            st = "WON" if pnl > 0 else "LOST"
+            lesson = f"خروج بالوقت بعد {int(age_h)} ساعة ({pct:+.2f}%)."
+        else:
+            run("UPDATE trades SET pnl_sar=?, lesson=? WHERE id=?",
+                (pnl, f"التغير الحالي: {pct:+.2f}%", t["id"]))
+            continue
+        run("UPDATE trades SET exit_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
+            (round(cur, 4), fmt(t_now), st, pnl, lesson, t["id"]))
+        _dirty = True
 
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM trades WHERE status = 'OPEN' AND is_historical = 0")
-    open_trades = [dict(r) for r in c.fetchall()]
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    closed_any = False
 
-    for t in open_trades:
-        sym = t['symbol']
-        if sym in current_prices:
-            curr = current_prices[sym]
-            entry = t['entry_price']
-            qty = t.get('qty') or 1.0
-            change_pct = ((curr - entry) / entry) * 100
-            diff_usd = (curr - entry) * qty
-            live_pnl_sar = round(diff_usd * 3.75, 2)
+def open_symbols():
+    return [r["symbol"] for r in run("SELECT symbol FROM trades WHERE status='OPEN' AND is_historical=0")]
 
-            if change_pct >= tp_target:
-                lesson = f"ربح (+{tp_target}%): خروج هادئ لحفظ المكسب."
-                c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='WON', pnl_sar=?, lesson=? WHERE id=?",
-                          (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
-                closed_any = True
-            elif change_pct <= sl_target:
-                lesson = f"وقف محدود ({sl_target}%): خسارة رمزية بحجم ميكرو ({live_pnl_sar} ر.س)."
-                c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='LOST', pnl_sar=?, lesson=? WHERE id=?",
-                          (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
-                closed_any = True
-            else:
-                lesson = f"تغير: {change_pct:+.2f}% | الدخول بـ {t['invested_sar']} ر.س"
-                c.execute("UPDATE trades SET pnl_sar=?, lesson=? WHERE id=?",
-                          (live_pnl_sar, lesson, t['id']))
-    conn.commit()
-    conn.close()
-    if closed_any:
-        backup_db_to_github()
 
-def get_all_trades():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM trades ORDER BY id DESC LIMIT 60")
-    rows = [dict(row) for row in c.fetchall()]
-    conn.close()
-    return rows
+def on_cooldown(symbol, minutes):
+    r = run("SELECT exit_time FROM trades WHERE symbol=? AND is_historical=0 AND status!='OPEN' "
+            "ORDER BY id DESC LIMIT 1", (symbol,))
+    if not r or not r[0]["exit_time"]:
+        return False
+    try:
+        return now() - parse(r[0]["exit_time"]) < timedelta(minutes=minutes)
+    except Exception:
+        return False
+
+
+def get_trades(historical=0, limit=60):
+    return run("SELECT * FROM trades WHERE is_historical=? ORDER BY id DESC LIMIT ?", (historical, limit))
+
+
+# ---------- الإحصائيات (تُحسب من كل الصفقات، وليس آخر 60 فقط) ----------
+def _stats(closed):
+    closed = sorted(closed, key=lambda t: t["exit_time"] or "")
+    n = len(closed)
+    won = sum(1 for t in closed if t["status"] == "WON")
+    gw = sum(t["pnl_sar"] for t in closed if (t["pnl_sar"] or 0) > 0)
+    gl = -sum(t["pnl_sar"] for t in closed if (t["pnl_sar"] or 0) < 0)
+    cum = peak = dd = 0.0
+    curve = []
+    for t in closed:
+        cum += t["pnl_sar"] or 0
+        curve.append(round(cum, 2))
+        peak = max(peak, cum)
+        dd = max(dd, peak - cum)
+    return {"n": n, "won": won, "lost": n - won,
+            "win_rate": round(won / n * 100, 1) if n else None,
+            "pnl": round(cum, 2), "pf": round(gw / gl, 2) if gl else None,
+            "expectancy": round(cum / n, 3) if n else None,
+            "max_dd": round(dd, 2), "curve": curve}
+
+
+def get_summary():
+    live = run("SELECT * FROM trades WHERE is_historical=0")
+    closed = [t for t in live if t["status"] != "OPEN"]
+    opn = [t for t in live if t["status"] == "OPEN"]
+    st = _stats(closed)
+    invested = round(sum(t["invested_sar"] or 0 for t in opn), 2)
+    floating = round(sum(t["pnl_sar"] or 0 for t in opn), 2)
+    return {"stats": st, "invested": invested, "floating": floating,
+            "open_count": len(opn),
+            "wallet": round(START_CAPITAL + st["pnl"] + floating, 2),
+            "cash": round(max(0.0, START_CAPITAL + st["pnl"] - invested), 2)}
+
+
+def get_lab():
+    hist = run("SELECT * FROM trades WHERE is_historical=1")
+    st = _stats([t for t in hist if t["status"] != "OPEN"])
+    st["trades"] = get_trades(1, 100)
+    return st
+
 
 init_db()
