@@ -48,10 +48,17 @@ def run(sql, args=()):
 def get_ai_config():
     cfg = DEFAULT_CFG.copy()
     try:
-        with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
-            cfg.update(json.load(f))
+        if os.path.exists(AI_CONFIG_FILE):
+            with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                if isinstance(saved, dict):
+                    cfg.update(saved)
     except Exception:
         pass
+    if not isinstance(cfg.get("banned"), dict):
+        cfg["banned"] = {}
+    if not isinstance(cfg.get("ban_ref"), dict):
+        cfg["ban_ref"] = {}
     return cfg
 
 def save_ai_config(cfg):
@@ -123,24 +130,43 @@ def init_db():
         invested_sar REAL DEFAULT 6.0, entry_time TEXT, exit_time TEXT,
         reason TEXT, status TEXT, pnl_sar REAL DEFAULT 0.0, lesson TEXT,
         is_historical INTEGER DEFAULT 0)''')
+    
+    # فحص وترقية الأعمدة الناقصة تلقائياً لمنع أي انهيار
+    existing_cols = [r["name"] for r in run("PRAGMA table_info(trades)")]
+    cols_to_add = {
+        "qty": "REAL DEFAULT 1.0",
+        "invested_sar": "REAL DEFAULT 6.0",
+        "pnl_sar": "REAL DEFAULT 0.0",
+        "lesson": "TEXT DEFAULT ''",
+        "is_historical": "INTEGER DEFAULT 0"
+    }
+    for col, col_type in cols_to_add.items():
+        if col not in existing_cols:
+            try:
+                run(f"ALTER TABLE trades ADD COLUMN {col} {col_type}")
+            except Exception:
+                pass
 
 def calc_pnl(entry, exit_, invested):
+    if not entry or entry <= 0:
+        return 0.0
     return round(invested * (exit_ - entry) / entry - invested * FEE_PCT / 100 * 2, 2)
 
 def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
               exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
               lesson="", invest_amount=6.0):
     global _dirty
+    p = float(price) if price else 1.0
     invest_usd = invest_amount / 3.75 if (symbol.endswith("-USD") or not symbol.endswith(".SR")) else invest_amount
-    qty = round(invest_usd / float(price), 4) if float(price) > 0 else 1.0
+    qty = round(invest_usd / p, 4) if p > 0 else 1.0
 
     run('''INSERT INTO trades (symbol, asset_type, entry_price, exit_price, qty, invested_sar,
            entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-        (symbol, asset_type, round(float(price), 4),
+        (symbol, asset_type, round(p, 4),
          round(float(exit_price), 4) if exit_price else None, qty, invest_amount,
          entry_time or fmt(now()), exit_time, reason, status,
-         round(pnl_sar, 2), lesson, is_historical))
+         round(float(pnl_sar or 0.0), 2), lesson, is_historical))
     if not is_historical:
         _dirty = True
 
@@ -153,8 +179,9 @@ def update_open_trades(prices):
         if cur is None:
             continue
         entry = t["entry_price"]
-        pct = (cur - entry) / entry * 100
-        pnl = calc_pnl(entry, cur, t["invested_sar"])
+        pct = ((cur - entry) / entry) * 100 if entry else 0
+        inv = float(t.get("invested_sar") or 6.0)
+        pnl = calc_pnl(entry, cur, inv)
         try:
             age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
         except Exception:
@@ -190,15 +217,16 @@ def get_trades(historical=0, limit=60):
     return run("SELECT * FROM trades WHERE is_historical=? ORDER BY id DESC LIMIT ?", (historical, limit))
 
 def _stats(closed):
-    closed = sorted(closed, key=lambda t: t["exit_time"] or "")
+    closed = sorted(closed, key=lambda t: t.get("exit_time") or "")
     n = len(closed)
-    won = sum(1 for t in closed if t["status"] == "WON")
-    gw = sum(t["pnl_sar"] for t in closed if (t["pnl_sar"] or 0) > 0)
-    gl = -sum(t["pnl_sar"] for t in closed if (t["pnl_sar"] or 0) < 0)
+    won = sum(1 for t in closed if t.get("status") == "WON")
+    gw = sum(float(t.get("pnl_sar") or 0) for t in closed if float(t.get("pnl_sar") or 0) > 0)
+    gl = -sum(float(t.get("pnl_sar") or 0) for t in closed if float(t.get("pnl_sar") or 0) < 0)
     cum = peak = dd = 0.0
     curve = []
     for t in closed:
-        cum += t["pnl_sar"] or 0
+        val = float(t.get("pnl_sar") or 0)
+        cum += val
         curve.append(round(cum, 2))
         peak = max(peak, cum)
         dd = max(dd, peak - cum)
@@ -210,11 +238,11 @@ def _stats(closed):
 
 def get_summary():
     live = run("SELECT * FROM trades WHERE is_historical=0")
-    closed = [t for t in live if t["status"] != "OPEN"]
-    opn = [t for t in live if t["status"] == "OPEN"]
+    closed = [t for t in live if t.get("status") != "OPEN"]
+    opn = [t for t in live if t.get("status") == "OPEN"]
     st = _stats(closed)
-    invested = round(sum(t["invested_sar"] or 0 for t in opn), 2)
-    floating = round(sum(t["pnl_sar"] or 0 for t in opn), 2)
+    invested = round(sum(float(t.get("invested_sar") or 6.0) for t in opn), 2)
+    floating = round(sum(float(t.get("pnl_sar") or 0.0) for t in opn), 2)
     return {"stats": st, "invested": invested, "floating": floating,
             "open_count": len(opn),
             "wallet": round(START_CAPITAL + st["pnl"] + floating, 2),
@@ -222,7 +250,7 @@ def get_summary():
 
 def get_lab():
     hist = run("SELECT * FROM trades WHERE is_historical=1")
-    st = _stats([t for t in hist if t["status"] != "OPEN"])
+    st = _stats([t for t in hist if t.get("status") != "OPEN"])
     st["trades"] = get_trades(1, 100)
     return st
 
