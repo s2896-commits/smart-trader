@@ -1,4 +1,4 @@
-﻿import sqlite3
+import sqlite3
 import os
 import base64
 import requests
@@ -9,8 +9,6 @@ DB_NAME = os.path.join(BASE_DIR, "trades.db")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
-
-INITIAL_BALANCE_SAR = 60.0
 
 def restore_db_from_github():
     if not GITHUB_TOKEN or os.path.exists(DB_NAME):
@@ -62,6 +60,15 @@ def init_db():
         pnl_sar REAL DEFAULT 0.0,
         lesson TEXT
     )''')
+    # ترقية تلقائية لو كانت قاعدة البيانات قديمة
+    c.execute("PRAGMA table_info(trades)")
+    cols = [col[1] for col in c.fetchall()]
+    if "qty" not in cols:
+        c.execute("ALTER TABLE trades ADD COLUMN qty REAL DEFAULT 1.0")
+    if "invested_sar" not in cols:
+        c.execute("ALTER TABLE trades ADD COLUMN invested_sar REAL DEFAULT 20.0")
+    if "pnl_sar" not in cols:
+        c.execute("ALTER TABLE trades ADD COLUMN pnl_sar REAL DEFAULT 0.0")
     conn.commit()
     conn.close()
 
@@ -69,7 +76,7 @@ def log_trade(symbol, asset_type, price, reason, is_historical=False, entry_time
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     now = entry_time if entry_time else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    invest_sar = 20.0 # كل صفقة تدخل بـ 20 ريال من أصل 60
+    invest_sar = 20.0
     invest_usd = invest_sar / 3.75
     qty = round(invest_usd / price, 4) if price > 0 else 1.0
 
@@ -97,9 +104,9 @@ def update_open_trades(current_prices):
         if sym in current_prices:
             curr = current_prices[sym]
             entry = t['entry_price']
+            qty = t.get('qty') or 1.0
             change_pct = ((curr - entry) / entry) * 100
-            # حساب الربح الفعلي بالريال بناءً على الكمية المشتراة
-            diff_usd = (curr - entry) * t['qty']
+            diff_usd = (curr - entry) * qty
             live_pnl_sar = round(diff_usd * 3.75, 2)
 
             if change_pct >= 1.5:
@@ -108,7 +115,7 @@ def update_open_trades(current_prices):
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
             elif change_pct <= -1.0:
-                lesson = "تفعيل حماية الوقف (-1%): تم إغلاق الصفقة لحفظ بقية الـ 60 ريال."
+                lesson = "تفعيل حماية الوقف (-1%): إغلاق لحفظ بقية الـ 60 ريال."
                 c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='LOST', pnl_sar=?, lesson=? WHERE id=?",
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
