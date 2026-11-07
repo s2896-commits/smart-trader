@@ -18,10 +18,8 @@ TZ_SA, TZ_US = ZoneInfo("Asia/Riyadh"), ZoneInfo("America/New_York")
 _scan_lock = threading.Lock()
 _last_bar = {}
 
-
 def asset_class(s):
     return "crypto" if s.endswith("-USD") else "tasi" if s.endswith(".SR") else "us"
-
 
 def market_status():
     sa, us = datetime.now(TZ_SA), datetime.now(TZ_US)
@@ -29,8 +27,6 @@ def market_status():
             "tasi": sa.weekday() in (6, 0, 1, 2, 3) and dtime(10, 0) <= sa.time() < dtime(15, 0),
             "us": us.weekday() < 5 and dtime(9, 30) <= us.time() < dtime(16, 0)}
 
-
-# ---------- المؤشرات (مشتركة بين التداول الحي والمحاكاة) ----------
 def indicators(close):
     d = close.diff()
     up = d.clip(lower=0).ewm(alpha=1 / 14, adjust=False).mean()
@@ -38,11 +34,8 @@ def indicators(close):
     rsi = 100 - 100 / (1 + up / dn.replace(0, 1e-9))
     return close.rolling(20).mean(), rsi
 
-
 def is_entry(price, prev, sma, rsi, cfg):
-    """اتجاه صاعد (فوق SMA20) + شمعة خضراء + RSI داخل النطاق."""
     return bool(price > sma and price >= prev and cfg["rsi_min"] <= rsi <= cfg["rsi_max"])
-
 
 def fetch(period, interval):
     df = yf.download(list(WATCHLIST), period=period, interval=interval,
@@ -58,19 +51,14 @@ def fetch(period, interval):
             pass
     return out
 
-
 def is_fresh(d, minutes=45):
-    """آخر شمعة حديثة؟ (يمنع التداول على أسعار قديمة عند إغلاق السوق)"""
     last = d.index[-1]
     return pd.Timestamp.now(tz=last.tz) - last < pd.Timedelta(minutes=minutes)
 
-
-# ---------- المشرف: إحصائيات حقيقية + حظر مؤقت ----------
 def supervisor():
     cfg, t = db.get_ai_config(), db.now()
     cfg["banned"] = {s: u for s, u in cfg["banned"].items() if u > db.fmt(t)}
-    recent = db.run("SELECT id, symbol, status FROM trades WHERE is_historical=0 "
-                    "AND status!='OPEN' ORDER BY id DESC LIMIT 80")
+    recent = db.run("SELECT id, symbol, status FROM trades WHERE is_historical=0 AND status!='OPEN' ORDER BY id DESC LIMIT 80")
     by = {}
     for r in recent:
         if r["id"] > cfg["ban_ref"].get(r["symbol"], 0):
@@ -87,10 +75,8 @@ def supervisor():
     db.save_ai_config(cfg)
     return cfg
 
-
-# ---------- الفحص الحي ----------
 def analyze_and_trade():
-    if not _scan_lock.acquire(blocking=False):  # يمنع الفحص المتزامن ← لا صفقات مكررة
+    if not _scan_lock.acquire(blocking=False):
         return
     try:
         cfg = supervisor()
@@ -112,7 +98,7 @@ def analyze_and_trade():
                 break
             if counts.get(asset_class(s), 0) >= cfg["max_per_class"] or db.on_cooldown(s, cfg["cooldown_min"]):
                 continue
-            c = d["Close"].iloc[:-1]  # الشموع المغلقة فقط (آخر شمعة لا تزال تتشكل)
+            c = d["Close"].iloc[:-1]
             if _last_bar.get(s) == c.index[-1]:
                 continue
             _last_bar[s] = c.index[-1]
@@ -126,11 +112,7 @@ def analyze_and_trade():
     finally:
         _scan_lock.release()
 
-
-# ---------- محاكاة تاريخية صادقة ----------
 def run_backtest():
-    """نفس شروط الدخول الحية. الدخول عند افتتاح الشمعة التالية، والترتيب الزمني
-    للهدف/الوقف محترم (إذا لمس الاثنين في نفس الشمعة نعتبر الوقف أولاً)، مع الرسوم."""
     cfg = db.get_ai_config()
     db.run("DELETE FROM trades WHERE is_historical=1")
     data = fetch("6mo", "1h")
@@ -149,13 +131,14 @@ def run_backtest():
                     continue
                 entry = o[i + 1]
                 tp, sl = entry * (1 + cfg["tp_pct"] / 100), entry * (1 + cfg["sl_pct"] / 100)
+                ex, why = c[min(i + hold, len(d) - 1)], "خروج بالوقت"
                 for j in range(i + 1, min(i + 1 + hold, len(d))):
                     if l[j] <= sl:
-                        ex, why = sl, "وقف الخسارة"; break
+                        ex, why = sl, "وقف الخسارة"
+                        break
                     if h[j] >= tp:
-                        ex, why = tp, "هدف الربح"; break
-                else:
-                    ex, why = c[j], "خروج بالوقت"
+                        ex, why = tp, "هدف الربح"
+                        break
                 pnl = db.calc_pnl(entry, ex, cfg["trade_size"])
                 db.log_trade(s, label, entry, f"زخم (RSI {rsi.iloc[i]:.0f})", 1,
                              idx[i + 1].strftime("%Y-%m-%d %H:%M"), idx[j].strftime("%Y-%m-%d %H:%M"),
