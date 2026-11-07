@@ -1,14 +1,42 @@
 import sqlite3
 import os
+import json
 import base64
 import requests
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "trades.db")
+AI_CONFIG_FILE = os.path.join(BASE_DIR, "ai_supervisor.json")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
+
+DEFAULT_AI_CONFIG = {
+    "rsi_min": 35,
+    "rsi_max": 54,
+    "tp_pct": 1.4,
+    "sl_pct": -1.2,
+    "require_uptrend": True,
+    "banned_symbols": [],
+    "ai_report": "تم تفعيل المشرف الذكي: تم خفض سقف RSI إلى 54 لمنع الشراء في القمم وتفعيل فلتر المسار الصاعد."
+}
+
+def get_ai_config():
+    if os.path.exists(AI_CONFIG_FILE):
+        try:
+            with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return DEFAULT_AI_CONFIG.copy()
+
+def save_ai_config(cfg):
+    try:
+        with open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False)
+    except Exception as e:
+        print(f"AI config save error: {e}")
 
 def is_cloud_connected():
     return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
@@ -74,6 +102,13 @@ def init_db():
         c.execute("ALTER TABLE trades ADD COLUMN pnl_sar REAL DEFAULT 0.0")
     if "is_historical" not in cols:
         c.execute("ALTER TABLE trades ADD COLUMN is_historical INTEGER DEFAULT 0")
+    
+    # تنظيف أي صفقات مفتوحة زائدة عن حد الـ 60 ريال (الحد الأقصى 3 صفقات)
+    c.execute("SELECT id FROM trades WHERE status = 'OPEN' AND is_historical = 0 ORDER BY id ASC")
+    open_ids = [r[0] for r in c.fetchall()]
+    if len(open_ids) > 3:
+        for extra_id in open_ids[3:]:
+            c.execute("DELETE FROM trades WHERE id = ?", (extra_id,))
     conn.commit()
     conn.close()
 
@@ -103,6 +138,10 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
         backup_db_to_github()
 
 def update_open_trades(current_prices):
+    cfg = get_ai_config()
+    tp_target = cfg.get("tp_pct", 1.4)
+    sl_target = cfg.get("sl_pct", -1.2)
+
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -121,18 +160,18 @@ def update_open_trades(current_prices):
             diff_usd = (curr - entry) * qty
             live_pnl_sar = round(diff_usd * 3.75, 2)
 
-            if change_pct >= 1.5:
-                lesson = "أغلقت على ربح (+1.5%): الزخم حقق الهدف المحدد."
+            if change_pct >= tp_target:
+                lesson = f"أغلقت بربح (+{tp_target}%): استراتيجية المشرف الذكي أصابت الهدف."
                 c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='WON', pnl_sar=?, lesson=? WHERE id=?",
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
-            elif change_pct <= -1.0:
-                lesson = "وقف خسارة (-1%): حماية رأس المال من استمرار الهبوط."
+            elif change_pct <= sl_target:
+                lesson = f"وقف خسارة ({sl_target}%): حماية المحفظة وسيتم مراجعة السبب بواسطة المشرف الذكي."
                 c.execute("UPDATE trades SET exit_price=?, exit_time=?, status='LOST', pnl_sar=?, lesson=? WHERE id=?",
                           (round(curr, 4), now, live_pnl_sar, lesson, t['id']))
                 closed_any = True
             else:
-                lesson = f"السعر الحالي: {round(curr, 4)}$ ({change_pct:+.2f}%) | الهدف +1.5%"
+                lesson = f"السعر الحالي: {round(curr, 4)}$ ({change_pct:+.2f}%) | الهدف +{tp_target}%"
                 c.execute("UPDATE trades SET pnl_sar=?, lesson=? WHERE id=?",
                           (live_pnl_sar, lesson, t['id']))
     conn.commit()
