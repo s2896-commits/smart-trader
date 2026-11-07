@@ -6,9 +6,8 @@ import database as db
 import bot_engine as bot
 
 SELF_URL = os.environ.get("RENDER_EXTERNAL_URL", "https://smart-trader-wo7s.onrender.com")
-ADMIN_KEY = os.environ.get("ADMIN_KEY", "")  # اختياري: يحمي الأزرار (فحص/مختبر/إيقاف)
+ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 state = {"last_scan": None, "error": None}
-
 
 def worker():
     last_ping = 0
@@ -27,26 +26,21 @@ def worker():
             last_ping = time.time()
         time.sleep(120)
 
-
 @asynccontextmanager
 async def lifespan(app):
     threading.Thread(target=worker, daemon=True).start()
     yield
     db.backup_if_dirty(force=True)
 
-
 app = FastAPI(lifespan=lifespan)
-
 
 def guard(key):
     if ADMIN_KEY and key != ADMIN_KEY:
         raise HTTPException(401, "bad key")
 
-
 @app.get("/api/ping")
 def ping():
     return {"alive": True}
-
 
 @app.get("/api/scan")
 def scan(bg: BackgroundTasks, key: str = ""):
@@ -54,13 +48,11 @@ def scan(bg: BackgroundTasks, key: str = ""):
     bg.add_task(bot.analyze_and_trade)
     return {"ok": True}
 
-
 @app.get("/api/backtest")
 def backtest(bg: BackgroundTasks, key: str = ""):
     guard(key)
     bg.add_task(bot.run_backtest)
     return {"ok": True}
-
 
 @app.get("/api/pause")
 def pause(key: str = ""):
@@ -70,7 +62,6 @@ def pause(key: str = ""):
     db.save_ai_config(cfg)
     return {"paused": cfg["paused"]}
 
-
 @app.get("/api/data")
 def data():
     s = db.get_summary()
@@ -78,12 +69,6 @@ def data():
             "markets": bot.market_status(), "last_scan": state["last_scan"],
             "error": state["error"], "start": db.START_CAPITAL, "fee": db.FEE_PCT,
             "live": {**s, "trades": db.get_trades(0, 60)}, "lab": db.get_lab()}
-
-
-@app.get("/", response_class=HTMLResponse)
-def dashboard():
-    return PAGE
-
 
 PAGE = '''<!DOCTYPE html>
 <html dir="rtl" lang="ar"><head>
@@ -250,3 +235,7 @@ async function pauseToggle(){await act('/api/pause');await load()}
 load();setInterval(load,30000);
 </script></body></html>
 '''
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+    return PAGE
