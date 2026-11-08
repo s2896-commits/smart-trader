@@ -22,6 +22,7 @@ DEFAULT_CFG = {
     "rsi_min": 32, "rsi_max": 58,
     "tp_pct": 1.2, "sl_pct": -1.2,
     "trail_trigger": 1.0, "trail_gap": 0.45,
+    "trade_size": 5.0, "min_size": 5.0, "med_size": 10.0, "max_size": 15.0,
     "min_size": 5.0, "med_size": 10.0, "max_size": 15.0,
     "max_open": 6, "max_per_class": 3,
     "max_hold_h": 24, "cooldown_min": 45,
