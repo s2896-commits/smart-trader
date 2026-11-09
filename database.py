@@ -23,12 +23,11 @@ DEFAULT_CFG = {
     "tp_pct": 1.2, "sl_pct": -1.2,
     "trail_trigger": 1.0, "trail_gap": 0.45,
     "trade_size": 5.0, "min_size": 5.0, "med_size": 10.0, "max_size": 15.0,
-    "min_size": 5.0, "med_size": 10.0, "max_size": 15.0,
     "max_open": 6, "max_per_class": 3,
     "max_hold_h": 24, "cooldown_min": 45,
     "paused": False,
     "paused_pockets": {"scalp": False, "swing": False, "reserve": False},
-    "observer_mode": False,  # وضع المراقب والقناص وقت الخطر بدل الإيقاف التام
+    "observer_mode": False,
     "manual_vault_add": 0.0,
     "banned": {}, "ban_ref": {},
     "elite_assets": ["BTC-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BNB-USD"],
@@ -45,7 +44,17 @@ def fmt(dt):
     return dt.strftime("%Y-%m-%d %H:%M")
 
 def parse(s):
-    return datetime.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=TZ)
+    """قراءة مرنة لجميع صيغ التواريخ القديمة والجديدة (مع الثواني أو بدونها)."""
+    s = str(s or "").strip()
+    for f in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d-%m-%Y %H:%M:%S", "%d-%m-%Y %H:%M", "%H:%M:%S %d-%m-%Y"):
+        try:
+            return datetime.strptime(s, f).replace(tzinfo=TZ)
+        except ValueError:
+            pass
+    try:
+        return datetime.strptime(s[:16], "%Y-%m-%d %H:%M").replace(tzinfo=TZ)
+    except Exception:
+        return now() - timedelta(hours=25)
 
 def run(sql, args=()):
     with LOCK:
@@ -62,6 +71,16 @@ def run(sql, args=()):
 
 def get_ai_config():
     cfg = DEFAULT_CFG.copy()
+    # 1. قراءة من قاعدة البيانات أولاً (حتى لا تضيع بعد إعادة تشغيل السيرفر)
+    try:
+        rows = run("SELECT val FROM kv_settings WHERE key='ai_cfg'")
+        if rows and rows[0].get("val"):
+            saved_db = json.loads(rows[0]["val"])
+            if isinstance(saved_db, dict):
+                cfg.update(saved_db)
+    except Exception:
+        pass
+    # 2. قراءة من الملف المحلي إن وجد
     try:
         if os.path.exists(AI_CONFIG_FILE):
             with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -70,6 +89,7 @@ def get_ai_config():
                     cfg.update(saved)
     except Exception:
         pass
+
     if not isinstance(cfg.get("banned"), dict):
         cfg["banned"] = {}
     if not isinstance(cfg.get("ban_ref"), dict):
@@ -78,12 +98,16 @@ def get_ai_config():
         cfg["paused_pockets"] = {"scalp": False, "swing": False, "reserve": False}
     if not isinstance(cfg.get("elite_assets"), list):
         cfg["elite_assets"] = list(DEFAULT_CFG["elite_assets"])
+    cfg.setdefault("trade_size", 5.0)
     return cfg
 
 def save_ai_config(cfg):
     try:
-        with LOCK, open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(cfg, f, ensure_ascii=False, indent=2)
+        raw = json.dumps(cfg, ensure_ascii=False, indent=2)
+        with LOCK:
+            with open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
+                f.write(raw)
+        run("INSERT OR REPLACE INTO kv_settings (key, val) VALUES ('ai_cfg', ?)", (raw,))
     except Exception as e:
         print(f"AI config save error: {e}")
 
@@ -147,12 +171,19 @@ def backup_db_to_github(force=False):
     except Exception as e:
         print(f"Backup error: {e}")
 
+def _instant_backup_async():
+    """رفع فوري في الخلفية فور فتح أو إغلاق أي صفقة."""
+    threading.Thread(target=backup_db_to_github, kwargs={"force": True}, daemon=True).start()
+
 def backup_if_dirty(force=False):
     if _dirty or force:
         backup_db_to_github(force=force)
 
 def init_db():
     restore_db_from_github()
+    # جدول حفظ الإعدادات داخل قاعدة البيانات
+    run("CREATE TABLE IF NOT EXISTS kv_settings (key TEXT PRIMARY KEY, val TEXT)")
+
     # 1. جدول الصفقات الرئيسي
     run('''CREATE TABLE IF NOT EXISTS trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
@@ -183,25 +214,24 @@ def init_db():
             except Exception:
                 pass
 
-    # 2. جدول دوري المفضلة (ملكي / تحت الاختبار / هبّة)
+    # 2. جدول دوري المفضلة
     run('''CREATE TABLE IF NOT EXISTS favorites (
         symbol TEXT PRIMARY KEY, tier TEXT DEFAULT 'trend',
         picks INTEGER DEFAULT 1, wins INTEGER DEFAULT 0,
         losses INTEGER DEFAULT 0, consec_losses INTEGER DEFAULT 0,
         updated_at TEXT)''')
 
-    # 3. جدول شاشة التفكير الحية (ستايل Grok)
+    # 3. جدول شاشة التفكير الحية
     run('''CREATE TABLE IF NOT EXISTS thoughts (
         id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
         agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
 
-    # 4. جدول محادثة البوت (الشات التفاعلي)
+    # 4. جدول محادثة البوت
     run('''CREATE TABLE IF NOT EXISTS chat_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
         sender TEXT, message TEXT)''')
 
 def log_thought(agent, message, level="info"):
-    """تسجيل تفكير المساعدين الأربعة في شاشة Grok الحية."""
     try:
         run("INSERT INTO thoughts (time, agent, message, level) VALUES (?,?,?,?)",
             (now().strftime("%H:%M"), agent, message, level))
@@ -213,7 +243,6 @@ def get_thoughts(limit=12):
     return run("SELECT * FROM thoughts ORDER BY id DESC LIMIT ?", (limit,))
 
 def update_favorite(symbol, picked=False, won=None):
-    """ترقية العملات بعد 5 اختيارات، وطردها عند خسارتين متتاليتين."""
     t_str = fmt(now())
     rows = run("SELECT * FROM favorites WHERE symbol=?", (symbol,))
     if not rows:
@@ -286,11 +315,13 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
         update_favorite(symbol, picked=True)
         pocket_names = {"scalp": "المضارب السريع", "swing": "صائد الموجات", "reserve": "قناص الاحتياط"}
         log_thought("القناص", f"فتح صفقة {symbol} بمبلغ {invest_amount} ر.س في جيب ({pocket_names.get(pocket, pocket)}) بدرجة {score}/100", "success")
+        _instant_backup_async()
 
 def update_open_trades(prices):
     global _dirty
     cfg = get_ai_config()
     t_now = now()
+    closed_any = False
     for t in run("SELECT * FROM trades WHERE status='OPEN' AND is_historical=0"):
         cur = prices.get(t["symbol"])
         if cur is None:
@@ -304,10 +335,7 @@ def update_open_trades(prices):
         tp_target = float(t.get("tp_pct") or cfg["tp_pct"])
         sl_target = float(t.get("sl_pct") or cfg["sl_pct"])
         pnl = calc_pnl(entry, cur, inv)
-        try:
-            age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
-        except Exception:
-            age_h = 0
+        age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
 
         if peak_pct >= cfg["trail_trigger"] and drop_from_peak >= cfg["trail_gap"] and pct > 0.3:
             st, lesson = "WON", f"قناص الموجة 🎯: وصل القمة (+{peak_pct:.1f}%) وحجز الربح عند (+{pct:.1f}%)."
@@ -331,6 +359,10 @@ def update_open_trades(prices):
         update_favorite(t["symbol"], won=(st == "WON"))
         log_thought("المدقق", f"إغلاق {t['symbol']} ({st}): الصافي {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
         _dirty = True
+        closed_any = True
+
+    if closed_any:
+        _instant_backup_async()
 
 def open_symbols():
     return [r["symbol"] for r in run("SELECT symbol FROM trades WHERE status='OPEN' AND is_historical=0")]
@@ -362,7 +394,6 @@ def _stats(closed, base_cap=START_CAPITAL):
         peak = max(peak, cum)
         dd = max(dd, peak - cum)
 
-    # حساب التدرج الواقعي ×10 (مثلاً من 60 إلى 600 ريال، وإذا وصلت 100 يصير 1000 ريال)
     current_tier_base = 100.0 if (base_cap + cum) >= 100.0 else START_CAPITAL
     scaled_capital = round(current_tier_base * SCALE_FACTOR, 0)
     scaled_pnl = round(cum * SCALE_FACTOR, 2)
@@ -371,7 +402,7 @@ def _stats(closed, base_cap=START_CAPITAL):
         "n": n, "won": won, "lost": n - won,
         "win_rate": round(won / n * 100, 1) if n else None,
         "pnl": round(cum, 2),
-        "pro_pnl": scaled_pnl,  # متوافق مع الواجهة الحالية ويعرض ربح الـ ×10
+        "pro_pnl": scaled_pnl,
         "scaled_capital": scaled_capital,
         "scaled_pnl": scaled_pnl,
         "pf": round(gw / gl, 2) if gl else None,
@@ -380,17 +411,14 @@ def _stats(closed, base_cap=START_CAPITAL):
     }
 
 def _calc_pockets(closed, opn, cfg):
-    """حساب الجيوب الثلاثة (25 سريع، 25 موجات، 10 احتياط) وتقسيم كل 10 ريال ربح."""
     total_realized = sum(float(t.get("pnl_sar") or 0.0) for t in closed)
     milestones = int(max(0.0, total_realized) // 10.0)
 
-    # تقسيم كل 10 ريال ربح: 3 ريال خزنة سحب، 5 ريال للجيوب، 2 ريال للاحتياط
     auto_vault = round(milestones * 3.0, 2)
     manual_vault = round(float(cfg.get("manual_vault_add") or 0.0), 2)
     personal_vault = round(auto_vault + manual_vault, 2)
     next_split_rem = round(10.0 - (max(0.0, total_realized) % 10.0), 2) if total_realized >= 0 else round(10.0 + abs(total_realized), 2)
 
-    # توزيع الأرباح غير المعزولة على الجيوب
     unsplit_pnl = total_realized - (milestones * 10.0) if total_realized >= 0 else total_realized
     base_alloc = {
         "scalp": round(25.0 + (milestones * 2.5) + (unsplit_pnl * 0.45) - (manual_vault * 0.5), 2),
@@ -447,7 +475,6 @@ def get_lab():
     return st
 
 def ask_bot_chat(user_msg):
-    """محرك الشات التفاعلي: يرد على أسئلتك من واقع المحفظة وينفذ أوامرك."""
     msg = (user_msg or "").strip()
     if not msg:
         return "اكتب سؤالك أو أمرك يا صالح وأبشر!"
@@ -460,7 +487,6 @@ def ask_bot_chat(user_msg):
     pockets = s["pockets"]
     st = s["stats"]
 
-    # تنفيذ أوامر مباشرة من الشات
     if "وقف" in msg and "سريع" in msg:
         cfg["paused_pockets"]["scalp"] = True
         save_ai_config(cfg)
@@ -503,9 +529,3 @@ def get_chat_history(limit=25):
     return list(reversed(rows))
 
 init_db()
-
-if __name__ == "__main__":
-    summ = get_summary()
-    print("✅ فحص المحطة الأولى (database.py) ناجح 100%!")
-    print(f"💰 إجمالي المحفظة: {summ['wallet']} ر.س | خزنة السحب: {summ['personal_vault']} ر.س")
-    print("📦 الجيوب الثلاثة:", {k: v["cash"] for k, v in summ["pockets"].items()})
