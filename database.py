@@ -12,7 +12,7 @@ GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
 
 START_CAPITAL = 60.0
-SCALE_FACTOR = 10.0  # قاعدة التدرج الواقعي ×10 (من 60 إلى 600 ريال)
+SCALE_FACTOR = 10.0
 FEE_PCT = 0.10
 LOCK = threading.RLock()
 _dirty = False
@@ -44,7 +44,6 @@ def fmt(dt):
     return dt.strftime("%Y-%m-%d %H:%M")
 
 def parse(s):
-    """قراءة مرنة لجميع صيغ التواريخ القديمة والجديدة (مع الثواني أو بدونها)."""
     s = str(s or "").strip()
     for f in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d-%m-%Y %H:%M:%S", "%d-%m-%Y %H:%M", "%H:%M:%S %d-%m-%Y"):
         try:
@@ -71,7 +70,6 @@ def run(sql, args=()):
 
 def get_ai_config():
     cfg = DEFAULT_CFG.copy()
-    # 1. قراءة من قاعدة البيانات أولاً (حتى لا تضيع بعد إعادة تشغيل السيرفر)
     try:
         rows = run("SELECT val FROM kv_settings WHERE key='ai_cfg'")
         if rows and rows[0].get("val"):
@@ -80,7 +78,6 @@ def get_ai_config():
                 cfg.update(saved_db)
     except Exception:
         pass
-    # 2. قراءة من الملف المحلي إن وجد
     try:
         if os.path.exists(AI_CONFIG_FILE):
             with open(AI_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -112,7 +109,6 @@ def save_ai_config(cfg):
         print(f"AI config save error: {e}")
 
 def get_brain():
-    """قراءة خلاصة معمل التدريب (وصفات العملات والفخاخ الممنوعة)."""
     default_brain = {"tested_hashes": [], "asset_profiles": {}, "trap_patterns": [], "total_runs": 0}
     try:
         if os.path.exists(BRAIN_FILE):
@@ -128,7 +124,7 @@ def is_cloud_connected():
     return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
 
 def _gh():
-    return (f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}",
+    return (f"[https://api.github.com/repos/](https://api.github.com/repos/){GITHUB_REPO}/contents/{FILE_PATH}",
             {"Authorization": f"token {GITHUB_TOKEN}"})
 
 def restore_db_from_github():
@@ -136,10 +132,10 @@ def restore_db_from_github():
         return
     try:
         url, h = _gh()
-        r = requests.get(url, headers=h, timeout=15)
+        r = requests.get(url, headers=h, timeout=8)
         if r.status_code == 200:
             j = r.json()
-            data = base64.b64decode(j["content"]) if j.get("content") else requests.get(j["download_url"], headers=h, timeout=30).content
+            data = base64.b64decode(j["content"]) if j.get("content") else requests.get(j["download_url"], headers=h, timeout=15).content
             with open(DB_NAME, "wb") as f:
                 f.write(data)
     except Exception as e:
@@ -161,18 +157,17 @@ def backup_db_to_github(force=False):
         with open(tmp, "rb") as f:
             content = base64.b64encode(f.read()).decode()
         url, h = _gh()
-        r = requests.get(url, headers=h, timeout=15)
+        r = requests.get(url, headers=h, timeout=10)
         data = {"message": "Auto-save trades DB", "content": content}
         if r.status_code == 200:
             data["sha"] = r.json().get("sha")
-        res = requests.put(url, headers=h, json=data, timeout=30)
+        res = requests.put(url, headers=h, json=data, timeout=20)
         if res.status_code in (200, 201):
             _dirty, _last_backup = False, time.time()
     except Exception as e:
         print(f"Backup error: {e}")
 
 def _instant_backup_async():
-    """رفع فوري في الخلفية فور فتح أو إغلاق أي صفقة."""
     threading.Thread(target=backup_db_to_github, kwargs={"force": True}, daemon=True).start()
 
 def backup_if_dirty(force=False):
@@ -180,56 +175,53 @@ def backup_if_dirty(force=False):
         backup_db_to_github(force=force)
 
 def init_db():
-    restore_db_from_github()
-    # جدول حفظ الإعدادات داخل قاعدة البيانات
-    run("CREATE TABLE IF NOT EXISTS kv_settings (key TEXT PRIMARY KEY, val TEXT)")
+    try:
+        restore_db_from_github()
+        run("CREATE TABLE IF NOT EXISTS kv_settings (key TEXT PRIMARY KEY, val TEXT)")
+        run('''CREATE TABLE IF NOT EXISTS trades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
+            pocket TEXT DEFAULT 'scalp', score INTEGER DEFAULT 80,
+            entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
+            tp_pct REAL DEFAULT 1.2, sl_pct REAL DEFAULT -1.2,
+            qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0,
+            entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
+            pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
 
-    # 1. جدول الصفقات الرئيسي
-    run('''CREATE TABLE IF NOT EXISTS trades (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
-        pocket TEXT DEFAULT 'scalp', score INTEGER DEFAULT 80,
-        entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
-        tp_pct REAL DEFAULT 1.2, sl_pct REAL DEFAULT -1.2,
-        qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0,
-        entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
-        pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
+        existing_cols = [r["name"] for r in run("PRAGMA table_info(trades)")]
+        cols_to_add = {
+            "pocket": "TEXT DEFAULT 'scalp'",
+            "score": "INTEGER DEFAULT 80",
+            "peak_price": "REAL DEFAULT 0.0",
+            "tp_pct": "REAL DEFAULT 1.2",
+            "sl_pct": "REAL DEFAULT -1.2",
+            "qty": "REAL DEFAULT 1.0",
+            "invested_sar": "REAL DEFAULT 5.0",
+            "pnl_sar": "REAL DEFAULT 0.0",
+            "lesson": "TEXT DEFAULT ''",
+            "is_historical": "INTEGER DEFAULT 0",
+        }
+        for col, col_type in cols_to_add.items():
+            if col not in existing_cols:
+                try:
+                    run(f"ALTER TABLE trades ADD COLUMN {col} {col_type}")
+                except Exception:
+                    pass
 
-    existing_cols = [r["name"] for r in run("PRAGMA table_info(trades)")]
-    cols_to_add = {
-        "pocket": "TEXT DEFAULT 'scalp'",
-        "score": "INTEGER DEFAULT 80",
-        "peak_price": "REAL DEFAULT 0.0",
-        "tp_pct": "REAL DEFAULT 1.2",
-        "sl_pct": "REAL DEFAULT -1.2",
-        "qty": "REAL DEFAULT 1.0",
-        "invested_sar": "REAL DEFAULT 5.0",
-        "pnl_sar": "REAL DEFAULT 0.0",
-        "lesson": "TEXT DEFAULT ''",
-        "is_historical": "INTEGER DEFAULT 0",
-    }
-    for col, col_type in cols_to_add.items():
-        if col not in existing_cols:
-            try:
-                run(f"ALTER TABLE trades ADD COLUMN {col} {col_type}")
-            except Exception:
-                pass
+        run('''CREATE TABLE IF NOT EXISTS favorites (
+            symbol TEXT PRIMARY KEY, tier TEXT DEFAULT 'trend',
+            picks INTEGER DEFAULT 1, wins INTEGER DEFAULT 0,
+            losses INTEGER DEFAULT 0, consec_losses INTEGER DEFAULT 0,
+            updated_at TEXT)''')
 
-    # 2. جدول دوري المفضلة
-    run('''CREATE TABLE IF NOT EXISTS favorites (
-        symbol TEXT PRIMARY KEY, tier TEXT DEFAULT 'trend',
-        picks INTEGER DEFAULT 1, wins INTEGER DEFAULT 0,
-        losses INTEGER DEFAULT 0, consec_losses INTEGER DEFAULT 0,
-        updated_at TEXT)''')
+        run('''CREATE TABLE IF NOT EXISTS thoughts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
+            agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
 
-    # 3. جدول شاشة التفكير الحية
-    run('''CREATE TABLE IF NOT EXISTS thoughts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
-        agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
-
-    # 4. جدول محادثة البوت
-    run('''CREATE TABLE IF NOT EXISTS chat_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
-        sender TEXT, message TEXT)''')
+        run('''CREATE TABLE IF NOT EXISTS chat_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
+            sender TEXT, message TEXT)''')
+    except Exception as e:
+        print(f"DB init warning: {e}")
 
 def log_thought(agent, message, level="info"):
     try:
