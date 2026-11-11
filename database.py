@@ -20,11 +20,12 @@ _last_backup = 0.0
 
 DEFAULT_CFG = {
     "rsi_min": 32, "rsi_max": 58,
-    "tp_pct": 1.2, "sl_pct": -1.2,
-    "trail_trigger": 1.0, "trail_gap": 0.45,
+    "tp_pct": 1.1, "sl_pct": -1.0,
+    "trail_trigger": 0.85, "trail_gap": 0.35,
     "trade_size": 5.0, "min_size": 5.0, "med_size": 10.0, "max_size": 15.0,
     "max_open": 6, "max_per_class": 3,
-    "max_hold_h": 24, "cooldown_min": 45,
+    "max_hold_h": 18, "cooldown_min": 25,
+    "risk_mode": "medium",  # low | medium | high
     "paused": False,
     "paused_pockets": {"scalp": False, "swing": False, "reserve": False},
     "observer_mode": False,
@@ -34,7 +35,15 @@ DEFAULT_CFG = {
     "scenarios_tested": 0,
     "daily_score": 95,
     "market_mood": "مستقر 🟢",
-    "ai_report": "الخزنة والجيوب الثلاثة جاهزة — المساعدون يراقبون السوق.",
+    "last_win_toast": "",
+    "crew_state": {
+        "KEST8": {"role": "المضارب السريع", "status": "scanning", "bubble": "يمسح فريم 5د..."},
+        "ORVEN": {"role": "صائد الموجات", "status": "scanning", "bubble": "يقيس قوة Aroon..."},
+        "BRAVA": {"role": "قناص الاحتياط", "status": "cooling", "bubble": "ينتظر فرصة 90+"},
+        "MIRAX": {"role": "راصد الأخبار", "status": "working", "bubble": "يراقب السيولة"},
+        "DUSKA": {"role": "حارس المخاطر", "status": "working", "bubble": "يتتبع القمم 🎯"},
+    },
+    "ai_report": "منظومة Grok Crew والجيوب الثلاثة نشطة.",
 }
 
 def now():
@@ -69,7 +78,7 @@ def run(sql, args=()):
             c.close()
 
 def get_ai_config():
-    cfg = DEFAULT_CFG.copy()
+    cfg = json.loads(json.dumps(DEFAULT_CFG))
     try:
         rows = run("SELECT val FROM kv_settings WHERE key='ai_cfg'")
         if rows and rows[0].get("val"):
@@ -86,16 +95,12 @@ def get_ai_config():
                     cfg.update(saved)
     except Exception:
         pass
-
-    if not isinstance(cfg.get("banned"), dict):
-        cfg["banned"] = {}
-    if not isinstance(cfg.get("ban_ref"), dict):
-        cfg["ban_ref"] = {}
-    if not isinstance(cfg.get("paused_pockets"), dict):
-        cfg["paused_pockets"] = {"scalp": False, "swing": False, "reserve": False}
-    if not isinstance(cfg.get("elite_assets"), list):
-        cfg["elite_assets"] = list(DEFAULT_CFG["elite_assets"])
+    if not isinstance(cfg.get("banned"), dict): cfg["banned"] = {}
+    if not isinstance(cfg.get("ban_ref"), dict): cfg["ban_ref"] = {}
+    if not isinstance(cfg.get("paused_pockets"), dict): cfg["paused_pockets"] = {"scalp": False, "swing": False, "reserve": False}
+    if not isinstance(cfg.get("crew_state"), dict): cfg["crew_state"] = json.loads(json.dumps(DEFAULT_CFG["crew_state"]))
     cfg.setdefault("trade_size", 5.0)
+    cfg.setdefault("risk_mode", "medium")
     return cfg
 
 def save_ai_config(cfg):
@@ -108,23 +113,46 @@ def save_ai_config(cfg):
     except Exception as e:
         print(f"AI config save error: {e}")
 
+def update_crew(bot_id, status=None, bubble=None):
+    cfg = get_ai_config()
+    crew = cfg.get("crew_state", {})
+    if bot_id in crew:
+        if status: crew[bot_id]["status"] = status
+        if bubble: crew[bot_id]["bubble"] = bubble[:38]
+        cfg["crew_state"] = crew
+        save_ai_config(cfg)
+
 def get_brain():
     default_brain = {"tested_hashes": [], "asset_profiles": {}, "trap_patterns": [], "total_runs": 0}
     try:
+        rows = run("SELECT val FROM kv_settings WHERE key='ai_brain'")
+        if rows and rows[0].get("val"):
+            default_brain.update(json.loads(rows[0]["val"]))
+    except Exception:
+        pass
+    try:
         if os.path.exists(BRAIN_FILE):
             with open(BRAIN_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, dict):
-                    default_brain.update(data)
+                default_brain.update(json.load(f))
     except Exception:
         pass
     return default_brain
+
+def save_brain(brain_data):
+    try:
+        raw = json.dumps(brain_data, ensure_ascii=False, indent=2)
+        with LOCK:
+            with open(BRAIN_FILE, "w", encoding="utf-8") as f:
+                f.write(raw)
+        run("INSERT OR REPLACE INTO kv_settings (key, val) VALUES ('ai_brain', ?)", (raw,))
+    except Exception as e:
+        print(f"Brain save error: {e}")
 
 def is_cloud_connected():
     return bool(GITHUB_TOKEN and len(GITHUB_TOKEN) > 10)
 
 def _gh():
-    return (f"[https://api.github.com/repos/](https://api.github.com/repos/){GITHUB_REPO}/contents/{FILE_PATH}",
+    return (f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}",
             {"Authorization": f"token {GITHUB_TOKEN}"})
 
 def restore_db_from_github():
@@ -182,44 +210,33 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
             pocket TEXT DEFAULT 'scalp', score INTEGER DEFAULT 80,
             entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
-            tp_pct REAL DEFAULT 1.2, sl_pct REAL DEFAULT -1.2,
+            tp_pct REAL DEFAULT 1.1, sl_pct REAL DEFAULT -1.0,
             qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0,
             entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
             pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
 
         existing_cols = [r["name"] for r in run("PRAGMA table_info(trades)")]
         cols_to_add = {
-            "pocket": "TEXT DEFAULT 'scalp'",
-            "score": "INTEGER DEFAULT 80",
-            "peak_price": "REAL DEFAULT 0.0",
-            "tp_pct": "REAL DEFAULT 1.2",
-            "sl_pct": "REAL DEFAULT -1.2",
-            "qty": "REAL DEFAULT 1.0",
-            "invested_sar": "REAL DEFAULT 5.0",
-            "pnl_sar": "REAL DEFAULT 0.0",
-            "lesson": "TEXT DEFAULT ''",
-            "is_historical": "INTEGER DEFAULT 0",
+            "pocket": "TEXT DEFAULT 'scalp'", "score": "INTEGER DEFAULT 80",
+            "peak_price": "REAL DEFAULT 0.0", "tp_pct": "REAL DEFAULT 1.1",
+            "sl_pct": "REAL DEFAULT -1.0", "qty": "REAL DEFAULT 1.0",
+            "invested_sar": "REAL DEFAULT 5.0", "pnl_sar": "REAL DEFAULT 0.0",
+            "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
         }
         for col, col_type in cols_to_add.items():
             if col not in existing_cols:
-                try:
-                    run(f"ALTER TABLE trades ADD COLUMN {col} {col_type}")
-                except Exception:
-                    pass
+                try: run(f"ALTER TABLE trades ADD COLUMN {col} {col_type}")
+                except Exception: pass
 
         run('''CREATE TABLE IF NOT EXISTS favorites (
             symbol TEXT PRIMARY KEY, tier TEXT DEFAULT 'trend',
             picks INTEGER DEFAULT 1, wins INTEGER DEFAULT 0,
-            losses INTEGER DEFAULT 0, consec_losses INTEGER DEFAULT 0,
-            updated_at TEXT)''')
-
+            losses INTEGER DEFAULT 0, consec_losses INTEGER DEFAULT 0, updated_at TEXT)''')
         run('''CREATE TABLE IF NOT EXISTS thoughts (
             id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
             agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
-
         run('''CREATE TABLE IF NOT EXISTS chat_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT,
-            sender TEXT, message TEXT)''')
+            id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, sender TEXT, message TEXT)''')
     except Exception as e:
         print(f"DB init warning: {e}")
 
@@ -227,11 +244,11 @@ def log_thought(agent, message, level="info"):
     try:
         run("INSERT INTO thoughts (time, agent, message, level) VALUES (?,?,?,?)",
             (now().strftime("%H:%M"), agent, message, level))
-        run("DELETE FROM thoughts WHERE id NOT IN (SELECT id FROM thoughts ORDER BY id DESC LIMIT 40)")
+        run("DELETE FROM thoughts WHERE id NOT IN (SELECT id FROM thoughts ORDER BY id DESC LIMIT 45)")
     except Exception:
         pass
 
-def get_thoughts(limit=12):
+def get_thoughts(limit=14):
     return run("SELECT * FROM thoughts ORDER BY id DESC LIMIT ?", (limit,))
 
 def update_favorite(symbol, picked=False, won=None):
@@ -242,7 +259,6 @@ def update_favorite(symbol, picked=False, won=None):
         run("INSERT INTO favorites (symbol, tier, picks, wins, losses, consec_losses, updated_at) VALUES (?,?,?,?,?,?,?)",
             (symbol, tier, 1 if picked else 0, 1 if won is True else 0, 1 if won is False else 0, 1 if won is False else 0, t_str))
         return
-
     r = rows[0]
     picks = int(r["picks"] or 0) + (1 if picked else 0)
     wins = int(r["wins"] or 0) + (1 if won is True else 0)
@@ -252,16 +268,12 @@ def update_favorite(symbol, picked=False, won=None):
 
     if consec >= 2:
         run("DELETE FROM favorites WHERE symbol=?", (symbol,))
-        log_thought("المدقق", f"تم طرد {symbol} من المفضلة بعد خسارتين متتاليتين 🛡️", "warn")
+        log_thought("DUSKA", f"طرد {symbol} من المفضلة بعد خسارتين متتاليتين 🛡️", "warn")
         return
-
     if picks >= 5 and tier == "trend":
         tier = "testing"
-        log_thought("الكشاف", f"ترقية {symbol} إلى درجة (تحت الاختبار ⏳) بعد اختيارها 5 مرات", "info")
     if wins >= 3 and consec == 0 and tier in ("trend", "testing"):
         tier = "royal"
-        log_thought("المدقق", f"تتويج {symbol} في درجة (النخبة الملكية 👑) بعد إثبات أرباحها!", "success")
-
     run("UPDATE favorites SET tier=?, picks=?, wins=?, losses=?, consec_losses=?, updated_at=? WHERE symbol=?",
         (tier, picks, wins, losses, consec, t_str, symbol))
 
@@ -305,9 +317,31 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
     if not is_historical:
         _dirty = True
         update_favorite(symbol, picked=True)
-        pocket_names = {"scalp": "المضارب السريع", "swing": "صائد الموجات", "reserve": "قناص الاحتياط"}
-        log_thought("القناص", f"فتح صفقة {symbol} بمبلغ {invest_amount} ر.س في جيب ({pocket_names.get(pocket, pocket)}) بدرجة {score}/100", "success")
+        bot_map = {"scalp": "KEST8", "swing": "ORVEN", "reserve": "BRAVA"}
+        b_name = bot_map.get(pocket, "KEST8")
+        update_crew(b_name, "working", f"قنص {symbol} بـ {invest_amount} ر.س 🎯")
+        log_thought(b_name, f"[SNIPE] شراء {symbol} بمبلغ {invest_amount} ر.س ({score}/100)", "success")
         _instant_backup_async()
+
+def close_trade_manual(trade_id):
+    """إغلاق الصفقة يدوياً بضغطة زر على طريقة SLAYER."""
+    global _dirty
+    rows = run("SELECT * FROM trades WHERE id=? AND status='OPEN'", (trade_id,))
+    if not rows:
+        return False
+    t = rows[0]
+    pnl = float(t.get("pnl_sar") or 0.0)
+    entry = float(t.get("entry_price") or 1.0)
+    inv = float(t.get("invested_sar") or 5.0)
+    cur_est = round(entry * (1.0 + (pnl / max(inv, 1.0))), 4)
+    st = "WON" if pnl >= 0 else "LOST"
+    lesson = f"إغلاق يدوي فوري بأمرك ({pnl:+.2f} ر.س) ⚡"
+    run("UPDATE trades SET exit_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
+        (cur_est, fmt(now()), st, pnl, lesson, trade_id))
+    log_thought("DUSKA", f"[MANUAL] إغلاق يدوي لصفقة {t['symbol']} بصافي {pnl:+.2f} ر.س", "info")
+    _dirty = True
+    _instant_backup_async()
+    return True
 
 def update_open_trades(prices):
     global _dirty
@@ -329,10 +363,10 @@ def update_open_trades(prices):
         pnl = calc_pnl(entry, cur, inv)
         age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
 
-        if peak_pct >= cfg["trail_trigger"] and drop_from_peak >= cfg["trail_gap"] and pct > 0.3:
-            st, lesson = "WON", f"قناص الموجة 🎯: وصل القمة (+{peak_pct:.1f}%) وحجز الربح عند (+{pct:.1f}%)."
-        elif pct >= tp_target * 2.0:
-            st, lesson = "WON", f"هدف مضاعف ممتاز (+{pct:.1f}%)."
+        if peak_pct >= cfg["trail_trigger"] and drop_from_peak >= cfg["trail_gap"] and pct > 0.28:
+            st, lesson = "WON", f"قناص القمة 🎯: بلغ (+{peak_pct:.1f}%) وحجز الربح عند (+{pct:.1f}%)."
+        elif pct >= tp_target * 1.8:
+            st, lesson = "WON", f"انفجار سعري ممتاز (+{pct:.1f}%)."
         elif t.get("pocket") == "scalp" and pct >= tp_target:
             st, lesson = "WON", f"خطف سريع ناجح (+{pct:.1f}%)."
         elif pct <= sl_target:
@@ -341,15 +375,18 @@ def update_open_trades(prices):
             st = "WON" if pnl > 0 else "LOST"
             lesson = f"إغلاق زمني بعد {int(age_h)} ساعة لتحرير السيولة ({pct:+.2f}%)."
         else:
-            trail_note = f" | تتبع القمة نشط 🔥 (+{peak_pct:.1f}%)" if peak_pct >= cfg["trail_trigger"] else ""
+            trail_note = f" | تتبع القمة 🔥 (+{peak_pct:.1f}%)" if peak_pct >= cfg["trail_trigger"] else ""
             run("UPDATE trades SET peak_price=?, pnl_sar=?, lesson=? WHERE id=?",
-                (round(peak, 4), pnl, f"التغير: {pct:+.2f}%{trail_note}", t["id"]))
+                (round(peak, 4), pnl, f"التغير اللحظي: {pct:+.2f}%{trail_note}", t["id"]))
             continue
 
         run("UPDATE trades SET exit_price=?, peak_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
             (round(cur, 4), round(peak, 4), fmt(t_now), st, pnl, lesson, t["id"]))
         update_favorite(t["symbol"], won=(st == "WON"))
-        log_thought("المدقق", f"إغلاق {t['symbol']} ({st}): الصافي {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
+        if st == "WON":
+            cfg["last_win_toast"] = f"🎯 قناص {t['symbol']} حجز ربح +{pnl:.2f} ر.س ({pct:+.1f}%)"
+            save_ai_config(cfg)
+        log_thought("DUSKA", f"[FILL] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
         _dirty = True
         closed_any = True
 
@@ -378,9 +415,11 @@ def _stats(closed, base_cap=START_CAPITAL):
     gw = sum(float(t.get("pnl_sar") or 0) for t in closed if float(t.get("pnl_sar") or 0) > 0)
     gl = -sum(float(t.get("pnl_sar") or 0) for t in closed if float(t.get("pnl_sar") or 0) < 0)
     cum = peak = dd = 0.0
-    curve = []
+    curve = [0.0]
+    best_win = 0.0
     for t in closed:
         val = float(t.get("pnl_sar") or 0)
+        if val > best_win: best_win = val
         cum += val
         curve.append(round(cum, 2))
         peak = max(peak, cum)
@@ -394,18 +433,18 @@ def _stats(closed, base_cap=START_CAPITAL):
         "n": n, "won": won, "lost": n - won,
         "win_rate": round(won / n * 100, 1) if n else None,
         "pnl": round(cum, 2),
+        "best_win": round(best_win, 2),
         "pro_pnl": scaled_pnl,
         "scaled_capital": scaled_capital,
         "scaled_pnl": scaled_pnl,
         "pf": round(gw / gl, 2) if gl else None,
         "expectancy": round(cum / n, 3) if n else None,
-        "max_dd": round(dd, 2), "curve": curve
+        "max_dd": round(dd, 2), "curve": curve[-40:]
     }
 
 def _calc_pockets(closed, opn, cfg):
     total_realized = sum(float(t.get("pnl_sar") or 0.0) for t in closed)
     milestones = int(max(0.0, total_realized) // 10.0)
-
     auto_vault = round(milestones * 3.0, 2)
     manual_vault = round(float(cfg.get("manual_vault_add") or 0.0), 2)
     personal_vault = round(auto_vault + manual_vault, 2)
@@ -419,19 +458,18 @@ def _calc_pockets(closed, opn, cfg):
     }
 
     pockets = {}
-    for pk, label in (("scalp", "المضارب السريع"), ("swing", "صائد الموجات"), ("reserve", "الاحتياط والقناص")):
+    for pk, label in (("scalp", "المضارب السريع ⚡"), ("swing", "صائد الموجات 🌊"), ("reserve", "قناص الاحتياط 🎯")):
         pk_open = [t for t in opn if (t.get("pocket") or "scalp") == pk]
+        pk_closed = [t for t in closed if (t.get("pocket") or "scalp") == pk]
+        pk_pnl = round(sum(float(t.get("pnl_sar") or 0.0) for t in pk_closed), 2)
         inv = round(sum(float(t.get("invested_sar") or 5.0) for t in pk_open), 2)
         alloc = max(0.0, base_alloc[pk])
         pockets[pk] = {
-            "name": label,
-            "allocated": alloc,
-            "invested": inv,
+            "name": label, "allocated": alloc, "invested": inv,
             "cash": round(max(0.0, alloc - inv), 2),
-            "open_count": len(pk_open),
+            "open_count": len(pk_open), "pnl": pk_pnl,
             "paused": bool(cfg.get("paused_pockets", {}).get(pk, False)),
         }
-
     return pockets, personal_vault, milestones, next_split_rem
 
 def get_summary():
@@ -448,16 +486,10 @@ def get_summary():
     trading_cash = round(max(0.0, START_CAPITAL + st["pnl"] - personal_vault - invested), 2)
 
     return {
-        "stats": st,
-        "invested": invested,
-        "floating": floating,
-        "open_count": len(opn),
-        "wallet": total_wallet,
-        "cash": trading_cash,
-        "personal_vault": personal_vault,
-        "profit_milestones": milestones,
-        "next_split_remaining": next_split_rem,
-        "pockets": pockets,
+        "stats": st, "invested": invested, "floating": floating,
+        "open_count": len(opn), "wallet": total_wallet, "cash": trading_cash,
+        "personal_vault": personal_vault, "profit_milestones": milestones,
+        "next_split_remaining": next_split_rem, "pockets": pockets,
     }
 
 def get_lab():
@@ -468,56 +500,40 @@ def get_lab():
 
 def ask_bot_chat(user_msg):
     msg = (user_msg or "").strip()
-    if not msg:
-        return "اكتب سؤالك أو أمرك يا صالح وأبشر!"
-
+    if not msg: return "اكتب سؤالك أو أمرك يا صالح وأبشر!"
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
-
     s = get_summary()
     cfg = get_ai_config()
     pockets = s["pockets"]
     st = s["stats"]
 
     if "وقف" in msg and "سريع" in msg:
-        cfg["paused_pockets"]["scalp"] = True
-        save_ai_config(cfg)
-        reply = "تم إيقاف الشراء في (جيب المضارب السريع) بطلبك ⏸️، وبقية الجيوب مستمرة."
+        cfg["paused_pockets"]["scalp"] = True; save_ai_config(cfg)
+        reply = "تم إيقاف الشراء في (جيب المضارب السريع) ⏸️."
     elif ("شغل" in msg or "استئناف" in msg) and "سريع" in msg:
-        cfg["paused_pockets"]["scalp"] = False
-        save_ai_config(cfg)
+        cfg["paused_pockets"]["scalp"] = False; save_ai_config(cfg)
         reply = "تم تشغيل (جيب المضارب السريع) من جديد ▶️."
     elif "مراقب" in msg:
-        cfg["observer_mode"] = not cfg.get("observer_mode", False)
-        save_ai_config(cfg)
-        state_txt = "مفعّل (يدخل الفرص النادرة فوق 92 نقطة فقط)" if cfg["observer_mode"] else "ملغي (تداول طبيعي)"
-        reply = f"وضع المراقب والقناص الآن: {state_txt} 🎯."
+        cfg["observer_mode"] = not cfg.get("observer_mode", False); save_ai_config(cfg)
+        reply = f"وضع المراقب والقناص الآن: {'مفعّل 🎯' if cfg['observer_mode'] else 'ملغي (تداول طبيعي) ✅'}."
     elif "كم معي" in msg or "رصيد" in msg or "محفظ" in msg or "ملخص" in msg:
-        reply = (
-            f"إجمالي محفظتك الآن {s['wallet']:.2f} ر.س (الصافي: {st['pnl']:+.2f} ر.س) 💼.\n"
-            f"• جيب السريع: متاح {pockets['scalp']['cash']} ر.س\n"
-            f"• جيب الموجات: متاح {pockets['swing']['cash']} ر.س\n"
-            f"• جيب الاحتياط: متاح {pockets['reserve']['cash']} ر.س\n"
-            f"• خزنة السحب الشخصي: {s['personal_vault']:.2f} ر.س (باقي {s['next_split_remaining']:.2f} ر.س للتقسيمة الجاية)."
-        )
-    elif "نخبة" in msg or "مفضل" in msg or "افضل" in msg or "أفضل" in msg:
+        reply = (f"إجمالي محفظتك {s['wallet']:.2f} ر.س (الصافي: {st['pnl']:+.2f} ر.س) 💼.\n"
+                 f"• KEST8 (السريع): متاح {pockets['scalp']['cash']} ر.س\n"
+                 f"• ORVEN (الموجات): متاح {pockets['swing']['cash']} ر.س\n"
+                 f"• BRAVA (الاحتياط): متاح {pockets['reserve']['cash']} ر.س\n"
+                 f"• خزنة السحب: {s['personal_vault']:.2f} ر.س.")
+    elif "نخبة" in msg or "مفضل" in msg:
         favs = get_favorites_grouped()
-        royal = ", ".join(r["symbol"] for r in favs["royal"]) or "لا يوجد بعد"
-        testing = ", ".join(r["symbol"] for r in favs["testing"]) or "لا يوجد بعد"
-        reply = f"👑 النخبة الملكية: {royal}\n⏳ تحت الاختبار: {testing}"
-    elif "اخبار" in msg or "أخبار" in msg or "سوق" in msg:
-        reply = f"حالة السوق: {cfg.get('market_mood', 'مستقر')} | تقييم البوت اليومي: {cfg.get('daily_score', 95)}/100 📊."
+        reply = f"👑 النخبة الملكية: {', '.join(r['symbol'] for r in favs['royal']) or 'قيد التحديث'}"
     else:
-        last_trades = get_trades(0, 1)
-        last_info = f"آخر صفقة كانت {last_trades[0]['symbol']} ({last_trades[0]['status']}) بسبب: {last_trades[0]['reason']}" if last_trades else "لم نفتتح صفقات حية بعد."
-        reply = f"أنا صاحي وأراقب السوق 24/7 🤖. الرصيد المتاح للتداول {s['cash']:.2f} ر.س، و{last_info}"
+        reply = f"طاقم الروبوتات الـ 5 يفحص السوق على فريم 5د و15د 🤖. الكاش المتاح: {s['cash']:.2f} ر.س."
 
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     run("DELETE FROM chat_logs WHERE id NOT IN (SELECT id FROM chat_logs ORDER BY id DESC LIMIT 50)")
     return reply
 
 def get_chat_history(limit=25):
-    rows = run("SELECT * FROM chat_logs ORDER BY id DESC LIMIT ?", (limit,))
-    return list(reversed(rows))
+    return list(reversed(run("SELECT * FROM chat_logs ORDER BY id DESC LIMIT ?", (limit,))))
 
 init_db()
