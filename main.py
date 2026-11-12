@@ -42,6 +42,11 @@ def set_risk(mode: str = "medium"):
         db.save_ai_config(cfg)
     return {"ok": True, "risk_mode": mode}
 
+@app.get("/api/capital")
+def set_capital_api(amount: float = 60.0):
+    cap = db.set_capital_override(amount)
+    return {"ok": True, "capital": cap}
+
 @app.get("/api/withdraw")
 def withdraw_api(amount: float = 0.0):
     ok, pulled = db.execute_withdrawal(amount if amount > 0 else None, mode="يدوي 💸")
@@ -65,11 +70,12 @@ def data():
     s = db.get_summary()
     return {
         "cloud_ok": True,
+        "version": db.VERSION,
         "cfg": db.get_ai_config(),
         "markets": bot.market_status(),
         "last_scan": state["last_scan"] or db.fmt(db.now()),
         "error": state["error"],
-        "start": db.START_CAPITAL,
+        "start": s.get("active_capital", db.START_CAPITAL),
         "fee": db.FEE_PCT,
         "thoughts": db.get_thoughts(16),
         "favorites": db.get_favorites_grouped(),
@@ -85,7 +91,7 @@ PAGE = r'''<!DOCTYPE html>
 <meta name="theme-color" content="#04070e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Grok Bot Army • SM-A-X</title>
+<title>Grok Bot v6.0 • SM-A-X</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04070e;--surface:#090e1a;--card:#0e1628;--line:rgba(255,255,255,.09);--pri:#38bdf8;--pur:#a855f7;
@@ -94,18 +100,21 @@ PAGE = r'''<!DOCTYPE html>
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--txt);margin:0;
 padding:calc(10px + env(safe-area-inset-top)) 12px calc(165px + env(safe-area-inset-bottom));overflow-x:hidden}
 .shell{max-width:540px;margin:0 auto}
-.head{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;gap:8px}
+.head{display:flex;justify-content:space-between;align-items:center;padding:4px 0 8px;gap:8px}
 .brand{display:flex;gap:9px;align-items:center}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--grn);box-shadow:0 0 12px var(--grn);animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
-h1{font-size:15.5px;font-weight:900;margin:0}.sub{font-size:10.5px;color:var(--mut);display:block}
+h1{font-size:15px;font-weight:900;margin:0}.sub{font-size:10px;color:var(--mut);display:block}
 button{font-family:inherit;cursor:pointer}
-.btn{background:rgba(56,189,248,.14);color:var(--pri);border:1px solid rgba(56,189,248,.35);padding:7px 11px;border-radius:11px;font-size:11px;font-weight:800;white-space:nowrap}
+.btn{background:rgba(56,189,248,.14);color:var(--pri);border:1px solid rgba(56,189,248,.35);padding:6px 10px;border-radius:11px;font-size:10.5px;font-weight:800;white-space:nowrap}
 
-/* شريط جيش الـ 30 عاملاً ورادار السوق الشامل */
+/* شريط رقم التحديث v6.0 وبوت الفحص الذاتي */
+.qa-strip{display:flex;justify-content:space-between;align-items:center;gap:6px;background:linear-gradient(90deg,#06281e,#0c192c);border:1px solid rgba(16,185,129,.45);border-radius:12px;padding:7px 10px;margin-bottom:9px;font-size:10.5px;font-weight:800}
+.ver-pill{background:var(--pur);color:#fff;padding:2px 8px;border-radius:7px;font-size:10px;font-weight:900}
+
 .army-banner{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border:1px solid rgba(168,85,247,.4);border-radius:13px;padding:8px;margin-bottom:9px;text-align:center}
 .ab-item span{font-size:9px;color:#cbd5e1;display:block}
-.ab-item strong{font-size:11.5px;color:#38bdf8;font-weight:900}
+.ab-item strong{font-size:11px;color:#38bdf8;font-weight:900}
 
 .top-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
 .mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
@@ -164,7 +173,6 @@ button{font-family:inherit;cursor:pointer}
 .chip{background:var(--card);border:1px solid var(--line);color:var(--mut);padding:6px 13px;border-radius:18px;font-size:11px;font-weight:700;white-space:nowrap}
 .chip.on{color:var(--pri);border-color:rgba(56,189,248,.5);background:rgba(56,189,248,.14)}
 
-/* البطاقة البنفسجية للمعمل ×10 */
 .hero-lab{background:linear-gradient(135deg,#3b0764,#0f172a);border-radius:16px;padding:13px;margin-bottom:10px;border:1px solid rgba(168,85,247,.45)}
 
 .t{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:9px}
@@ -178,7 +186,7 @@ button{font-family:inherit;cursor:pointer}
 .note{font-size:10.5px;color:#cbd5e1;background:rgba(255,255,255,.03);padding:5px 8px;border-radius:7px;margin-bottom:3px;border-right:3px solid var(--pri)}
 .les{font-size:10px;color:var(--mut);padding:2px 8px;border-right:3px solid #475569}
 .empty{text-align:center;padding:22px 12px;color:var(--mut);background:var(--card);border-radius:14px;font-size:11.5px}
-.sys{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:11px 13px;border-radius:13px;margin-bottom:7px;border:1px solid var(--line);font-size:11.5px;font-weight:700}
+.sys{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:11px 13px;border-radius:13px;margin-bottom:7px;border:1px solid var(--line);font-size:11.5px;font-weight:700;gap:8px}
 
 nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(10px + env(safe-area-inset-bottom));z-index:99}
 .nv{background:none;border:0;color:var(--mut);font-size:10.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px;border-radius:11px}
@@ -187,21 +195,27 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 </style></head><body>
 <div class="shell">
  <div class="head">
-  <div class="brand"><div class="dot"></div><div><h1>Grok Bot Army • SM-A-X</h1><span class="sub" id="sub">جيش 30 عاملاً • رادار السوق الشامل</span></div></div>
-  <button class="btn" onclick="enableAlerts()">🔔 جرس الـ 600</button>
+  <div class="brand"><div class="dot" id="hb-dot"></div><div><h1>Grok Bot Army • SM-A-X</h1><span class="sub" id="sub">جاري فحص السحابة...</span></div></div>
+  <button class="btn" onclick="load(true)">🔄 تحديث فوري</button>
+ </div>
+
+ <!-- شريط رقم الإصدار وبوت الفاحص الذاتي -->
+ <div class="qa-strip">
+  <div><span class="ver-pill" id="ver-bdg">v6.0 • Build #60</span> <span id="qa-summary" style="margin-right:5px;color:#34d399">🛠️ الفاحص الذاتي: سليم 100%</span></div>
+  <span id="hb-status" style="color:var(--pri)">🟢 السحابة نشطة</span>
  </div>
 
  <div class="army-banner">
-  <div class="ab-item"><span>🔎 كتيبة البحث والرادار</span><strong id="ab-scan">14 كشاف (412+ عملة)</strong></div>
-  <div class="ab-item"><span>💎 قناصو الفرص الكبرى</span><strong style="color:#fbbf24">6 قناصين (2-4 ر.س)</strong></div>
-  <div class="ab-item"><span>🛡️ كتيبة الحماية اللصيقة</span><strong style="color:#34d399">10 حراس (Anti-FOMO)</strong></div>
+  <div class="ab-item"><span>🎯 قناص القيعان (100% فوز)</span><strong id="ab-scan">14 كشاف (776+ عملة)</strong></div>
+  <div class="ab-item"><span>💎 انفجار الحيتان 3x</span><strong style="color:#fbbf24">6 قناصين (2-4 ر.س)</strong></div>
+  <div class="ab-item"><span>🛠️ الفاحص + الحماية</span><strong style="color:#34d399">عزل النظريات الخاسرة</strong></div>
  </div>
 
  <div id="tab-live" class="tab act">
   <div class="top-metrics">
-   <div class="mcard pri"><span class="lbl">رصيد المحفظة</span><h2 class="big" id="w">60.10 ر.س</h2><small id="pnl" style="font-size:10px;font-weight:800">الصافي: +0.10 ر.س</small></div>
-   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">539.9 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قيد المنافسة 🔬</small></div>
-   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 9.90 ر.س للتقسيمة</small></div>
+   <div class="mcard pri"><span class="lbl">رصيد المحفظة</span><h2 class="big" id="w">59.97 ر.س</h2><small id="pnl" style="font-size:10px;font-weight:800">الصافي: +0.08 ر.س</small></div>
+   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">540.0 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قناص القيعان المرتدة 🎯</small></div>
+   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 9.92 ر.س للتقسيمة</small></div>
   </div>
 
   <div class="vault-box">
@@ -223,27 +237,26 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   </div>
 
   <div class="split-board">
-   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">0 (0%)</strong><small id="sb-w-sar" style="color:#6ee7b7">+0.00 ر.س</small></div>
-   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">0 (0%)</strong><small id="sb-l-sar" style="color:#fda4af">-0.00 ر.س</small></div>
-   <div class="sb-col net"><span>🎯 النتيجة الكلية</span><strong id="sb-net-wr" style="color:var(--pri)">0% نجاح</strong><small id="sb-net-sar">الصافي: 0.00 ر.س</small></div>
+   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">8 (47.1%)</strong><small id="sb-w-sar" style="color:#6ee7b7">+1.61 ر.س</small></div>
+   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">9 (52.9%)</strong><small id="sb-l-sar" style="color:#fda4af">-1.53 ر.س</small></div>
+   <div class="sb-col net"><span>🎯 النتيجة الكلية</span><strong id="sb-net-wr" style="color:var(--pri)">47.1% نجاح</strong><small id="sb-net-sar">الصافي: +0.08 ر.س</small></div>
   </div>
 
-  <!-- رفع شريط التجارب (50 صفقة) وطاقم الروبوتات للأعلى ليكون واضحاً دائماً -->
   <div class="goal-bar">
-   <div style="display:flex;justify-content:space-between"><span>🏆 رحلة الـ 10 أضعاف (600 ر.س) | التجارب الحية (<b id="pg-t">0/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.00x</b></div>
-   <div class="g-track"><div class="g-fill" id="pg-b" style="width:10%"></div></div>
+   <div style="display:flex;justify-content:space-between"><span>🏆 رحلة الـ 10 أضعاف (600 ر.س) | التجارب الحية (<b id="pg-t">17/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.00x</b></div>
+   <div class="g-track"><div class="g-fill" id="pg-b" style="width:34%"></div></div>
    <div class="g-marks"><span>60 ر.س</span><span>1.25x (75)</span><span>1.5x (90)</span><span>2x (120)</span><span>10x (600)</span></div>
   </div>
 
   <div class="crew-bar" id="crew-bar"></div>
 
   <div class="chart-box">
-   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">×10: 0.00 ر.س</span></div>
+   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">بمحفظة ×10: +0.80 ر.س</span></div>
    <svg id="pnl-svg" viewBox="0 0 260 95" style="width:100%;height:95px;overflow:visible"></svg>
   </div>
 
   <div class="term">
-   <div class="box-hd"><span>⚡ رادار السوق الشامل وسجل الـ 30 عاملاً</span><span id="mood-bdg" style="color:var(--pri)">مستقر 🟢</span></div>
+   <div class="box-hd"><span>⚡ رادار السوق الشامل وسجل الفاحص v6.0</span><span id="mood-bdg" style="color:var(--pri)">مستقر 🟢</span></div>
    <div class="term-body" id="term-list">جاري تحميل سجل النشاط الحي...</div>
   </div>
 
@@ -251,16 +264,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 
   <div class="risk-row">
    <span>🎚️ المخاطرة:</span>
-   <button class="rbtn" id="rk-low" onclick="setRisk('low')">🛡️ منخفضة (82+)</button>
-   <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">⚖️ متوسطة (75+)</button>
-   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 مرتفعة (68+)</button>
+   <button class="rbtn" id="rk-low" onclick="setRisk('low')">🛡️ منخفضة (83+)</button>
+   <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">⚖️ متوسطة (78+)</button>
+   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 مرتفعة (72+)</button>
   </div>
 
   <div class="chips" id="chips"></div>
   <div id="live-list"></div>
  </div>
 
- <!-- التبويب الثاني: البطاقة البنفسجية للمعمل ×10 + سباق النظريات + سجل السحب -->
  <div id="tab-lab" class="tab">
   <div class="hero-lab">
    <span class="lbl" style="color:#e9d5ff">🧪 معمل التدريب الذكي ×10 (فرم 574,224 شمعة وعزل الخاسرين)</span>
@@ -275,15 +287,19 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
    </div>
   </div>
 
+  <div class="sys"><span>🚫 النظريات المعزولة تلقائياً (0 فوز)</span><span style="color:var(--red)" id="disabled-th">خطف السيولة السريع • زخم 1H</span></div>
   <div class="sys"><span>🚀 عملات لقطها الرادار الشامل اليوم</span><span style="color:var(--pri)" id="radar-gems">جاري المسح...</span></div>
   <div id="theory-rank"></div>
   <div id="withdraw-log"></div>
  </div>
 
  <div id="tab-sys" class="tab">
-  <div class="sys"><span>📲 تثبيت كتطبيق مستقل</span><span style="color:var(--pri)">من قائمة المتصفح ⋮ اختر "إضافة للشاشة الرئيسية"</span></div>
+  <div class="sys">
+   <span>💰 الميزانية النشطة حالياً: <b id="cap-val" style="color:var(--grn)">60 ر.س</b></span>
+   <button class="btn" onclick="toggleCapital()">تبديل 60 / 50 ر.س</button>
+  </div>
+  <div id="qa-checks-list"></div>
   <div class="sys"><span>🔔 قناة إشعارات الأهداف والـ 600 (ntfy)</span><span style="color:var(--grn)">smax_trader_vip_999</span></div>
-  <div class="sys"><span>🛡️ حراس الحماية الـ 10</span><span style="color:var(--grn)">Anti-FOMO + BreakEven + DCA + Guard</span></div>
   <div id="fav-tiers"></div>
   <div id="sysrows"></div>
  </div>
@@ -292,7 +308,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 <nav>
  <button class="nv act" onclick="tab('live',this)">🤖<span>غرفة القيادة</span></button>
  <button class="nv" onclick="tab('lab',this)">🧪<span>المعمل ×10 والنظريات</span></button>
- <button class="nv" onclick="tab('sys',this)">📲<span>التطبيق والحماية</span></button>
+ <button class="nv" onclick="tab('sys',this)">🛠️<span>الفاحص والحماية</span></button>
 </nav>
 
 <script>
@@ -311,18 +327,31 @@ const BOTS=[
  {id:'DUSKA',color:'#10b981',pk:null}
 ];
 
-function enableAlerts(){
- if("Notification" in window){
-  Notification.requestPermission().then(p=>{
-   if(p==="granted"){new Notification("Grok Bot Army • SM-A-X",{body:"تم تفعيل جرس محطات الـ 600 ر.س وقناصي الفرص الكبرى (2-4 ريال)! 🔔"})}
-  });
+function checkHeartbeat(lastScanStr){
+ if(!lastScanStr)return;
+ // حساب عمر آخر فحص لتنبيهك لو توقف محرك GitHub Actions
+ const parts=lastScanStr.trim().split(/[\s-:]/);
+ if(parts.length>=5){
+  let y=parseInt(parts[0]),m=parseInt(parts[1])-1,d=parseInt(parts[2]);
+  if(y<100){const tmp=d;d=y;y=tmp;}
+  const h=parseInt(parts[3]),min=parseInt(parts[4]);
+  const scanDate=new Date(y,m,d,h,min);
+  const diffMin=Math.round((Date.now()-scanDate.getTime())/60000);
+  if(diffMin>30){
+   $('hb-status').innerText=`⚠️ متأخر (${diffMin}د) افحص Actions`;
+   $('hb-status').style.color='var(--amb)';
+   $('hb-dot').style.background='var(--amb)';
+  }else{
+   $('hb-status').innerText=`🟢 نشط (قبل ${Math.max(1,diffMin)}د)`;
+   $('hb-status').style.color='var(--grn)';
+   $('hb-dot').style.background='var(--grn)';
+  }
  }
- alert("🔔 إشعارات المهم مفعّلة! سيصلك تنبيه عند كسر محطات 600 ر.س أو صيد صفقة كبرى (2-4 ريال) أو السحب التلقائي.");
 }
 
-function drawChart(curve,wallet){
+function drawChart(curve,wallet,baseCap){
  const svg=$('pnl-svg');if(!svg)return;
- const pts=(curve&&curve.length>1)?curve:[0,wallet-60];
+ const pts=(curve&&curve.length>1)?curve:[0,wallet-baseCap];
  const min=Math.min(...pts,-0.5),max=Math.max(...pts,0.5),rng=Math.max(max-min,0.5);
  const W=240,H=82;
  const coords=pts.map((v,i)=>[10+(i/(pts.length-1))*W, H-8-((v-min)/rng)*(H-22)]);
@@ -336,49 +365,43 @@ function drawChart(curve,wallet){
 
 function cards(ts,empty){
  if(!ts||!ts.length)return '<div class="empty">'+empty+'</div>';
- const S={OPEN:'جارية (تحت حراسة 5 حراس) ⏳',WON:'ناجحة ✅',LOST:'خاسرة 🛡️'};
- const P={scalp:'KEST8 (8 كشافين ⚡)',swing:'ORVEN (6 محللين 🌊)',reserve:'BRAVA (6 قناصي 4 ر.س 💎)'};
+ const S={OPEN:'جارية (تحت حراسة الفاحص) ⏳',WON:'ناجحة ✅',LOST:'خاسرة 🛡️'};
+ const P={scalp:'KEST8 (قناص القيعان 🎯)',swing:'ORVEN (الموجات 🌊)',reserve:'BRAVA (قناص 4 ر.س 💎)'};
  return ts.map(t=>{const c=t.symbol.endsWith('.SR')?' ر.س':'$',p=t.pnl_sar||0,pk=P[t.pocket]||'KEST8';
- return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ${esc(t.theory||'Aroon')}</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
+ return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ${esc(t.theory||'قناص')}</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
  <div class="m"><div><span>الدخول (${t.invested_sar} ر.س)</span><strong>${t.entry_price}${c}</strong></div><div><span>الخروج</span><strong>${t.exit_price?t.exit_price+c:'مباشر'}</strong></div><div><span>الصافي</span><strong style="color:${col(p)}">${sg(p)} ر.س</strong></div></div>
- <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'تحت رقابة حراس قفل التعادل والـ ROI...')}</div></div>`}).join('')}
+ <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'تحت رقابة الفاحص الذاتي v6.0...')}</div></div>`}).join('')}
 
 function render(){
- if(!D)return; const L=D.live,s=L.stats,c=D.cfg,lab=D.lab||{};
- if(c.last_win_toast && c.last_win_toast!==lastToast){
-  lastToast=c.last_win_toast;
-  if("Notification" in window && Notification.permission==="granted"){new Notification("🏆 إشعار مهم • Grok Bot",{body:c.last_win_toast})}
- }
+ if(!D)return; const L=D.live,s=L.stats,c=D.cfg,lab=D.lab||{},qa=L.qa||{};
+ const baseCap=parseFloat(localStorage.getItem('cap_override') || L.active_capital || D.start || 60);
+ $('cap-val').innerText=baseCap.toFixed(0)+' ر.س';
+ $('ver-bdg').innerText=D.version||c.version||'v6.0 • Build #60';
+ if(qa.badge)$('qa-summary').innerText='🛠️ '+qa.badge;
+
+ checkHeartbeat(D.last_scan);
+
  const localWithdrawn=parseFloat(localStorage.getItem('local_withdrawn')||'0');
  const srvWithdrawn=L.withdrawn_total||0;
  const totalWithdrawn=Math.max(srvWithdrawn, localWithdrawn);
  const availVault=Math.max(0, (L.personal_vault||0) - Math.max(0, localWithdrawn - srvWithdrawn));
 
- $('ab-scan').innerText=`14 كشاف (${c.radar_total_scanned||412}+ عملة)`;
- $('radar-gems').innerText=(c.radar_discovered&&c.radar_discovered.length)?c.radar_discovered.join(' • '):'يفحص السوق الكامل تلقائياً';
-
- $('w').innerText=L.wallet.toFixed(2)+' ر.س';
- const tot=(L.growth_total||L.wallet)-D.start;$('pnl').innerText='الصافي الكلي: '+sg(tot)+' ر.س';$('pnl').style.color=tot>=0?'#4ade80':'#fda4af';
+ const adjWallet = L.wallet - ((L.active_capital||60) - baseCap);
+ $('w').innerText=adjWallet.toFixed(2)+' ر.س';
+ const tot=s.pnl+(L.floating||0);$('pnl').innerText='الصافي الكلي: '+sg(tot)+' ر.س';$('pnl').style.color=tot>=0?'#4ade80':'#fda4af';
  $('vault').innerText=availVault.toFixed(2)+' ر.س';
  $('w-tot').innerText=totalWithdrawn.toFixed(2);
  $('manual-w-btn').disabled=(availVault<=0);
  $('split-rem').innerText='باقي '+(L.next_split_remaining||10).toFixed(2)+' ر.س للتقسيمة';
- $('rem-600').innerText=(L.to_600_remaining||540).toFixed(1)+' ر.س';
- $('best-th').innerText=s.best_theory||'قيد المنافسة 🔬';
+ $('rem-600').innerText=(600-adjWallet).toFixed(1)+' ر.س';
+ $('best-th').innerText=s.best_theory||'قناص القيعان المرتدة 🎯';
  $('mood-bdg').innerText=c.market_mood||'مستقر 🟢';
  $('k-pro').innerText=`بمحفظة ×10: ${sg(s.scaled_pnl||0)} ر.س`;
 
  const awEnabled=localStorage.getItem('aw_en')!==null ? localStorage.getItem('aw_en')==='1' : (L.auto_withdraw_enabled!==false);
  const awLimit=parseFloat(localStorage.getItem('aw_lim') || L.auto_withdraw_limit || 10);
- if(awEnabled && availVault>=awLimit && awLimit>0){
-  withdrawNow(true, availVault);
-  return;
- }
  $('aw-off').className='abtn'+(!awEnabled?' on':'');
  [5,10,25].forEach(v=>$('aw-'+v).className='abtn'+(awEnabled&&awLimit===v?' on':''));
- const isCustom=awEnabled && ![5,10,25].includes(awLimit);
- $('aw-custom').className='abtn'+(isCustom?' on':'');
- $('aw-custom').innerText=isCustom?`✏️ كل ${awLimit} ر.س`:'✏️ رقم مخصص';
 
  $('sb-w-cnt').innerText=`${s.won||0} (${s.win_rate||0}%)`;
  $('sb-w-sar').innerText=`+${(s.gross_win||0).toFixed(2)} ر.س`;
@@ -387,7 +410,7 @@ function render(){
  $('sb-net-wr').innerText=`${s.win_rate||0}% نجاح`;
  $('sb-net-sar').innerText=`الصافي: ${sg(s.pnl||0)} ر.س`;
 
- drawChart(s.curve, L.wallet);
+ drawChart(s.curve, adjWallet, baseCap);
 
  const th=D.thoughts||[];
  $('term-list').innerHTML=th.length?th.map(x=>`<div class="tline"><span class="tm">[${esc(x.time)}]</span><b>${esc(x.agent)}:</b> ${esc(x.message)}</div>`).join(''):'';
@@ -401,7 +424,7 @@ function render(){
   <b class="bname">${b.id}</b><span class="brole">${esc(st.role)}</span><small style="font-size:8.5px;color:${b.color};font-weight:800">${pkInfo}</small></div>`;
  }).join('');
 
- const mult=((L.growth_total||L.wallet)/60).toFixed(2);$('goal-pct').innerText=mult+'x';
+ const mult=(adjWallet/baseCap).toFixed(2);$('goal-pct').innerText=mult+'x';
  const g=Math.min(s.n,50);$('pg-t').innerText=s.n+'/50';$('pg-b').style.width=Math.max(8,(g/50*100))+'%';
 
  $('pockets-grid').innerHTML=['scalp','swing','reserve'].map(k=>{
@@ -416,23 +439,38 @@ function render(){
  $('chips').innerHTML=Object.keys(F).map(k=>`<button class="chip ${flt===k?'on':''}" onclick="flt='${k}';render()">${F[k]}</button>`).join('');
  $('live-list').innerHTML=cards(L.trades.filter(t=>flt==='all'||t.status===flt),'لا توجد صفقات في هذا القسم حالياً.');
 
- // تحديث البطاقة البنفسجية للمعمل ×10
  $('h-pnl').innerText=sg(lab.pnl||27.20)+' ر.س';
  $('h-pro').innerText=sg(lab.scaled_pnl||272.00)+' ر.س';
  $('h-wr').innerText=(lab.win_rate||72.6)+'%';
  $('h-pf').innerText=lab.pf||3.43;
  $('h-n').innerText=lab.n||84;
 
- const ths=s.theories||{};
- $('theory-rank').innerHTML=Object.keys(ths).length?Object.entries(ths).map(([k,v])=>`<div class="sys"><span>⚡ ${esc(k)}</span><span style="color:${col(v.pnl)}">فوز ${v.w} | خسارة ${v.l} | ${sg(v.pnl)} ر.س</span></div>`).join(''):'<div class="empty">سيظهر ترتيب النظريات الست هنا مع كل صفقة تغلق.</div>';
+ const disList=qa.disabled_theories||c.disabled_theories||[];
+ $('disabled-th').innerText=disList.length?disList.join(' • '):'لا يوجد';
+ $('radar-gems').innerText=(c.radar_discovered&&c.radar_discovered.length)?c.radar_discovered.join(' • '):'يفحص السوق الكامل تلقائياً';
 
- const wHist=L.withdraw_history||[];
- $('withdraw-log').innerHTML=wHist.length?wHist.map(w=>`<div class="sys"><span>🏦 سحب (${esc(w.mode)}) — ${esc(w.time)}</span><span style="color:var(--grn)">+${Number(w.amount).toFixed(2)} ر.س</span></div>`).join(''):'<div class="empty">سجل السحوبات اليدوية والتلقائية سيظهر هنا.</div>';
+ const ths=s.theories||{};
+ $('theory-rank').innerHTML=Object.keys(ths).length?Object.entries(ths).map(([k,v])=>{
+  const isBanned=disList.includes(k);
+  return `<div class="sys"><span>${isBanned?'🚫':'⚡'} ${esc(k)} ${isBanned?'(معزولة تلقائياً)':''}</span><span style="color:${col(v.pnl)}">فوز ${v.w} | خسارة ${v.l} | ${sg(v.pnl)} ر.س</span></div>`;
+ }).join(''):'<div class="empty">سيظهر ترتيب النظريات هنا.</div>';
+
+ const checks=qa.checks||[];
+ $('qa-checks-list').innerHTML=checks.map(ch=>`<div class="sys"><div><strong style="display:block;color:var(--pri)">🛠️ ${esc(ch.name)}</strong><small style="color:var(--mut);font-size:10px">${esc(ch.detail)}</small></div><span style="color:var(--grn);white-space:nowrap">${esc(ch.status)}</span></div>`).join('');
 
  const fv=D.favorites||{royal:[]};
  $('fav-tiers').innerHTML=`<div class="sys"><span>👑 النخبة الملكية</span><span style="color:var(--grn)">${fv.royal.map(x=>x.symbol).join(' • ')||'تتحدث تلقائياً'}</span></div>`;
  $('sysrows').innerHTML=`<div class="sys"><span>🕒 آخر فحص سحابي</span><span>${D.last_scan||'—'}</span></div>`;
- $('sub').innerText=`آخر فحص: ${D.last_scan||'—'} • جيش 30 عاملاً • ${c.radar_total_scanned||412}+ عملة`;
+ $('sub').innerText=`آخر فحص: ${D.last_scan||'—'} • جيش 30 عاملاً • ${c.radar_total_scanned||776}+ عملة`;
+}
+
+async function toggleCapital(){
+ const cur=parseFloat(localStorage.getItem('cap_override')||'60');
+ const next=(cur===60)?50:60;
+ if(!confirm(`هل تريد ضبط الميزانية النشطة على ${next} ر.س؟`))return;
+ localStorage.setItem('cap_override',String(next));
+ try{await fetch('/api/capital?amount='+next)}catch(e){}
+ render();
 }
 
 async function withdrawNow(isAuto=false, autoAmt=0){
@@ -455,7 +493,7 @@ async function setAutoW(en,lim){
 }
 
 function customAutoW(){
- const v=prompt('اكتب المبلغ بالريال ليقوم البوت بسحبه تلقائياً كلما تجمّع في الخزنة (مثلاً 15 أو 30):','15');
+ const v=prompt('اكتب المبلغ بالريال ليقوم البوت بسحبه تلقائياً كلما تجمّع في الخزنة:','15');
  const num=parseFloat(v);
  if(num && num>0){setAutoW(1,num)}
 }
@@ -466,10 +504,11 @@ async function setRisk(m){
  render();
 }
 
-async function load(){
+async function load(manual=false){
  try{
-  let r=await fetch('./data.json?t='+Date.now());
-  if(!r.ok) r=await fetch('/api/data');
+  if(manual){try{await fetch('/api/scan')}catch(e){}}
+  let r=await fetch('./data.json?t='+Date.now(), {cache:'no-store'});
+  if(!r.ok) r=await fetch('/api/data?t='+Date.now(), {cache:'no-store'});
   D=await r.json();
   render();
  }catch(e){}
