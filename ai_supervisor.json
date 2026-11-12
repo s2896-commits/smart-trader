@@ -38,8 +38,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "ERA (+8%)",
-    "GRAM (+4%)",
+    "GRAM (+6%)",
     "MUB (+3%)"
   ],
   "radar_total_scanned": 776,
@@ -62,7 +61,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص GRAM-USD (انفجار الحيتان 3x 💎)"
+      "bubble": "6 قناصين يرصدون الـ 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس رادار",
@@ -72,7 +71,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "5 حراس يراقبون 3 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 6 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
