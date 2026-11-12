@@ -45,13 +45,13 @@
   "crew_state": {
     "KEST8": {
       "role": "المضارب السريع",
-      "status": "working",
-      "bubble": "قنص ALGO-USD (خطف السيولة السريع ⚡)"
+      "status": "scanning",
+      "bubble": "يمسح 27 أصلاً (5m) ⚡"
     },
     "ORVEN": {
       "role": "صائد الموجات",
       "status": "scanning",
-      "bubble": "يختبر 4 نظريات (15m) 🌊"
+      "bubble": "فلتر 1H + Aroon 🌊"
     },
     "BRAVA": {
       "role": "قناص الاحتياط",
