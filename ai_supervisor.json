@@ -1,25 +1,28 @@
 {
-  "version": "v6.0 (Build #60)",
+  "version": "v7.0 (Build #70 • Obsidian AI)",
   "capital_override": 60.0,
   "rsi_min": 32,
   "rsi_max": 58,
-  "tp_pct": 1.35,
-  "sl_pct": -0.75,
-  "trail_trigger": 0.85,
-  "trail_gap": 0.22,
-  "breakeven_trigger": 0.6,
-  "breakeven_lock": 0.32,
+  "tp_pct": 1.3,
+  "sl_pct": -0.85,
+  "trail_trigger": 0.7,
+  "trail_gap": 0.2,
+  "breakeven_trigger": 0.45,
+  "breakeven_lock": 0.25,
   "trade_size": 5.0,
   "max_open": 6,
-  "max_hold_h": 4,
+  "max_hold_h": 3,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
   "stoploss_guard_until": "2026-11-12 20:13",
   "disabled_theories": [
     "خطف السيولة السريع ⚡",
-    "زخم Aroon + فريم 1H 🌊"
+    "زخم Aroon + فريم 1H 🌊",
+    "قناص اختراق القمم 🚀",
+    "Aroon Momentum"
   ],
+  "coin_reputation": {},
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -44,39 +47,39 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "GOOGLB (+3%)"
+    "GOOGLB (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 GRAM-USD حقق ربح +1.06 ر.س (انفجار الحيتان 3x 💎)",
+  "last_win_toast": "🎯 ETH-USD حقق ربح +0.16 ر.س (انفجار الحيتان 3x 💎)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+0.31 ر.س)",
   "crew_state": {
     "KEST8": {
-      "role": "8 كشافين قيعان",
+      "role": "8 قناصي قيعان",
       "status": "scanning",
       "bubble": "قناص القيعان يفحص 776 عملة 🎯"
     },
     "ORVEN": {
-      "role": "6 محللي موجات",
+      "role": "6 راصدي حيتان",
       "status": "working",
       "bubble": "قنص FIL-USD (قناص القيعان المرتدة 🎯)"
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "يرصد انفجار الحيتان 3x 💎"
+      "bubble": "قنص ETC-USD (انفجار الحيتان 3x 💎)"
     },
     "MIRAX": {
-      "role": "5 حراس رادار",
+      "role": "5 حراس + درع BTC",
       "status": "working",
       "bubble": "يراقب السيولة"
     },
     "DUSKA": {
-      "role": "5 حراس + الفاحص",
+      "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "الفاحص v6.0 يراقب 4 صفقات 🛠️"
+      "bubble": "الفاحص v6.0 يراقب 1 صفقات 🛠️"
     }
   },
   "min_size": 5.0,
