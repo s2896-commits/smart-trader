@@ -37,18 +37,22 @@
     "ADA-USD",
     "SOL-USD"
   ],
-  "radar_discovered": [],
-  "radar_total_scanned": 412,
+  "radar_discovered": [
+    "SNDKB (+7%)",
+    "MUB (+5%)",
+    "GRAM (+3%)"
+  ],
+  "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 AAVE-USD حقق ربح +0.04 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "Aroon Momentum (-0.09 ر.س)",
+  "last_win_toast": "🎯 ARB11841-USD حقق ربح +0.06 ر.س (قناص القيعان المرتدة 🎯)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+0.29 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 كشافين بحث",
-      "status": "scanning",
-      "bubble": "يمسح 27 أصلاً (5m) ⚡"
+      "status": "working",
+      "bubble": "قنص VET-USD (خطف السيولة السريع ⚡)"
     },
     "ORVEN": {
       "role": "6 محللي موجات",
@@ -57,8 +61,8 @@
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
-      "status": "cooling",
-      "bubble": "ينتظر فرصة 90+"
+      "status": "working",
+      "bubble": "6 قناصين يرصدون الـ 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس رادار",
@@ -68,7 +72,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "يتتبع القمم 🎯"
+      "bubble": "5 حراس يراقبون 2 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
