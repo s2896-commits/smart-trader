@@ -1,19 +1,25 @@
 {
+  "version": "v6.0 (Build #60)",
+  "capital_override": 60.0,
   "rsi_min": 32,
   "rsi_max": 58,
-  "tp_pct": 1.55,
+  "tp_pct": 1.35,
   "sl_pct": -0.75,
-  "trail_trigger": 0.95,
-  "trail_gap": 0.25,
-  "breakeven_trigger": 0.75,
-  "breakeven_lock": 0.38,
+  "trail_trigger": 0.85,
+  "trail_gap": 0.22,
+  "breakeven_trigger": 0.6,
+  "breakeven_lock": 0.32,
   "trade_size": 5.0,
   "max_open": 6,
-  "max_hold_h": 18,
+  "max_hold_h": 4,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
   "stoploss_guard_until": "",
+  "disabled_theories": [
+    "خطف السيولة السريع ⚡",
+    "زخم Aroon + فريم 1H 🌊"
+  ],
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -38,7 +44,9 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "GRAM (+6%)"
+    "ERA (+16%)",
+    "GRAM (+7%)",
+    "GOOGLB (+3%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -48,9 +56,9 @@
   "best_theory": "قناص القيعان المرتدة 🎯 (+0.40 ر.س)",
   "crew_state": {
     "KEST8": {
-      "role": "8 كشافين بحث",
-      "status": "working",
-      "bubble": "قنص INJ-USD (خطف السيولة السريع ⚡)"
+      "role": "8 كشافين قيعان",
+      "status": "scanning",
+      "bubble": "8 كشافين فحصوا 776 عملة ⚡"
     },
     "ORVEN": {
       "role": "6 محللي موجات",
@@ -60,7 +68,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "6 قناصين يرصدون الـ 4 ر.س 💎"
+      "bubble": "قنص NEAR-USD (قناص اختراق القمم 🚀)"
     },
     "MIRAX": {
       "role": "5 حراس رادار",
@@ -68,9 +76,9 @@
       "bubble": "يراقب السيولة"
     },
     "DUSKA": {
-      "role": "5 حراس صفقات",
+      "role": "5 حراس + الفاحص",
       "status": "working",
-      "bubble": "5 حراس يراقبون 1 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 0 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
