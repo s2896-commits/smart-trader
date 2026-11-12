@@ -6,11 +6,7 @@
   "trail_trigger": 0.85,
   "trail_gap": 0.35,
   "trade_size": 5.0,
-  "min_size": 5.0,
-  "med_size": 10.0,
-  "max_size": 15.0,
   "max_open": 6,
-  "max_per_class": 3,
   "max_hold_h": 18,
   "cooldown_min": 25,
   "risk_mode": "medium",
@@ -22,6 +18,7 @@
   },
   "observer_mode": false,
   "manual_vault_add": 0.0,
+  "ntfy_topic": "smax_trader_vip_999",
   "banned": {},
   "ban_ref": {},
   "elite_assets": [
@@ -34,8 +31,9 @@
   ],
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "متوازن (29) 🟢",
+  "market_mood": "متوازن (28) 🟢",
   "last_win_toast": "🎯 قناص SUI20947-USD حجز ربح +0.06 ر.س (+1.4%)",
+  "best_theory": "قيد المنافسة 🔬",
   "crew_state": {
     "KEST8": {
       "role": "المضارب السريع",
@@ -63,5 +61,9 @@
       "bubble": "يتتبع القمم 🎯"
     }
   },
+  "min_size": 5.0,
+  "med_size": 10.0,
+  "max_size": 15.0,
+  "max_per_class": 3,
   "ai_report": "منظومة Grok Crew والجيوب الثلاثة نشطة."
 }
