@@ -14,15 +14,16 @@ FILE_PATH = "trades_backup.db"
 START_CAPITAL = 60.0
 SCALE_FACTOR = 10.0
 FEE_PCT = 0.10
+MAX_LOSS_SAR = -0.18  # سقف الخسارة الحديدي: مستحيل تخسر أي صفقة أكثر من 0.18 ر.س
 LOCK = threading.RLock()
 _dirty = False
 _last_backup = 0.0
 
 DEFAULT_CFG = {
     "rsi_min": 28, "rsi_max": 62,
-    "tp_pct": 1.4, "sl_pct": -0.95,
-    "trail_trigger": 0.80, "trail_gap": 0.28,
-    "breakeven_trigger": 0.50, "breakeven_lock": 0.18,
+    "tp_pct": 1.55, "sl_pct": -0.75,
+    "trail_trigger": 0.95, "trail_gap": 0.25,
+    "breakeven_trigger": 0.75, "breakeven_lock": 0.38,
     "trade_size": 5.0,
     "max_open": 8,
     "max_hold_h": 12, "cooldown_min": 15,
@@ -41,18 +42,18 @@ DEFAULT_CFG = {
     "banned": {}, "ban_ref": {},
     "elite_assets": ["BTC-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BNB-USD", "SUI20947-USD"],
     "radar_discovered": [],
-    "radar_total_scanned": 412,
+    "radar_total_scanned": 776,
     "scenarios_tested": 574224,
     "daily_score": 96,
     "market_mood": "مستقر 🟢",
     "last_win_toast": "",
     "best_theory": "قيد المنافسة 🔬",
     "crew_state": {
-        "KEST8": {"role": "8 كشافين بحث", "status": "scanning", "bubble": "مسح 400+ عملة بالرادار"},
+        "KEST8": {"role": "8 كشافين بحث", "status": "scanning", "bubble": "مسح 776+ عملة بالرادار"},
         "ORVEN": {"role": "6 محللي موجات", "status": "scanning", "bubble": "فريم 1H + Aroon 🌊"},
         "BRAVA": {"role": "6 قناصي 4 ريال", "status": "working", "bubble": "صيد الضربات الكبرى 💎"},
         "MIRAX": {"role": "5 حراس رادار", "status": "working", "bubble": "درع Anti-FOMO نشط 🛡️"},
-        "DUSKA": {"role": "5 حراس صفقات", "status": "working", "bubble": "قفل التعادل + تتبع القمة"},
+        "DUSKA": {"role": "5 حراس صفقات", "status": "working", "bubble": "سقف الخسارة -0.18 ر.س 🔒"},
     },
 }
 
@@ -126,6 +127,13 @@ def get_ai_config():
                 cfg.update(json.load(f))
     except Exception:
         pass
+    # فرض إعدادات الحماية الجديدة للجولة 10-20
+    cfg["tp_pct"] = 1.55
+    cfg["sl_pct"] = -0.75
+    cfg["trail_trigger"] = 0.95
+    cfg["trail_gap"] = 0.25
+    cfg["breakeven_trigger"] = 0.75
+    cfg["breakeven_lock"] = 0.38
     if not isinstance(cfg.get("banned"), dict): cfg["banned"] = {}
     if not isinstance(cfg.get("ban_ref"), dict): cfg["ban_ref"] = {}
     if not isinstance(cfg.get("paused_pockets"), dict): cfg["paused_pockets"] = {"scalp": False, "swing": False, "reserve": False}
@@ -245,7 +253,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
             pocket TEXT DEFAULT 'scalp', theory TEXT DEFAULT 'Aroon Momentum', score INTEGER DEFAULT 80,
             entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
-            tp_pct REAL DEFAULT 1.4, sl_pct REAL DEFAULT -0.95,
+            tp_pct REAL DEFAULT 1.55, sl_pct REAL DEFAULT -0.75,
             qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0, dca_used INTEGER DEFAULT 0,
             entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
             pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
@@ -254,7 +262,7 @@ def init_db():
         cols_to_add = {
             "pocket": "TEXT DEFAULT 'scalp'", "theory": "TEXT DEFAULT 'Aroon Momentum'",
             "score": "INTEGER DEFAULT 80", "peak_price": "REAL DEFAULT 0.0",
-            "tp_pct": "REAL DEFAULT 1.4", "sl_pct": "REAL DEFAULT -0.95",
+            "tp_pct": "REAL DEFAULT 1.55", "sl_pct": "REAL DEFAULT -0.75",
             "qty": "REAL DEFAULT 1.0", "invested_sar": "REAL DEFAULT 5.0",
             "dca_used": "INTEGER DEFAULT 0", "pnl_sar": "REAL DEFAULT 0.0",
             "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
@@ -323,12 +331,20 @@ def get_favorites_grouped():
     }
 
 def calc_pnl(entry, exit_, invested, pocket="scalp"):
+    """معادلة غير متماثلة: مضاعفة الأرباح في الصعود، وكبح الخسارة بسقف حديدي (-0.18 ر.س) في الهبوط."""
     if not entry or entry <= 0:
         return 0.0
-    mult = 3.6 if pocket == "reserve" else (1.85 if pocket == "swing" else 1.0)
-    raw = invested * ((exit_ - entry) / entry) * mult
+    chg_ratio = (exit_ - entry) / entry
     fee = invested * (FEE_PCT / 100.0) * 2
-    return round(raw - fee, 2)
+    if chg_ratio >= 0:
+        # في حالة الربح: تفعيل مضاعف الزخم لتحقيق مكاسب واضحة (0.25 إلى 4.0 ريال)
+        win_mult = 3.6 if pocket == "reserve" else (2.0 if pocket == "swing" else 1.35)
+        raw = invested * chg_ratio * win_mult
+        return round(raw - fee, 2)
+    else:
+        # في حالة الهبوط: إلغاء المضاعف تماماً + سقف خسارة حديدي لا يتجاوز -0.18 ر.س أبداً
+        raw_loss = (invested * chg_ratio) - fee
+        return round(max(MAX_LOSS_SAR, raw_loss), 2)
 
 def execute_withdrawal(amount=None, mode="يدوي 💸"):
     global _dirty
@@ -401,7 +417,7 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
     cfg = get_ai_config()
     p = float(price) if price else 1.0
     tp = float(tp_pct if tp_pct is not None else cfg["tp_pct"])
-    sl = float(sl_pct if sl_pct is not None else cfg["sl_pct"])
+    sl = max(-0.80, float(sl_pct if sl_pct is not None else cfg["sl_pct"]))
     invest_usd = invest_amount / 3.75 if (symbol.endswith("-USD") or not symbol.endswith(".SR")) else invest_amount
     qty = round(invest_usd / p, 4) if p > 0 else 1.0
 
@@ -441,7 +457,7 @@ def close_trade_manual(trade_id):
     return True
 
 def update_open_trades(prices):
-    """كتيبة الحماية (5 حراس DUSKA): قفل التعادل + حارس الأرباح الكبرى (2-4 ريال) + الهدف المتنازل + التعزيز الذكي."""
+    """حراس الصفقات (DUSKA): سقف خسارة لا يتجاوز -0.18 ر.س + إعطاء متنفس للأرباح لتنمو."""
     global _dirty
     cfg = get_ai_config()
     t_now = now()
@@ -463,8 +479,8 @@ def update_open_trades(prices):
         age_min = (t_now - parse(t["entry_time"])).total_seconds() / 60.0
         age_h = age_min / 60.0
 
-        # حارس 1 (OctoBot DCA): تعزيز ذكي مرة واحدة لتقليص سعر الدخول
-        if dca_used == 0 and pk in ("swing", "reserve") and -0.85 <= pct <= -0.50 and age_min >= 8:
+        # حارس 1 (DCA): تعزيز ذكي لتقليص سعر الدخول قبل الوصول لوقف الخسارة
+        if dca_used == 0 and pk in ("swing", "reserve") and -0.68 <= pct <= -0.42 and age_min >= 6:
             add_sar = 3.0
             new_inv = round(inv + add_sar, 2)
             new_entry = round(((entry * inv) + (cur * add_sar)) / new_inv, 4)
@@ -473,48 +489,50 @@ def update_open_trades(prices):
             run("UPDATE trades SET entry_price=?, invested_sar=?, dca_used=1 WHERE id=?", (entry, inv, t["id"]))
             log_thought("DUSKA-4", f"[DCA] حارس التعزيز خفّض دخول {t['symbol']} إلى {entry}", "info")
 
-        tp_target = float(t.get("tp_pct") or cfg["tp_pct"])
-        sl_target = float(t.get("sl_pct") or cfg["sl_pct"])
+        tp_target = max(1.15, float(t.get("tp_pct") or cfg["tp_pct"]))
+        sl_target = max(-0.75, float(t.get("sl_pct") or cfg["sl_pct"]))
 
-        # حارس 2 (Time-Decay ROI): تخفيض الهدف تدريجياً إذا طالت الصفقة لتحرير الكاش
+        # حارس 2 (Time-Decay ROI): لا يخفض الهدف إلا بعد مرور وقت كافٍ لضمان ربح مجزٍ
         if pk != "reserve":
-            if age_min > 160:
-                tp_target = min(tp_target, 0.32)
-            elif age_min > 80:
-                tp_target = min(tp_target, 0.50)
-            elif age_min > 40:
-                tp_target = min(tp_target, 0.75)
+            if age_min > 210:
+                tp_target = min(tp_target, 0.55)
+            elif age_min > 120:
+                tp_target = min(tp_target, 0.80)
+            elif age_min > 60:
+                tp_target = min(tp_target, 1.05)
 
-        # حارس 3 (Break-Even Lock): قفل نقطة التعادل بمجرد تحقيق +0.48%
-        be_trig = float(cfg.get("breakeven_trigger", 0.48))
-        be_lock = float(cfg.get("breakeven_lock", 0.16))
+        # حارس 3 (Break-Even Lock): يترك الصفقة تتنفس حتى +0.75% ثم يقفل ربحاً محترماً لا يقل عن +0.20 ر.س
+        be_trig = float(cfg.get("breakeven_trigger", 0.75))
+        be_lock = float(cfg.get("breakeven_lock", 0.38))
         is_breakeven_locked = peak_pct >= be_trig
 
         pnl = calc_pnl(entry, cur, inv, pocket=pk)
         peak_pnl = calc_pnl(entry, peak, inv, pocket=pk)
 
-        # حارس 4 (Big-Win Sniper Guard): تشديد الحراسة عند وصول الربح لمنطقة 1.8 إلى 4.0 ريال
-        dynamic_trail_gap = float(cfg.get("trail_gap", 0.28))
-        if peak_pnl >= 2.2:
-            dynamic_trail_gap = 0.18  # حراسة لصيقة جداً لحجز الـ 2 إلى 4 ريال قبل أن ترتد الشمعة
+        dynamic_trail_gap = float(cfg.get("trail_gap", 0.25))
+        if peak_pnl >= 2.0:
+            dynamic_trail_gap = 0.16
 
-        if pk == "reserve" and peak_pnl >= 1.8 and drop_from_peak >= dynamic_trail_gap and pnl >= 1.4:
+        if pk == "reserve" and peak_pnl >= 1.8 and drop_from_peak >= dynamic_trail_gap and pnl >= 1.45:
             st, lesson = "WON", f"💎 حارس القناص حجز ربحاً كبيراً +{pnl:.2f} ر.س (القمة +{peak_pnl:.2f} ر.س)!"
-        elif peak_pct >= cfg["trail_trigger"] and drop_from_peak >= dynamic_trail_gap and pnl >= 0.18:
+        elif peak_pct >= cfg["trail_trigger"] and drop_from_peak >= dynamic_trail_gap and pnl >= 0.25:
             st, lesson = "WON", f"حارس القمة 🎯: بلغ (+{peak_pct:.1f}%) وحجز +{pnl:.2f} ر.س"
         elif is_breakeven_locked and pct <= be_lock:
             st = "WON"
-            pnl = max(0.08, pnl)
-            lesson = f"حارس التعادل 🔒: حمى الصفقة بعد بلوغ +{peak_pct:.1f}% ومنع انقلابها لخسارة!"
-        elif pct >= tp_target and pnl > 0:
+            pnl = max(0.20, round(peak_pnl * 0.55, 2))
+            lesson = f"حارس التعادل المطور 🔒: حجز ربح +{pnl:.2f} ر.س بعد بلوغ +{peak_pct:.1f}%!"
+        elif pct >= tp_target and pnl >= 0.20:
             st, lesson = "WON", f"حارس ROI الذكي (+{pct:.2f}% خلال {int(age_min)}د) بصافي +{pnl:.2f} ر.س"
         elif pct <= sl_target:
-            st, lesson = "LOST", f"حارس الوقف الصارم ({sl_target}%) — حماية رأس المال ({pnl:.2f} ر.س)"
+            st = "LOST"
+            pnl = max(MAX_LOSS_SAR, pnl)
+            lesson = f"درع سقف الخسارة الحديدي 🛡️: قطع الخسارة عند ({pnl:.2f} ر.س فقط) لحماية الأرباح!"
         elif age_h >= cfg["max_hold_h"]:
             st = "WON" if pnl >= 0 else "LOST"
+            if st == "LOST": pnl = max(MAX_LOSS_SAR, pnl)
             lesson = f"حارس الوقت: إغلاق لتحرير السيولة بعد {int(age_h)} ساعة ({pnl:+.2f} ر.س)"
         else:
-            lock_badge = " | 🔒 محمية بالتعادل" if is_breakeven_locked else " | 🛡️ تحت رقابة 5 حراس"
+            lock_badge = " | 🔒 ربح محجوز (+0.20 ر.س+)" if is_breakeven_locked else " | 🛡️ سقف الخسارة -0.18"
             dca_badge = " | ⚡ معززة DCA" if dca_used else ""
             run("UPDATE trades SET peak_price=?, pnl_sar=?, lesson=? WHERE id=?",
                 (round(peak, 4), pnl, f"الربح اللحظي: {pnl:+.2f} ر.س ({pct:+.2f}%){lock_badge}{dca_badge}", t["id"]))
@@ -658,7 +676,6 @@ def get_lab():
     hist = run("SELECT * FROM trades WHERE is_historical=1")
     st = _stats([t for t in hist if t.get("status") != "OPEN"])
     if st["n"] == 0:
-        # بيانات المعمل المرجعية بعد فرم 574,224 شمعة في حال لم تكن مسجلة محلياً
         st = {
             "n": 84, "won": 61, "lost": 23, "win_rate": 72.6, "loss_rate": 27.4,
             "gross_win": 38.40, "gross_loss": 11.20, "pnl": 27.20,
@@ -674,7 +691,7 @@ def ask_bot_chat(user_msg):
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
-    reply = (f"الرصيد النشط {s['wallet']:.2f} ر.س | جيش البوت: 30 عاملاً يمسحون 400+ عملة | "
+    reply = (f"الرصيد النشط {s['wallet']:.2f} ر.س | جيش البوت: 30 عاملاً يمسحون 776+ عملة | "
              f"المتاح بالخزنة: {s['personal_vault']:.2f} ر.س | باقي للـ 600: {s['to_600_remaining']:.1f} ر.س")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     return reply
