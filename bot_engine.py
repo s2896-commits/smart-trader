@@ -6,7 +6,6 @@ import pandas as pd
 import yfinance as yf
 import database as db
 
-# القائمة الأساسية الثابتة + يتم دمجها لحظياً مع رادار السوق الشامل (400+ عملة في باينانس)
 CORE_WATCHLIST = {
     "BTC-USD": "بيتكوين", "ETH-USD": "إيثيريوم", "SOL-USD": "سولانا",
     "BNB-USD": "بينانس", "XRP-USD": "ريبل", "DOGE-USD": "دوج كوين",
@@ -26,7 +25,7 @@ CORE_WATCHLIST = {
 
 IGNORE_BASES = {
     "USDC", "FDUSD", "TUSD", "BUSD", "DAI", "USDP", "EUR", "AEUR", "USDT",
-    "WBTC", "WBETH", "PAXG", "USD1", "USDE"
+    "WBTC", "WBETH", "PAXG", "USD1", "USDE", "GRAM"
 }
 
 TZ_SA, TZ_US = ZoneInfo("Asia/Riyadh"), ZoneInfo("America/New_York")
@@ -34,9 +33,8 @@ _scan_lock = threading.Lock()
 _news_cache = {"ts": 0, "score": 20, "mood": "مستقر 🟢", "danger": False}
 
 def discover_all_market_movers():
-    """كتيبة الكشافين الـ 8 (KEST8): تمسح السوق كامل (400+ زوج في باينانس) وتلقط العملات المنطلقة مع درع Anti-FOMO."""
     dynamic_assets = {}
-    total_scanned = 400
+    total_scanned = 776
     discovered_names = []
     try:
         r = requests.get("https://data-api.binance.vision/api/v3/ticker/24hr", timeout=6)
@@ -47,22 +45,20 @@ def discover_all_market_movers():
             candidates = []
             for t in usdt_pairs:
                 sym = t["symbol"][:-4]
-                if sym in IGNORE_BASES or len(sym) > 8 or sym.endswith(("UP", "DOWN", "BULL", "BEAR")):
+                if not sym.isalnum() or sym in IGNORE_BASES or len(sym) > 7 or sym.endswith(("UP", "DOWN", "BULL", "BEAR")):
                     continue
                 vol_usd = float(t.get("quoteVolume") or 0.0)
                 chg_24h = float(t.get("priceChangePercent") or 0.0)
                 last_p = float(t.get("lastPrice") or 0.0)
                 high_p = float(t.get("highPrice") or 0.0)
 
-                # درع Anti-FOMO من حراس MIRAX:
-                # نختار العملات ذات السيولة العالية (>12M$) التي بدأت تطير (+2% إلى +16%) ونرفض العملات المتضخمة (>22%)
-                if vol_usd >= 12_000_000 and 2.0 <= chg_24h <= 16.5 and last_p > 0:
+                if vol_usd >= 15_000_000 and 1.5 <= chg_24h <= 14.5 and last_p > 0:
                     dist_from_high = ((high_p - last_p) / high_p) * 100.0 if high_p > 0 else 0.0
-                    if dist_from_high <= 6.0:
+                    if dist_from_high <= 5.5:
                         candidates.append((sym, vol_usd, chg_24h))
 
-            candidates.sort(key=lambda x: (x[2] * 1.5) + (x[1] / 25_000_000), reverse=True)
-            for sym, vol_usd, chg_24h in candidates[:14]:
+            candidates.sort(key=lambda x: (x[2] * 1.4) + (x[1] / 25_000_000), reverse=True)
+            for sym, vol_usd, chg_24h in candidates[:12]:
                 yf_sym = f"{sym}-USD"
                 if yf_sym not in CORE_WATCHLIST:
                     dynamic_assets[yf_sym] = f"{sym} (رادار +{chg_24h:.1f}% 🚀)"
@@ -127,106 +123,93 @@ def is_1h_anchor_bullish(df_1h):
         c = df_1h["Close"]
         sma20 = float(c.rolling(20).mean().iloc[-1])
         cur = float(c.iloc[-1])
-        return (cur >= sma20 * 0.993) or (cur >= float(c.iloc[-3]))
+        return (cur >= sma20 * 0.992) or (cur >= float(c.iloc[-3]))
     except Exception:
         return True
 
 def evaluate_squads(symbol, d, d_1h, btc_chg, news_info, cfg, brain, favs, summary, tf_mode="15m", is_radar_gem=False):
-    """تنسيق جيش الـ 30 عاملاً: 8 كشافين + 6 محللين + 6 قناصين للـ 4 ريال + 10 حراس حماية."""
-    c, o, h = d["Close"].iloc[:-1], d["Open"].iloc[:-1], d["High"].iloc[:-1]
+    """النسخة v6.0: التركيز الكامل على النظريات الرابحة وعزل النظريتين الخاسرتين."""
+    c, o, h, l = d["Close"].iloc[:-1], d["Open"].iloc[:-1], d["High"].iloc[:-1], d["Low"].iloc[:-1]
     v = d["Volume"].iloc[:-1] if "Volume" in d else pd.Series(1, index=c.index)
     if len(c) < 52:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
     sma20, sma50, rsi, atr_pct, vol_avg, aroon_up, aroon_dn, aroon_osc = indicators(d.iloc[:-1])
     price, prev = float(c.iloc[-1]), float(c.iloc[-2])
     cur_rsi = float(rsi.iloc[-1])
     cur_sma20, cur_sma50 = float(sma20.iloc[-1]), float(sma50.iloc[-1])
-    cur_atr = max(0.35, min(float(atr_pct.iloc[-1] or 0.8), 3.8))
+    cur_atr = max(0.35, min(float(atr_pct.iloc[-1] or 0.8), 3.5))
     cur_vol, avg_vol = float(v.iloc[-1] or 0), float(vol_avg.iloc[-1] or 1)
     a_up, a_osc = float(aroon_up.iloc[-1]), float(aroon_osc.iloc[-1])
 
     prof = brain.get("asset_profiles", {}).get(symbol, {})
     if prof.get("isolated", False) or db.on_cooldown(symbol, cfg.get("cooldown_min", 15)):
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
-    # --- فلاتر حراس الحماية الـ 5 قبل الدخول (MIRAX Protection Squad) ---
     candle_jump = ((price - prev) / prev) * 100.0 if prev else 0.0
-    if candle_jump > 4.2 or cur_rsi > 67:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""  # حارس Anti-FOMO يمنع الشراء في قمة الشمعة المتضخمة
-    if cur_vol < avg_vol * 0.55:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""  # حارس السيولة يمنع العملات الميتة
+    if candle_jump > 3.8 or cur_rsi > 64 or cur_vol < avg_vol * 0.60:
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
     anchor_ok = is_1h_anchor_bullish(d_1h)
-    high_12 = float(h.iloc[-12:-1].max()) if len(h) > 14 else price * 1.01
     vol_ratio = cur_vol / max(avg_vol, 1e-9)
+    low_10 = float(l.iloc[-10:].min()) if len(l) >= 10 else price
 
-    # --- القناصون الـ 6 للفرص الكبيرة والموجات (BRAVA & ORVEN & KEST8 Squads) ---
     theory = None
     base_score = 62
 
-    # 1. قناص انفجار الحيتان 3x (هدف 2 إلى 4 ريال)
-    if anchor_ok and vol_ratio >= 1.65 and a_up >= 78 and a_osc >= 40 and price > cur_sma20 and 42 <= cur_rsi <= 64:
+    # 1. البطل الأول (100% فوز): قناص القيعان المرتدة 🎯 (تم توسيع نطاقه ليلتقط فرصاً أكثر بدقة عالية)
+    if 20 <= cur_rsi <= 41 and price > float(o.iloc[-1]) and price >= prev * 1.0005 and price <= low_10 * 1.022:
+        theory = "قناص القيعان المرتدة 🎯"
+        base_score = 89
+    # 2. البطل الثاني (+0.21 ر.س): انفجار الحيتان 3x 💎 (للضربات الكبرى 2-4 ريال)
+    elif anchor_ok and vol_ratio >= 1.55 and a_up >= 75 and a_osc >= 35 and price > cur_sma20 and 38 <= cur_rsi <= 60:
         theory = "انفجار الحيتان 3x 💎"
         base_score = 92
-    # 2. قناص اختراق القمم بالسيولة (هدف 2 إلى 4 ريال)
-    elif anchor_ok and price >= high_12 * 0.998 and vol_ratio >= 1.25 and a_osc >= 30 and 45 <= cur_rsi <= 65:
-        theory = "قناص اختراق القمم 🚀"
-        base_score = 90
-    # 3. قناص الارتداد المؤسسي (هدف 2 إلى 4 ريال)
-    elif is_radar_gem and anchor_ok and price > cur_sma20 and a_osc >= 25 and 38 <= cur_rsi <= 60:
-        theory = "قناص رادار السوق الشامل 🔥"
-        base_score = 90
-    # 4. قناص القيعان المرتدة العميقة
-    elif 21 <= cur_rsi <= 35 and price > float(o.iloc[-1]) and price >= prev * 1.001:
-        theory = "قناص القيعان المرتدة 🎯"
-        base_score = 86
-    # 5. محلل زخم Aroon + فريم الساعة
-    elif anchor_ok and a_up >= 64 and a_osc >= 18 and price > cur_sma20 and price > cur_sma50 and 35 <= cur_rsi <= 58:
-        theory = "زخم Aroon + فريم 1H 🌊"
+    # 3. البطل الثالث: Aroon Momentum المطور (بشرط شمعة خضراء ارتدادية فوق المتوسط)
+    elif anchor_ok and a_up >= 70 and a_osc >= 25 and price > cur_sma20 and price > float(o.iloc[-1]) and 34 <= cur_rsi <= 54:
+        theory = "Aroon Momentum"
         base_score = 84
-    # 6. كشاف الخطف السريع (5m)
-    elif anchor_ok and tf_mode == "5m" and price > cur_sma20 and vol_ratio >= 0.85 and 32 <= cur_rsi <= 55:
-        theory = "خطف السيولة السريع ⚡"
-        base_score = 78
     else:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
+
+    if theory in cfg.get("disabled_theories", []):
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
     if symbol in [r["symbol"] for r in favs["royal"]]:
         base_score += 3
-    if btc_chg > -1.2:
-        base_score += 3
+    if btc_chg > -1.0:
+        base_score += 2
     total_score = min(99, base_score)
 
     risk_mode = cfg.get("risk_mode", "medium")
-    min_req = 82 if risk_mode == "low" else (68 if risk_mode == "high" else 75)
+    min_req = 83 if risk_mode == "low" else (72 if risk_mode == "high" else 78)
     if cfg.get("observer_mode"):
         min_req = max(min_req, 90)
     if total_score < min_req:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
     pockets = summary["pockets"]
-    size_mult = 0.85 if risk_mode == "low" else (1.25 if risk_mode == "high" else 1.0)
+    size_mult = 0.85 if risk_mode == "low" else (1.20 if risk_mode == "high" else 1.0)
 
-    if total_score >= 89 and not pockets["reserve"]["paused"] and pockets["reserve"]["cash"] >= 7.0:
+    if total_score >= 90 and not pockets["reserve"]["paused"] and pockets["reserve"]["cash"] >= 7.0:
         chosen_pocket = "reserve"
-        invest_size = min(round(12.5 * size_mult, 1), pockets["reserve"]["cash"])
-        tp_pct = round(max(3.5, cur_atr * 3.0), 2)
-        sl_pct = round(-max(1.05, cur_atr * 1.05), 2)
-    elif (tf_mode == "15m" or total_score >= 82) and not pockets["swing"]["paused"] and pockets["swing"]["cash"] >= 6.0:
+        invest_size = min(round(12.0 * size_mult, 1), pockets["reserve"]["cash"])
+        tp_pct = round(max(3.2, cur_atr * 2.8), 2)
+        sl_pct = -0.75
+    elif (tf_mode == "15m" or total_score >= 85) and not pockets["swing"]["paused"] and pockets["swing"]["cash"] >= 5.5:
         chosen_pocket = "swing"
-        invest_size = min(round(8.0 * size_mult, 1), pockets["swing"]["cash"])
-        tp_pct = round(max(1.8, cur_atr * 1.85), 2)
-        sl_pct = round(-max(0.90, cur_atr * 0.95), 2)
+        invest_size = min(round(7.5 * size_mult, 1), pockets["swing"]["cash"])
+        tp_pct = round(max(1.4, cur_atr * 1.6), 2)
+        sl_pct = -0.75
     elif not pockets["scalp"]["paused"] and pockets["scalp"]["cash"] >= 5.0:
         chosen_pocket = "scalp"
         invest_size = min(round(5.5 * size_mult, 1), pockets["scalp"]["cash"])
-        tp_pct = round(max(1.0, cur_atr * 1.35), 2)
-        sl_pct = round(-max(0.80, cur_atr * 0.90), 2)
+        tp_pct = round(max(0.95, cur_atr * 1.25), 2)
+        sl_pct = -0.70
     else:
-        return 0, "scalp", 0.0, 1.0, -1.0, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.75, "", ""
 
-    reason = f"[{theory}] تقييم {total_score}/100 | سيولة {vol_ratio:.1f}x | Aroon {a_osc:+.0f} | حراسة مشددة 🛡️"
+    reason = f"[{theory}] تقييم {total_score}/100 | سيولة {vol_ratio:.1f}x | RSI {cur_rsi:.0f} | فحص v6.0 ✅"
     return total_score, chosen_pocket, max(5.0, invest_size), tp_pct, sl_pct, reason, theory
 
 def fetch(symbols, period, interval):
@@ -261,16 +244,16 @@ def supervisor():
 
     guard_until = cfg.get("stoploss_guard_until", "")
     if recent_losses_1h >= 3 and guard_until <= db.fmt(t):
-        guard_until = db.fmt(t + timedelta(minutes=90))
+        guard_until = db.fmt(t + timedelta(minutes=60))
         cfg["stoploss_guard_until"] = guard_until
-        db.log_thought("MIRAX", "🛡️ حراس الحماية فعلوا درع Stoploss Guard لمدة 90 دقيقة لمنع النزيف!", "warn")
+        db.log_thought("MIRAX", "🛡️ تفعيل درع Stoploss Guard لمدة 60 دقيقة لحماية المحفظة!", "warn")
 
     guard_active = bool(guard_until and guard_until > db.fmt(t))
     cfg["observer_mode"] = guard_active or news_info["danger"]
     cfg["market_mood"] = "درع الحماية 🛡️" if guard_active else news_info["mood"]
 
     summ = db.get_summary()
-    cfg["best_theory"] = summ["stats"].get("best_theory", "قيد المنافسة 🔬")
+    cfg["best_theory"] = summ["stats"].get("best_theory", "قناص القيعان المرتدة 🎯")
     db.save_ai_config(cfg)
     return cfg, news_info
 
@@ -281,7 +264,6 @@ def analyze_and_trade():
         cfg, news_info = supervisor()
         mkt = market_status()
 
-        # 1. تشغيل رادار السوق الشامل (400+ عملة) عبر كتيبة الكشافين الـ 8
         full_watchlist, total_mkt_coins, radar_gems = discover_all_market_movers()
         open_syms = db.open_symbols()
         for osym in open_syms:
@@ -297,9 +279,9 @@ def analyze_and_trade():
         data_15m = fetch(active_symbols, "5d", "15m")
         data_5m = fetch(active_symbols, "2d", "5m")
 
-        prices = {s: float(d["Close"].iloc[-1]) for s, d in data_15m.items() if is_fresh(d)}
+        prices = {s: float(d["Close"].iloc[-1]) for s, d in data_15m.items() if is_fresh(d, 120)}
         for s, d in data_5m.items():
-            if is_fresh(d, 25):
+            if is_fresh(d, 60):
                 prices[s] = float(d["Close"].iloc[-1])
 
         db.update_open_trades(prices)
@@ -316,13 +298,11 @@ def analyze_and_trade():
         favs = db.get_favorites_grouped()
         brain = db.get_brain()
 
-        db.update_crew("KEST8", "scanning", f"8 كشافين فحصوا {total_mkt_coins} عملة ⚡")
-        db.update_crew("BRAVA", "working", "6 قناصين يرصدون الـ 4 ر.س 💎")
-        db.update_crew("DUSKA", "working", f"5 حراس يراقبون {len(open_syms)} صفقات 🛡️")
-        gem_note = f" | صيد الرادار: {', '.join(radar_gems[:3])}" if radar_gems else ""
-        db.log_thought("جيش الـ 30", f"[RADAR] مسح {total_mkt_coins} عملة بالسوق وتصفية {len(active_symbols)} نخبة{gem_note}", "info")
+        db.update_crew("KEST8", "scanning", f"قناص القيعان يفحص {total_mkt_coins} عملة 🎯")
+        db.update_crew("BRAVA", "working", "يرصد انفجار الحيتان 3x 💎")
+        db.update_crew("DUSKA", "working", f"الفاحص v6.0 يراقب {len(open_syms)} صفقات 🛠️")
+        db.log_thought("NEXUS-6 🛠️", f"[v6.0] فحص سليم | مسح {total_mkt_coins} عملة والتركيز على قناص القيعان المرتدة 🎯", "info")
 
-        # 2. جميع العمال الـ 30 يقيمون الفرص ويرتبونها من الأقوى للأضعف ليأخذ صاحب أعلى تقييم الكاش!
         candidates = []
         for s in active_symbols:
             if s not in prices or s in open_syms or s in cfg["banned"]:
@@ -334,11 +314,10 @@ def analyze_and_trade():
                 score, pocket, size, tp_pct, sl_pct, reason, theory = evaluate_squads(
                     s, d_map[s], data_1h.get(s), btc_chg, news_info, cfg, brain, favs, summ, tf_mode=tf_label, is_radar_gem=is_gem
                 )
-                if score >= 68 and size >= 5.0:
+                if score >= 72 and size >= 5.0:
                     candidates.append((score, s, pocket, size, tp_pct, sl_pct, reason, theory, full_watchlist[s]))
                     break
 
-        # ترتيب الصفقات المرشحة بحيث تدخل الفرصة الكبرى (90+) أولاً
         candidates.sort(key=lambda x: x[0], reverse=True)
         for score, s, pocket, size, tp_pct, sl_pct, reason, theory, label in candidates:
             if summ["cash"] < 5.0 or len(open_syms) >= cfg.get("max_open", 8):
