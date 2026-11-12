@@ -1,12 +1,12 @@
 {
   "rsi_min": 32,
   "rsi_max": 58,
-  "tp_pct": 1.1,
-  "sl_pct": -1.0,
-  "trail_trigger": 0.85,
-  "trail_gap": 0.35,
-  "breakeven_trigger": 0.55,
-  "breakeven_lock": 0.18,
+  "tp_pct": 1.55,
+  "sl_pct": -0.75,
+  "trail_trigger": 0.95,
+  "trail_gap": 0.25,
+  "breakeven_trigger": 0.75,
+  "breakeven_lock": 0.38,
   "trade_size": 5.0,
   "max_open": 6,
   "max_hold_h": 18,
@@ -38,7 +38,8 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "ERA (+11%)",
+    "ERA (+8%)",
+    "GRAM (+4%)",
     "MUB (+3%)"
   ],
   "radar_total_scanned": 776,
@@ -56,12 +57,12 @@
     "ORVEN": {
       "role": "6 محللي موجات",
       "status": "working",
-      "bubble": "قنص ARB11841-USD (زخم Aroon + فريم 1H "
+      "bubble": "قنص LINK-USD (زخم Aroon + فريم 1H 🌊)"
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "6 قناصين يرصدون الـ 4 ر.س 💎"
+      "bubble": "قنص GRAM-USD (انفجار الحيتان 3x 💎)"
     },
     "MIRAX": {
       "role": "5 حراس رادار",
