@@ -29,7 +29,9 @@ button{font-family:inherit;cursor:pointer}
 .lbl{font-size:10px;color:var(--mut);display:block;margin-bottom:3px}
 .big{font-size:16.5px;font-weight:900;margin:0}
 
-/* مركز السحب اليدوي والتلقائي */
+.gh-badges{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:9px}
+.gh-b{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.35);color:#e9d5ff;padding:4px 9px;border-radius:9px;font-size:9.5px;font-weight:800;white-space:nowrap}
+
 .vault-box{background:linear-gradient(135deg,#04231b,#0a1324);border:1px solid rgba(16,185,129,.4);border-radius:15px;padding:11px;margin-bottom:10px}
 .vb-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .w-btn{background:var(--grn);color:#022c22;border:0;padding:7px 13px;border-radius:10px;font-size:11.5px;font-weight:900}
@@ -101,17 +103,24 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 <div class="shell">
  <div class="head">
   <div class="brand"><div class="dot"></div><div><h1>Grok Bot Desk • SM-A-X</h1><span class="sub" id="sub">يمسح 32 عملة وسهماً...</span></div></div>
-  <button class="btn" onclick="enableAlerts()">🔔 جرس الأهداف والـ 600</button>
+  <button class="btn" onclick="enableAlerts()">🔔 جرس الـ 600</button>
+ </div>
+
+ <div class="gh-badges">
+  <span class="gh-b">🔒 Break-Even (Freqtrade)</span>
+  <span class="gh-b">⏱️ Time-Decay ROI</span>
+  <span class="gh-b">🛡️ Stoploss Guard (NFI)</span>
+  <span class="gh-b">🧭 1H Anchor (Jesse)</span>
+  <span class="gh-b">⚡ Smart DCA (OctoBot)</span>
  </div>
 
  <div id="tab-live" class="tab act">
   <div class="top-metrics">
-   <div class="mcard pri"><span class="lbl">رصيد المحفظة</span><h2 class="big" id="w">—</h2><small id="pnl" style="font-size:10px;font-weight:800">—</small></div>
-   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">—</h2><small id="best-th" style="font-size:9px;color:var(--grn)">—</small></div>
-   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">—</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">—</small></div>
+   <div class="mcard pri"><span class="lbl">رصيد المحفظة</span><h2 class="big" id="w">60.00 ر.س</h2><small id="pnl" style="font-size:10px;font-weight:800">الصافي: 0.00 ر.س</small></div>
+   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">540.0 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قيد المنافسة 🔬</small></div>
+   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 10.0 ر.س للتقسيمة</small></div>
   </div>
 
-  <!-- لوحة التحكم بالسحب اليدوي والتلقائي -->
   <div class="vault-box">
    <div class="vb-top">
     <div>
@@ -124,13 +133,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
     <span>🔄 سحب تلقائي كل ما جمع:</span>
     <button class="abtn" id="aw-off" onclick="setAutoW(0,0)">إيقاف</button>
     <button class="abtn" id="aw-5" onclick="setAutoW(1,5)">5 ر.س</button>
-    <button class="abtn" id="aw-10" onclick="setAutoW(1,10)">10 ر.س</button>
+    <button class="abtn on" id="aw-10" onclick="setAutoW(1,10)">10 ر.س</button>
     <button class="abtn" id="aw-25" onclick="setAutoW(1,25)">25 ر.س</button>
     <button class="abtn" id="aw-custom" onclick="customAutoW()">✏️ رقم مخصص</button>
    </div>
   </div>
 
-  <!-- لوحة فرز الصفقات الناجحة والفاشلة والنسبة الكلية -->
   <div class="split-board">
    <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">0 (0%)</strong><small id="sb-w-sar" style="color:#6ee7b7">+0.00 ر.س</small></div>
    <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">0 (0%)</strong><small id="sb-l-sar" style="color:#fda4af">-0.00 ر.س</small></div>
@@ -138,20 +146,20 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   </div>
 
   <div class="chart-box">
-   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">—</span></div>
+   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">×10: 0.00 ر.س</span></div>
    <svg id="pnl-svg" viewBox="0 0 260 95" style="width:100%;height:95px;overflow:visible"></svg>
   </div>
 
   <div class="term">
-   <div class="box-hd"><span>⚡ سجل النشاط الحي (32 أصلاً)</span><span id="mood-bdg" style="color:var(--pri)">—</span></div>
-   <div class="term-body" id="term-list">...</div>
+   <div class="box-hd"><span>⚡ سجل النشاط الحي (32 أصلاً)</span><span id="mood-bdg" style="color:var(--pri)">مستقر 🟢</span></div>
+   <div class="term-body" id="term-list">جاري تحميل سجل النشاط الحي...</div>
   </div>
 
   <div class="crew-bar" id="crew-bar"></div>
 
   <div class="goal-bar">
    <div style="display:flex;justify-content:space-between"><span>🏆 رحلة الـ 10 أضعاف (600 ر.س) | التجارب (<b id="pg-t">0/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.00x</b></div>
-   <div class="g-track"><div class="g-fill" id="pg-b" style="width:5%"></div></div>
+   <div class="g-track"><div class="g-fill" id="pg-b" style="width:8%"></div></div>
    <div class="g-marks"><span>60 ر.س</span><span>1.25x (75)</span><span>1.5x (90)</span><span>2x (120)</span><span>10x (600)</span></div>
   </div>
 
@@ -160,7 +168,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   <div class="risk-row">
    <span>🎚️ المخاطرة:</span>
    <button class="rbtn" id="rk-low" onclick="setRisk('low')">🛡️ منخفضة (82+)</button>
-   <button class="rbtn" id="rk-medium" onclick="setRisk('medium')">⚖️ متوسطة (75+)</button>
+   <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">⚖️ متوسطة (75+)</button>
    <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 مرتفعة (68+)</button>
   </div>
 
@@ -207,15 +215,10 @@ const BOTS=[
 function enableAlerts(){
  if("Notification" in window){
   Notification.requestPermission().then(p=>{
-   if(p==="granted"){new Notification("Grok Bot • SM-A-X",{body:"تم تفعيل إشعارات محطات الـ 600 ر.س (1.25x, 1.5x, 2x, 10x) والسحب التلقائي! 🔔"})}
+   if(p==="granted"){new Notification("Grok Bot • SM-A-X",{body:"تم تفعيل إشعارات محطات الـ 600 ر.س والسحب التلقائي! 🔔"})}
   });
  }
- alert("🔔 إشعارات المهم مفعّلة!
-سيصلك تنبيه عند:
-1. كسر محطات الربح الجديدة نحو 600 ر.س (75، 90، 120، 300، 480، 600 ر.س)
-2. صيد صفقة كبرى (2 إلى 4 ريال)
-3. تنفيذ سحب تلقائي من الخزنة.
-(للإشعارات والجوال مقفل: اشترك بقناة smax_trader_vip_999 في تطبيق ntfy)");
+ alert("🔔 إشعارات المهم مفعّلة! سيصلك تنبيه عند كسر محطات 600 ر.س (75 و90 و120 و300 و480 و600) أو صيد صفقة كبرى (2-4 ريال) أو السحب التلقائي.");
 }
 
 function drawChart(curve,wallet){
@@ -239,7 +242,7 @@ function cards(ts,empty){
  return ts.map(t=>{const c=t.symbol.endsWith('.SR')?' ر.س':'$',p=t.pnl_sar||0,pk=P[t.pocket]||'السريع';
  return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ${esc(t.theory||'Aroon')}</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
  <div class="m"><div><span>الدخول (${t.invested_sar} ر.س)</span><strong>${t.entry_price}${c}</strong></div><div><span>الخروج</span><strong>${t.exit_price?t.exit_price+c:'مباشر'}</strong></div><div><span>الصافي</span><strong style="color:${col(p)}">${sg(p)} ر.س</strong></div></div>
- <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'يرصد الهدف ويتتبع القمة...')}</div></div>`}).join('')}
+ <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'يرصد الهدف وقفل التعادل...')}</div></div>`}).join('')}
 
 function render(){
  if(!D)return; const L=D.live,s=L.stats,c=D.cfg;
@@ -263,7 +266,6 @@ function render(){
  $('mood-bdg').innerText=c.market_mood||'مستقر 🟢';
  $('k-pro').innerText=`بمحفظة ×10: ${sg(s.scaled_pnl||0)} ر.س`;
 
- // حالة أزرار السحب التلقائي
  const awEnabled=localStorage.getItem('aw_en')!==null ? localStorage.getItem('aw_en')==='1' : (L.auto_withdraw_enabled!==false);
  const awLimit=parseFloat(localStorage.getItem('aw_lim') || L.auto_withdraw_limit || 10);
  if(awEnabled && availVault>=awLimit && awLimit>0){
@@ -321,11 +323,11 @@ function render(){
  const fv=D.favorites||{royal:[]};
  $('fav-tiers').innerHTML=`<div class="sys"><span>👑 النخبة الملكية</span><span style="color:var(--grn)">${fv.royal.map(x=>x.symbol).join(' • ')||'تتحدث تلقائياً'}</span></div>`;
  $('sysrows').innerHTML=`<div class="sys"><span>🕒 آخر فحص سحابي</span><span>${D.last_scan||'—'}</span></div>`;
- $('sub').innerText='آخر فحص: '+(D.last_scan||'—')+' • 32 أصلاً نشطاً';
+ $('sub').innerText='آخر فحص: '+(D.last_scan||'—')+' • 32 أصلاً + نخبة GitHub';
 }
 
 async function withdrawNow(isAuto=false, autoAmt=0){
- const L=D.live||{};
+ const L=(D&&D.live)||{};
  const localW=parseFloat(localStorage.getItem('local_withdrawn')||'0');
  const srvW=L.withdrawn_total||0;
  const avail=isAuto ? autoAmt : Math.max(0,(L.personal_vault||0)-Math.max(0,localW-srvW));
@@ -333,9 +335,6 @@ async function withdrawNow(isAuto=false, autoAmt=0){
  if(!isAuto && !confirm(`هل تريد سحب ${avail.toFixed(2)} ر.س من الخزنة إلى جيبك الخاص الآن؟`))return;
  localStorage.setItem('local_withdrawn', String(Math.max(srvW,localW)+avail));
  try{await fetch('/api/withdraw?amount='+avail)}catch(e){}
- if("Notification" in window && Notification.permission==="granted"){
-  new Notification(isAuto?"⚡ سحب تلقائي ناجح!":"💸 سحب يدوي ناجح!",{body:`تم تحويل ${avail.toFixed(2)} ر.س من الخزنة إلى رصيدك المسحوب!`});
- }
  render();
 }
 
@@ -357,6 +356,14 @@ async function setRisk(m){
  try{await fetch('/api/risk?mode='+m)}catch(e){}
  render();
 }
-async function load(){try{D=await (await fetch('./data.json?t='+Date.now())).json();render()}catch(e){}}
+
+async function load(){
+ try{
+  let r=await fetch('./data.json?t='+Date.now());
+  if(!r.ok) r=await fetch('./data.json?t='+Date.now());
+  D=await r.json();
+  render();
+ }catch(e){}
+}
 load();setInterval(load,20000);
 </script></body></html>
