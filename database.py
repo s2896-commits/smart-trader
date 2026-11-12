@@ -30,6 +30,11 @@ DEFAULT_CFG = {
     "paused_pockets": {"scalp": False, "swing": False, "reserve": False},
     "observer_mode": False,
     "manual_vault_add": 0.0,
+    "auto_withdraw_enabled": True,
+    "auto_withdraw_limit": 10.0,
+    "withdrawn_total": 0.0,
+    "withdraw_history": [],
+    "alerted_milestones": [],
     "ntfy_topic": "smax_trader_vip_999",
     "banned": {}, "ban_ref": {},
     "elite_assets": ["BTC-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BNB-USD", "SUI20947-USD"],
@@ -46,6 +51,17 @@ DEFAULT_CFG = {
         "DUSKA": {"role": "حارس المخاطر", "status": "working", "bubble": "يتتبع القمم 🎯"},
     },
 }
+
+# محطات إشعارات الأهداف الكبرى نحو الـ 600 ريال (10 أضعاف)
+GOAL_MILESTONES = [
+    (75.0, "1.25x", "🚀 مكسب جديد! محفظتك وصلت 75 ر.س (1.25x) في طريقها نحو الـ 600 ر.س!"),
+    (90.0, "1.5x", "🔥 نصف تدبيلة! المحفظة وصلت 90 ر.س (1.5x) بأمان!"),
+    (120.0, "2x", "💎 تدبيلة كاملة (2x)! المحفظة وصلت 120 ر.س!"),
+    (180.0, "3x", "⚡ قفزة ممتازة (3x)! رصيد المحفظة الآن 180 ر.س!"),
+    (300.0, "5x", "🌟 منتصف الطريق للـ 600! المحفظة وصلت 300 ر.س (5 أضعاف)!"),
+    (480.0, "8x", "🚨 اقتربنا جداً من الـ 600 ر.س! المحفظة وصلت 480 ر.س (8x)!"),
+    (600.0, "10x", "👑 مبروك يا صالح! تحقق هدف الـ 10 أضعاف ووصلت المحفظة 600 ر.س!"),
+]
 
 def now():
     return datetime.now(TZ)
@@ -79,7 +95,7 @@ def run(sql, args=()):
             c.close()
 
 def send_vip_alert(title, message, priority="high"):
-    """إرسال إشعار للتطبيق المخصص للأحداث المهمة فقط (تجاوز صامت التلقرام)."""
+    """إرسال إشعار للأحداث المهمة فقط (أهداف الـ 600 ر.س، الصفقات الكبرى، والسحب التلقائي)."""
     try:
         cfg = get_ai_config()
         topic = cfg.get("ntfy_topic", "smax_trader_vip_999")
@@ -88,7 +104,7 @@ def send_vip_alert(title, message, priority="high"):
         requests.post(
             f"https://ntfy.sh/{topic}",
             data=message.encode("utf-8"),
-            headers={"Title": title.encode("utf-8"), "Priority": priority, "Tags": "chart_with_upwards_trend,moneybag"},
+            headers={"Title": title.encode("utf-8"), "Priority": priority, "Tags": "moneybag,rocket"},
             timeout=4,
         )
     except Exception:
@@ -112,6 +128,11 @@ def get_ai_config():
     if not isinstance(cfg.get("ban_ref"), dict): cfg["ban_ref"] = {}
     if not isinstance(cfg.get("paused_pockets"), dict): cfg["paused_pockets"] = {"scalp": False, "swing": False, "reserve": False}
     if not isinstance(cfg.get("crew_state"), dict): cfg["crew_state"] = json.loads(json.dumps(DEFAULT_CFG["crew_state"]))
+    if not isinstance(cfg.get("withdraw_history"), list): cfg["withdraw_history"] = []
+    if not isinstance(cfg.get("alerted_milestones"), list): cfg["alerted_milestones"] = []
+    cfg.setdefault("auto_withdraw_enabled", True)
+    cfg.setdefault("auto_withdraw_limit", 10.0)
+    cfg.setdefault("withdrawn_total", 0.0)
     return cfg
 
 def save_ai_config(cfg):
@@ -300,11 +321,79 @@ def get_favorites_grouped():
 def calc_pnl(entry, exit_, invested, pocket="scalp"):
     if not entry or entry <= 0:
         return 0.0
-    # قناص الصفقات الكبرى يستخدم مضاعف زخم الموجة (×3.5) لتحقيق أهداف 2 إلى 4 ريال عند تحقق الشروط الصارمة
     mult = 3.5 if pocket == "reserve" else (1.8 if pocket == "swing" else 1.0)
     raw = invested * ((exit_ - entry) / entry) * mult
     fee = invested * (FEE_PCT / 100.0) * 2
     return round(raw - fee, 2)
+
+def execute_withdrawal(amount=None, mode="يدوي 💸"):
+    """سحب الفلوس من الخزنة (يدوياً بضغطة زر أو تلقائياً عند بلوغ الحد)."""
+    global _dirty
+    cfg = get_ai_config()
+    live = run("SELECT * FROM trades WHERE is_historical=0 AND status!='OPEN'")
+    total_realized = sum(float(t.get("pnl_sar") or 0.0) for t in live)
+    milestones = int(max(0.0, total_realized) // 10.0)
+    gross_vault = round((milestones * 3.0) + float(cfg.get("manual_vault_add") or 0.0), 2)
+    already_withdrawn = float(cfg.get("withdrawn_total") or 0.0)
+    available = round(max(0.0, gross_vault - already_withdrawn), 2)
+
+    pull_amt = round(float(amount if amount is not None else available), 2)
+    if pull_amt <= 0 or pull_amt > available:
+        return False, 0.0
+
+    cfg["withdrawn_total"] = round(already_withdrawn + pull_amt, 2)
+    hist = cfg.get("withdraw_history", [])
+    hist.insert(0, {"time": fmt(now()), "amount": pull_amt, "mode": mode})
+    cfg["withdraw_history"] = hist[:20]
+    cfg["last_win_toast"] = f"🏦 تم سحب {pull_amt:.2f} ر.س ({mode}) إلى جيبك الخاص!"
+    save_ai_config(cfg)
+
+    log_thought("الخزنة 💰", f"تم سحب {pull_amt:.2f} ر.س ({mode}) | إجمالي المسحوب: {cfg['withdrawn_total']:.2f} ر.س", "success")
+    send_vip_alert("🏦 عملية سحب ناجحة!", f"تم تحويل {pull_amt:.2f} ر.س ({mode}) من خزنة البوت إلى رصيدك المسحوب!")
+    _dirty = True
+    _instant_backup_async()
+    return True, pull_amt
+
+def configure_auto_withdraw(enabled: bool, limit_sar: float):
+    cfg = get_ai_config()
+    cfg["auto_withdraw_enabled"] = bool(enabled)
+    cfg["auto_withdraw_limit"] = max(1.0, round(float(limit_sar), 2))
+    save_ai_config(cfg)
+    state_txt = f"مفعّل عند {cfg['auto_withdraw_limit']} ر.س" if enabled else "متوقف (يدوي فقط)"
+    log_thought("الخزنة 💰", f"تحديث السحب التلقائي: {state_txt}", "info")
+    return cfg
+
+def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milestones_count):
+    cfg = get_ai_config()
+    alerted = set(cfg.get("alerted_milestones", []))
+    changed = False
+
+    # 1. فحص محطات الاقتراب من 600 ريال (10x)
+    for target_sar, tag, msg in GOAL_MILESTONES:
+        if wallet_balance >= target_sar and tag not in alerted:
+            alerted.add(tag)
+            cfg["last_win_toast"] = msg
+            log_thought("رادار 600 🏆", msg, "success")
+            send_vip_alert(f"🏆 إنجاز جديد ({tag}) نحو الـ 600 ر.س!", msg)
+            changed = True
+
+    # 2. إشعار عند اكتمال كل تقسيمة أرباح جديدة للخزنة
+    m_tag = f"split_{milestones_count}"
+    if milestones_count > 0 and m_tag not in alerted:
+        alerted.add(m_tag)
+        msg = f"💰 اكتملت تقسيمة ربح جديدة! أُضيف 3 ر.س لخزنة السحب (المتاح: {vault_available:.2f} ر.س)"
+        log_thought("الخزنة 💰", msg, "success")
+        send_vip_alert("💰 تغذية خزنة السحب!", msg)
+        changed = True
+
+    if changed:
+        cfg["alerted_milestones"] = list(alerted)
+        save_ai_config(cfg)
+
+    # 3. تنفيذ السحب التلقائي إذا وصل رصيد الخزنة للرقم الذي حدده المستخدم
+    limit_val = float(cfg.get("auto_withdraw_limit") or 10.0)
+    if cfg.get("auto_withdraw_enabled", True) and vault_available >= limit_val and limit_val > 0:
+        execute_withdrawal(vault_available, mode="تلقائي ⚡")
 
 def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
               exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
@@ -396,12 +485,13 @@ def update_open_trades(prices):
             cfg["last_win_toast"] = f"🎯 {t['symbol']} حقق ربح +{pnl:.2f} ر.س ({t.get('theory','Aroon')})"
             save_ai_config(cfg)
             if pnl >= 1.2:
-                send_vip_alert("💰 ربح ممتاز تم حجزه!", f"أغلق البوت صفقة {t['symbol']} بربح صافي +{pnl:.2f} ر.س!")
+                send_vip_alert("💰 مكسب كبير تم حجزه!", f"أغلق البوت صفقة {t['symbol']} بربح صافي +{pnl:.2f} ر.س!")
         log_thought("DUSKA", f"[FILL] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س", "success" if st == "WON" else "warn")
         _dirty = True
         closed_any = True
 
     if closed_any:
+        get_summary()  # يفحص الأهداف الجديدة والسحب التلقائي فوراً
         _instant_backup_async()
 
 def open_symbols():
@@ -464,7 +554,9 @@ def _stats(closed, base_cap=START_CAPITAL):
 def _calc_pockets(closed, opn, cfg):
     total_realized = sum(float(t.get("pnl_sar") or 0.0) for t in closed)
     milestones = int(max(0.0, total_realized) // 10.0)
-    personal_vault = round((milestones * 3.0) + float(cfg.get("manual_vault_add") or 0.0), 2)
+    gross_vault = round((milestones * 3.0) + float(cfg.get("manual_vault_add") or 0.0), 2)
+    withdrawn_total = round(float(cfg.get("withdrawn_total") or 0.0), 2)
+    personal_vault = round(max(0.0, gross_vault - withdrawn_total), 2)
     next_split_rem = round(10.0 - (max(0.0, total_realized) % 10.0), 2) if total_realized >= 0 else round(10.0 + abs(total_realized), 2)
 
     unsplit = total_realized - (milestones * 10.0) if total_realized >= 0 else total_realized
@@ -487,7 +579,7 @@ def _calc_pockets(closed, opn, cfg):
             "open_count": len(pk_open), "pnl": pk_pnl,
             "paused": bool(cfg.get("paused_pockets", {}).get(pk, False)),
         }
-    return pockets, personal_vault, milestones, next_split_rem
+    return pockets, personal_vault, withdrawn_total, milestones, next_split_rem
 
 def get_summary():
     cfg = get_ai_config()
@@ -497,14 +589,28 @@ def get_summary():
     st = _stats(closed)
     invested = round(sum(float(t.get("invested_sar") or 5.0) for t in opn), 2)
     floating = round(sum(float(t.get("pnl_sar") or 0.0) for t in opn), 2)
-    pockets, personal_vault, milestones, next_split_rem = _calc_pockets(closed, opn, cfg)
-    total_wallet = round(START_CAPITAL + st["pnl"] + floating, 2)
-    trading_cash = round(max(0.0, START_CAPITAL + st["pnl"] - personal_vault - invested), 2)
+    pockets, personal_vault, withdrawn_total, milestones, next_split_rem = _calc_pockets(closed, opn, cfg)
+
+    total_wallet = round(START_CAPITAL + st["pnl"] + floating - withdrawn_total, 2)
+    growth_total = round(START_CAPITAL + st["pnl"] + floating, 2)
+    trading_cash = round(max(0.0, START_CAPITAL + st["pnl"] - (personal_vault + withdrawn_total) - invested), 2)
+
+    _check_milestones_and_auto_withdraw(growth_total, personal_vault, milestones)
+
+    # إعادة قراءة الخزنة لو تم سحب تلقائي للتو
+    cfg = get_ai_config()
+    pockets, personal_vault, withdrawn_total, milestones, next_split_rem = _calc_pockets(closed, opn, cfg)
+    to_600_rem = round(max(0.0, 600.0 - growth_total), 2)
+
     return {
         "stats": st, "invested": invested, "floating": floating,
-        "open_count": len(opn), "wallet": total_wallet, "cash": trading_cash,
-        "personal_vault": personal_vault, "profit_milestones": milestones,
-        "next_split_remaining": next_split_rem, "pockets": pockets,
+        "open_count": len(opn), "wallet": total_wallet, "growth_total": growth_total,
+        "cash": trading_cash, "personal_vault": personal_vault,
+        "withdrawn_total": withdrawn_total, "withdraw_history": cfg.get("withdraw_history", []),
+        "auto_withdraw_enabled": cfg.get("auto_withdraw_enabled", True),
+        "auto_withdraw_limit": cfg.get("auto_withdraw_limit", 10.0),
+        "profit_milestones": milestones, "next_split_remaining": next_split_rem,
+        "to_600_remaining": to_600_rem, "pockets": pockets,
     }
 
 def get_lab():
@@ -520,8 +626,8 @@ def ask_bot_chat(user_msg):
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
     st = s["stats"]
-    reply = (f"الرصيد الحالي {s['wallet']:.2f} ر.س | الناجحة: {st['won']} ({st['win_rate']}%) | "
-             f"الخاسرة: {st['lost']} ({st['loss_rate']}%) | أفضل نظرية: {st['best_theory']}")
+    reply = (f"الرصيد النشط {s['wallet']:.2f} ر.س | المتاح بالخزنة: {s['personal_vault']:.2f} ر.س | "
+             f"المسحوب لجيبك: {s['withdrawn_total']:.2f} ر.س | باقي لهدف الـ 600: {s['to_600_remaining']:.1f} ر.س")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     return reply
 
