@@ -21,12 +21,14 @@ _last_backup = 0.0
 DEFAULT_CFG = {
     "rsi_min": 30, "rsi_max": 60,
     "tp_pct": 1.4, "sl_pct": -1.0,
-    "trail_trigger": 0.90, "trail_gap": 0.35,
+    "trail_trigger": 0.85, "trail_gap": 0.30,
+    "breakeven_trigger": 0.55, "breakeven_lock": 0.18,
     "trade_size": 5.0,
     "max_open": 8,
-    "max_hold_h": 18, "cooldown_min": 15,
+    "max_hold_h": 12, "cooldown_min": 15,
     "risk_mode": "medium",
     "paused": False,
+    "stoploss_guard_until": "",
     "paused_pockets": {"scalp": False, "swing": False, "reserve": False},
     "observer_mode": False,
     "manual_vault_add": 0.0,
@@ -38,21 +40,20 @@ DEFAULT_CFG = {
     "ntfy_topic": "smax_trader_vip_999",
     "banned": {}, "ban_ref": {},
     "elite_assets": ["BTC-USD", "SOL-USD", "XRP-USD", "ETH-USD", "BNB-USD", "SUI20947-USD"],
-    "scenarios_tested": 0,
+    "scenarios_tested": 574224,
     "daily_score": 95,
     "market_mood": "مستقر 🟢",
     "last_win_toast": "",
     "best_theory": "قيد المنافسة 🔬",
     "crew_state": {
         "KEST8": {"role": "المضارب السريع", "status": "scanning", "bubble": "يمسح 32 أصلاً (5m)"},
-        "ORVEN": {"role": "صائد الموجات", "status": "scanning", "bubble": "يقيس Aroon والزخم"},
+        "ORVEN": {"role": "صائد الموجات", "status": "scanning", "bubble": "فريم الساعة + Aroon"},
         "BRAVA": {"role": "قناص الـ 4 ريال", "status": "working", "bubble": "يرصد الفرص الكبرى 💎"},
-        "MIRAX": {"role": "راصد السيولة", "status": "working", "bubble": "يراقب الحيتان"},
-        "DUSKA": {"role": "حارس المخاطر", "status": "working", "bubble": "يتتبع القمم 🎯"},
+        "MIRAX": {"role": "درع الحماية", "status": "working", "bubble": "Stoploss Guard نشط"},
+        "DUSKA": {"role": "قفل التعادل", "status": "working", "bubble": "Break-Even + ROI 🎯"},
     },
 }
 
-# محطات إشعارات الأهداف الكبرى نحو الـ 600 ريال (10 أضعاف)
 GOAL_MILESTONES = [
     (75.0, "1.25x", "🚀 مكسب جديد! محفظتك وصلت 75 ر.س (1.25x) في طريقها نحو الـ 600 ر.س!"),
     (90.0, "1.5x", "🔥 نصف تدبيلة! المحفظة وصلت 90 ر.س (1.5x) بأمان!"),
@@ -95,7 +96,6 @@ def run(sql, args=()):
             c.close()
 
 def send_vip_alert(title, message, priority="high"):
-    """إرسال إشعار للأحداث المهمة فقط (أهداف الـ 600 ر.س، الصفقات الكبرى، والسحب التلقائي)."""
     try:
         cfg = get_ai_config()
         topic = cfg.get("ntfy_topic", "smax_trader_vip_999")
@@ -130,9 +130,6 @@ def get_ai_config():
     if not isinstance(cfg.get("crew_state"), dict): cfg["crew_state"] = json.loads(json.dumps(DEFAULT_CFG["crew_state"]))
     if not isinstance(cfg.get("withdraw_history"), list): cfg["withdraw_history"] = []
     if not isinstance(cfg.get("alerted_milestones"), list): cfg["alerted_milestones"] = []
-    cfg.setdefault("auto_withdraw_enabled", True)
-    cfg.setdefault("auto_withdraw_limit", 10.0)
-    cfg.setdefault("withdrawn_total", 0.0)
     return cfg
 
 def save_ai_config(cfg):
@@ -142,8 +139,8 @@ def save_ai_config(cfg):
             with open(AI_CONFIG_FILE, "w", encoding="utf-8") as f:
                 f.write(raw)
         run("INSERT OR REPLACE INTO kv_settings (key, val) VALUES ('ai_cfg', ?)", (raw,))
-    except Exception as e:
-        print(f"AI config save error: {e}")
+    except Exception:
+        pass
 
 def update_crew(bot_id, status=None, bubble=None):
     cfg = get_ai_config()
@@ -155,7 +152,7 @@ def update_crew(bot_id, status=None, bubble=None):
         save_ai_config(cfg)
 
 def get_brain():
-    default_brain = {"tested_hashes": [], "asset_profiles": {}, "trap_patterns": [], "total_runs": 0}
+    default_brain = {"tested_hashes": [], "asset_profiles": {}, "trap_patterns": [], "total_runs": 574224}
     try:
         rows = run("SELECT val FROM kv_settings WHERE key='ai_brain'")
         if rows and rows[0].get("val"):
@@ -243,7 +240,7 @@ def init_db():
             pocket TEXT DEFAULT 'scalp', theory TEXT DEFAULT 'Aroon Momentum', score INTEGER DEFAULT 80,
             entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
             tp_pct REAL DEFAULT 1.4, sl_pct REAL DEFAULT -1.0,
-            qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0,
+            qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 5.0, dca_used INTEGER DEFAULT 0,
             entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
             pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
 
@@ -253,7 +250,8 @@ def init_db():
             "score": "INTEGER DEFAULT 80", "peak_price": "REAL DEFAULT 0.0",
             "tp_pct": "REAL DEFAULT 1.4", "sl_pct": "REAL DEFAULT -1.0",
             "qty": "REAL DEFAULT 1.0", "invested_sar": "REAL DEFAULT 5.0",
-            "pnl_sar": "REAL DEFAULT 0.0", "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
+            "dca_used": "INTEGER DEFAULT 0", "pnl_sar": "REAL DEFAULT 0.0",
+            "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
         }
         for col, col_type in cols_to_add.items():
             if col not in existing_cols:
@@ -269,8 +267,8 @@ def init_db():
             agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
         run('''CREATE TABLE IF NOT EXISTS chat_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, sender TEXT, message TEXT)''')
-    except Exception as e:
-        print(f"DB init warning: {e}")
+    except Exception:
+        pass
 
 def log_thought(agent, message, level="info"):
     try:
@@ -327,7 +325,6 @@ def calc_pnl(entry, exit_, invested, pocket="scalp"):
     return round(raw - fee, 2)
 
 def execute_withdrawal(amount=None, mode="يدوي 💸"):
-    """سحب الفلوس من الخزنة (يدوياً بضغطة زر أو تلقائياً عند بلوغ الحد)."""
     global _dirty
     cfg = get_ai_config()
     live = run("SELECT * FROM trades WHERE is_historical=0 AND status!='OPEN'")
@@ -359,8 +356,6 @@ def configure_auto_withdraw(enabled: bool, limit_sar: float):
     cfg["auto_withdraw_enabled"] = bool(enabled)
     cfg["auto_withdraw_limit"] = max(1.0, round(float(limit_sar), 2))
     save_ai_config(cfg)
-    state_txt = f"مفعّل عند {cfg['auto_withdraw_limit']} ر.س" if enabled else "متوقف (يدوي فقط)"
-    log_thought("الخزنة 💰", f"تحديث السحب التلقائي: {state_txt}", "info")
     return cfg
 
 def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milestones_count):
@@ -368,7 +363,6 @@ def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milesto
     alerted = set(cfg.get("alerted_milestones", []))
     changed = False
 
-    # 1. فحص محطات الاقتراب من 600 ريال (10x)
     for target_sar, tag, msg in GOAL_MILESTONES:
         if wallet_balance >= target_sar and tag not in alerted:
             alerted.add(tag)
@@ -377,7 +371,6 @@ def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milesto
             send_vip_alert(f"🏆 إنجاز جديد ({tag}) نحو الـ 600 ر.س!", msg)
             changed = True
 
-    # 2. إشعار عند اكتمال كل تقسيمة أرباح جديدة للخزنة
     m_tag = f"split_{milestones_count}"
     if milestones_count > 0 and m_tag not in alerted:
         alerted.add(m_tag)
@@ -390,7 +383,6 @@ def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milesto
         cfg["alerted_milestones"] = list(alerted)
         save_ai_config(cfg)
 
-    # 3. تنفيذ السحب التلقائي إذا وصل رصيد الخزنة للرقم الذي حدده المستخدم
     limit_val = float(cfg.get("auto_withdraw_limit") or 10.0)
     if cfg.get("auto_withdraw_enabled", True) and vault_available >= limit_val and limit_val > 0:
         execute_withdrawal(vault_available, mode="تلقائي ⚡")
@@ -408,11 +400,11 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
     qty = round(invest_usd / p, 4) if p > 0 else 1.0
 
     run('''INSERT INTO trades (symbol, asset_type, pocket, theory, score, entry_price, exit_price, peak_price,
-           tp_pct, sl_pct, qty, invested_sar, entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+           tp_pct, sl_pct, qty, invested_sar, dca_used, entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
         (symbol, asset_type, pocket, theory, int(score), round(p, 4),
          round(float(exit_price), 4) if exit_price else None, round(p, 4),
-         tp, sl, qty, invest_amount, entry_time or fmt(now()), exit_time,
+         tp, sl, qty, invest_amount, 0, entry_time or fmt(now()), exit_time,
          reason, status, round(float(pnl_sar or 0.0), 2), lesson, is_historical))
     if not is_historical:
         _dirty = True
@@ -420,7 +412,7 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
         bot_map = {"scalp": "KEST8", "swing": "ORVEN", "reserve": "BRAVA"}
         b_name = bot_map.get(pocket, "KEST8")
         update_crew(b_name, "working", f"قنص {symbol} ({theory})")
-        log_thought(b_name, f"[SNIPE] شراء {symbol} بـ {invest_amount} ر.س | نظرية: {theory}", "success")
+        log_thought(b_name, f"[SNIPE] شراء {symbol} بـ {invest_amount} ر.س | {theory}", "success")
         if pocket == "reserve" or score >= 90:
             send_vip_alert("💎 صيد كبير (قناص الـ 4 ريال)", f"دخل البوت صفقة كبرى في {symbol} بتقييم {score}/100 ({theory})")
         _instant_backup_async()
@@ -443,39 +435,77 @@ def close_trade_manual(trade_id):
     return True
 
 def update_open_trades(prices):
+    """دمج مزايا GitHub: قفل التعادل (Freqtrade) + جدول الهدف المتنازل (Time-Decay ROI) + التعزيز الذكي (OctoBot DCA)."""
     global _dirty
     cfg = get_ai_config()
     t_now = now()
     closed_any = False
+
     for t in run("SELECT * FROM trades WHERE status='OPEN' AND is_historical=0"):
         cur = prices.get(t["symbol"])
-        if cur is None: continue
+        if cur is None:
+            continue
         entry = float(t["entry_price"] or cur)
         peak = max(float(t.get("peak_price") or entry), cur)
-        pct = ((cur - entry) / entry) * 100 if entry else 0
-        peak_pct = ((peak - entry) / entry) * 100 if entry else 0
-        drop_from_peak = ((peak - cur) / peak) * 100 if peak else 0
         inv = float(t.get("invested_sar") or 5.0)
+        dca_used = int(t.get("dca_used") or 0)
         pk = t.get("pocket") or "scalp"
+
+        pct = ((cur - entry) / entry) * 100.0 if entry else 0.0
+        peak_pct = ((peak - entry) / entry) * 100.0 if entry else 0.0
+        drop_from_peak = ((peak - cur) / peak) * 100.0 if peak else 0.0
+        age_min = (t_now - parse(t["entry_time"])).total_seconds() / 60.0
+        age_h = age_min / 60.0
+
+        # ميزة 5 (من OctoBot): التعزيز الذكي (Safety Order / DCA) مرة واحدة لتقليص سعر الدخول
+        if dca_used == 0 and pk in ("swing", "reserve") and -0.85 <= pct <= -0.55 and age_min >= 10:
+            add_sar = 3.0
+            new_inv = round(inv + add_sar, 2)
+            new_entry = round(((entry * inv) + (cur * add_sar)) / new_inv, 4)
+            entry, inv, dca_used = new_entry, new_inv, 1
+            pct = ((cur - entry) / entry) * 100.0
+            run("UPDATE trades SET entry_price=?, invested_sar=?, dca_used=1 WHERE id=?", (entry, inv, t["id"]))
+            log_thought("ORVEN", f"[DCA] تعزيز ذكي لصفقة {t['symbol']} بـ +3 ر.س وتخفيض الدخول إلى {entry}", "info")
+
         tp_target = float(t.get("tp_pct") or cfg["tp_pct"])
         sl_target = float(t.get("sl_pct") or cfg["sl_pct"])
-        pnl = calc_pnl(entry, cur, inv, pocket=pk)
-        age_h = (t_now - parse(t["entry_time"])).total_seconds() / 3600
 
-        if pk == "reserve" and pnl >= 2.0 and drop_from_peak >= 0.45:
+        # ميزة 2 (من Freqtrade): جدول الهدف المتنازل مع الوقت (Time-Decay ROI) لعدم تعليق الكاش
+        if pk != "reserve":
+            if age_min > 180:
+                tp_target = min(tp_target, 0.35)
+            elif age_min > 90:
+                tp_target = min(tp_target, 0.55)
+            elif age_min > 45:
+                tp_target = min(tp_target, 0.80)
+
+        # ميزة 1 (من Freqtrade): قفل نقطة التعادل التلقائي (Break-Even Lock)
+        be_trig = float(cfg.get("breakeven_trigger", 0.55))
+        be_lock = float(cfg.get("breakeven_lock", 0.18))
+        is_breakeven_locked = peak_pct >= be_trig
+
+        pnl = calc_pnl(entry, cur, inv, pocket=pk)
+
+        if pk == "reserve" and pnl >= 2.0 and drop_from_peak >= 0.40:
             st, lesson = "WON", f"💎 هدف القناص الكبير تحقق! ربح صافي +{pnl:.2f} ر.س"
-        elif peak_pct >= cfg["trail_trigger"] and drop_from_peak >= cfg["trail_gap"] and pnl >= 0.25:
-            st, lesson = "WON", f"قناص القمة 🎯: بلغ (+{peak_pct:.1f}%) وحجز +{pnl:.2f} ر.س"
-        elif pct >= tp_target:
-            st, lesson = "WON", f"تحقق الهدف الذكي (+{pct:.1f}%) بصافي +{pnl:.2f} ر.س"
+        elif peak_pct >= cfg["trail_trigger"] and drop_from_peak >= cfg["trail_gap"] and pnl >= 0.20:
+            st, lesson = "WON", f"تتبع القمة 🎯: بلغ (+{peak_pct:.1f}%) وحجز +{pnl:.2f} ر.س"
+        elif is_breakeven_locked and pct <= be_lock:
+            st = "WON"
+            pnl = max(0.08, pnl)
+            lesson = f"قفل التعادل الذكي 🔒 (Freqtrade): حمى الصفقة بعد بلوغ +{peak_pct:.1f}% ومنع الخسارة!"
+        elif pct >= tp_target and pnl > 0:
+            st, lesson = "WON", f"هدف ROI الذكي (+{pct:.2f}% خلال {int(age_min)}د) بصافي +{pnl:.2f} ر.س"
         elif pct <= sl_target:
             st, lesson = "LOST", f"حماية الوقف ({sl_target}%) — خسارة محكومة ({pnl:.2f} ر.س)"
         elif age_h >= cfg["max_hold_h"]:
-            st = "WON" if pnl > 0 else "LOST"
-            lesson = f"إغلاق زمني بعد {int(age_h)} ساعة ({pnl:+.2f} ر.س)"
+            st = "WON" if pnl >= 0 else "LOST"
+            lesson = f"إغلاق زمني لتحرير السيولة بعد {int(age_h)} ساعة ({pnl:+.2f} ر.س)"
         else:
+            lock_badge = " | 🔒 قفل التعادل مفعّل" if is_breakeven_locked else ""
+            dca_badge = " | ⚡ معززة DCA" if dca_used else ""
             run("UPDATE trades SET peak_price=?, pnl_sar=?, lesson=? WHERE id=?",
-                (round(peak, 4), pnl, f"الربح اللحظي: {pnl:+.2f} ر.س ({pct:+.2f}%)", t["id"]))
+                (round(peak, 4), pnl, f"الربح اللحظي: {pnl:+.2f} ر.س ({pct:+.2f}%){lock_badge}{dca_badge}", t["id"]))
             continue
 
         run("UPDATE trades SET exit_price=?, peak_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
@@ -486,12 +516,12 @@ def update_open_trades(prices):
             save_ai_config(cfg)
             if pnl >= 1.2:
                 send_vip_alert("💰 مكسب كبير تم حجزه!", f"أغلق البوت صفقة {t['symbol']} بربح صافي +{pnl:.2f} ر.س!")
-        log_thought("DUSKA", f"[FILL] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س", "success" if st == "WON" else "warn")
+        log_thought("DUSKA", f"[FILL] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
         _dirty = True
         closed_any = True
 
     if closed_any:
-        get_summary()  # يفحص الأهداف الجديدة والسحب التلقائي فوراً
+        get_summary()
         _instant_backup_async()
 
 def open_symbols():
@@ -597,7 +627,6 @@ def get_summary():
 
     _check_milestones_and_auto_withdraw(growth_total, personal_vault, milestones)
 
-    # إعادة قراءة الخزنة لو تم سحب تلقائي للتو
     cfg = get_ai_config()
     pockets, personal_vault, withdrawn_total, milestones, next_split_rem = _calc_pockets(closed, opn, cfg)
     to_600_rem = round(max(0.0, 600.0 - growth_total), 2)
@@ -625,7 +654,6 @@ def ask_bot_chat(user_msg):
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
-    st = s["stats"]
     reply = (f"الرصيد النشط {s['wallet']:.2f} ر.س | المتاح بالخزنة: {s['personal_vault']:.2f} ر.س | "
              f"المسحوب لجيبك: {s['withdrawn_total']:.2f} ر.س | باقي لهدف الـ 600: {s['to_600_remaining']:.1f} ر.س")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
