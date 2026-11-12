@@ -33,17 +33,17 @@
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
   "last_win_toast": "🎯 قناص SUI20947-USD حجز ربح +0.06 ر.س (+1.4%)",
-  "best_theory": "قيد المنافسة 🔬",
+  "best_theory": "Aroon Momentum (-0.09 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "المضارب السريع",
       "status": "scanning",
-      "bubble": "فحص 10 عملات (5m) ⚡"
+      "bubble": "يمسح 27 أصلاً (5m) ⚡"
     },
     "ORVEN": {
       "role": "صائد الموجات",
-      "status": "scanning",
-      "bubble": "قياس Aroon (15m) 🌊"
+      "status": "working",
+      "bubble": "قنص ARB11841-USD (قناص القيعان المرتدة"
     },
     "BRAVA": {
       "role": "قناص الاحتياط",
