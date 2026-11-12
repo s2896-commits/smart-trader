@@ -5,12 +5,15 @@
   "sl_pct": -1.0,
   "trail_trigger": 0.85,
   "trail_gap": 0.35,
+  "breakeven_trigger": 0.55,
+  "breakeven_lock": 0.18,
   "trade_size": 5.0,
   "max_open": 6,
   "max_hold_h": 18,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
+  "stoploss_guard_until": "",
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -43,7 +46,7 @@
     "KEST8": {
       "role": "المضارب السريع",
       "status": "working",
-      "bubble": "قنص AAVE-USD (قناص القيعان المرتدة 🎯)"
+      "bubble": "قنص ALGO-USD (خطف السيولة السريع ⚡)"
     },
     "ORVEN": {
       "role": "صائد الموجات",
