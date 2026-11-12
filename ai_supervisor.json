@@ -47,12 +47,12 @@
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
   "last_win_toast": "🎯 ARB11841-USD حقق ربح +0.06 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+0.29 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+0.35 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 كشافين بحث",
-      "status": "working",
-      "bubble": "قنص VET-USD (خطف السيولة السريع ⚡)"
+      "status": "scanning",
+      "bubble": "8 كشافين فحصوا 776 عملة ⚡"
     },
     "ORVEN": {
       "role": "6 محللي موجات",
@@ -72,7 +72,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "5 حراس يراقبون 2 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 3 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
