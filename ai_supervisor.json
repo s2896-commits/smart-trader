@@ -39,20 +39,20 @@
   ],
   "radar_discovered": [
     "SNDKB (+7%)",
-    "MUB (+5%)",
-    "GRAM (+3%)"
+    "GRAM (+5%)",
+    "MUB (+5%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 ARB11841-USD حقق ربح +0.06 ر.س (قناص القيعان المرتدة 🎯)",
+  "last_win_toast": "🎯 INJ-USD حقق ربح +0.05 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+0.35 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 كشافين بحث",
-      "status": "scanning",
-      "bubble": "8 كشافين فحصوا 776 عملة ⚡"
+      "status": "working",
+      "bubble": "قنص FET-USD (خطف السيولة السريع ⚡)"
     },
     "ORVEN": {
       "role": "6 محللي موجات",
@@ -62,7 +62,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "6 قناصين يرصدون الـ 4 ر.س 💎"
+      "bubble": "قنص GRAM-USD (انفجار الحيتان 3x 💎)"
     },
     "MIRAX": {
       "role": "5 حراس رادار",
@@ -72,7 +72,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "5 حراس يراقبون 3 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 2 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
