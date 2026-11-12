@@ -58,8 +58,8 @@
   "crew_state": {
     "KEST8": {
       "role": "8 قناصي قيعان",
-      "status": "working",
-      "bubble": "قنص BCH-USD (جدار الحيتان (Order Block"
+      "status": "scanning",
+      "bubble": "Trailing Buy يفحص 776 عملة 🎯"
     },
     "ORVEN": {
       "role": "6 راصدي حيتان",
@@ -79,7 +79,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 4 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 6 صفقات 🧠"
     }
   },
   "min_size": 5.0,
