@@ -37,34 +37,36 @@
     "ADA-USD",
     "SOL-USD"
   ],
+  "radar_discovered": [],
+  "radar_total_scanned": 412,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 قناص SUI20947-USD حجز ربح +0.06 ر.س (+1.4%)",
+  "last_win_toast": "🎯 AAVE-USD حقق ربح +0.04 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "Aroon Momentum (-0.09 ر.س)",
   "crew_state": {
     "KEST8": {
-      "role": "المضارب السريع",
+      "role": "8 كشافين بحث",
       "status": "scanning",
       "bubble": "يمسح 27 أصلاً (5m) ⚡"
     },
     "ORVEN": {
-      "role": "صائد الموجات",
+      "role": "6 محللي موجات",
       "status": "scanning",
       "bubble": "فلتر 1H + Aroon 🌊"
     },
     "BRAVA": {
-      "role": "قناص الاحتياط",
+      "role": "6 قناصي 4 ريال",
       "status": "cooling",
       "bubble": "ينتظر فرصة 90+"
     },
     "MIRAX": {
-      "role": "راصد الأخبار",
+      "role": "5 حراس رادار",
       "status": "working",
       "bubble": "يراقب السيولة"
     },
     "DUSKA": {
-      "role": "حارس المخاطر",
+      "role": "5 حراس صفقات",
       "status": "working",
       "bubble": "يتتبع القمم 🎯"
     }
