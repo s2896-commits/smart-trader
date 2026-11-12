@@ -38,8 +38,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "GRAM (+4%)",
-    "MUB (+2%)"
+    "GRAM (+6%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -50,13 +49,13 @@
   "crew_state": {
     "KEST8": {
       "role": "8 كشافين بحث",
-      "status": "scanning",
-      "bubble": "8 كشافين فحصوا 776 عملة ⚡"
+      "status": "working",
+      "bubble": "قنص INJ-USD (خطف السيولة السريع ⚡)"
     },
     "ORVEN": {
       "role": "6 محللي موجات",
       "status": "working",
-      "bubble": "قنص SOL-USD (انفجار الحيتان 3x 💎)"
+      "bubble": "قنص ICP-USD (زخم Aroon + فريم 1H 🌊)"
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
@@ -71,7 +70,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "5 حراس يراقبون 5 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 1 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
