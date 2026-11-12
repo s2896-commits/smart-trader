@@ -12,7 +12,7 @@
 --grn:#10b981;--red:#f43f5e;--amb:#f59e0b;--txt:#f8fafc;--mut:#94a3b8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--txt);margin:0;
-padding:calc(10px + env(safe-area-inset-top)) 12px calc(155px + env(safe-area-inset-bottom));overflow-x:hidden}
+padding:calc(10px + env(safe-area-inset-top)) 12px calc(160px + env(safe-area-inset-bottom));overflow-x:hidden}
 .shell{max-width:540px;margin:0 auto}
 .head{display:flex;justify-content:space-between;align-items:center;padding:4px 0 12px;gap:8px}
 .brand{display:flex;gap:9px;align-items:center}
@@ -29,7 +29,15 @@ button{font-family:inherit;cursor:pointer}
 .lbl{font-size:10px;color:var(--mut);display:block;margin-bottom:3px}
 .big{font-size:16.5px;font-weight:900;margin:0}
 
-/* بطاقة فرز الصفقات الناجحة والفاشلة والنسبة الكلية */
+/* مركز السحب اليدوي والتلقائي */
+.vault-box{background:linear-gradient(135deg,#04231b,#0a1324);border:1px solid rgba(16,185,129,.4);border-radius:15px;padding:11px;margin-bottom:10px}
+.vb-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.w-btn{background:var(--grn);color:#022c22;border:0;padding:7px 13px;border-radius:10px;font-size:11.5px;font-weight:900}
+.w-btn:disabled{opacity:.4}
+.vb-auto{display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:#cbd5e1;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
+.abtn{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--mut);padding:4px 9px;border-radius:8px;font-size:10.5px;font-weight:800}
+.abtn.on{background:rgba(16,185,129,.22);color:#34d399;border-color:rgba(16,185,129,.6)}
+
 .split-board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#070c18;border:1px solid var(--line);border-radius:14px;padding:9px;margin-bottom:10px;text-align:center}
 .sb-col{padding:4px;border-radius:10px}
 .sb-col.win{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25)}
@@ -93,14 +101,33 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 <div class="shell">
  <div class="head">
   <div class="brand"><div class="dot"></div><div><h1>Grok Bot Desk • SM-A-X</h1><span class="sub" id="sub">يمسح 32 عملة وسهماً...</span></div></div>
-  <button class="btn" onclick="enableAlerts()">🔔 تفعيل جرس المهم</button>
+  <button class="btn" onclick="enableAlerts()">🔔 جرس الأهداف والـ 600</button>
  </div>
 
  <div id="tab-live" class="tab act">
   <div class="top-metrics">
    <div class="mcard pri"><span class="lbl">رصيد المحفظة</span><h2 class="big" id="w">—</h2><small id="pnl" style="font-size:10px;font-weight:800">—</small></div>
-   <div class="mcard"><span class="lbl">أفضل نظرية حالياً</span><h2 class="big" id="best-th" style="font-size:12px;color:var(--pri)">—</h2><small id="k-n" style="font-size:9.5px;color:var(--grn)">—</small></div>
+   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">—</h2><small id="best-th" style="font-size:9px;color:var(--grn)">—</small></div>
    <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">—</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">—</small></div>
+  </div>
+
+  <!-- لوحة التحكم بالسحب اليدوي والتلقائي -->
+  <div class="vault-box">
+   <div class="vb-top">
+    <div>
+     <strong style="font-size:12px;color:#34d399;display:block">🏦 مركز السحب الشخصي (تم سحبه لجيبك: <span id="w-tot">0.00</span> ر.س)</strong>
+     <span style="font-size:10px;color:#a7f3d0">تغتذي الخزنة بـ 3 ر.س من كل 10 ر.س أرباح محققة</span>
+    </div>
+    <button class="w-btn" id="manual-w-btn" onclick="withdrawNow()">💸 سحب يدوي الآن</button>
+   </div>
+   <div class="vb-auto">
+    <span>🔄 سحب تلقائي كل ما جمع:</span>
+    <button class="abtn" id="aw-off" onclick="setAutoW(0,0)">إيقاف</button>
+    <button class="abtn" id="aw-5" onclick="setAutoW(1,5)">5 ر.س</button>
+    <button class="abtn" id="aw-10" onclick="setAutoW(1,10)">10 ر.س</button>
+    <button class="abtn" id="aw-25" onclick="setAutoW(1,25)">25 ر.س</button>
+    <button class="abtn" id="aw-custom" onclick="customAutoW()">✏️ رقم مخصص</button>
+   </div>
   </div>
 
   <!-- لوحة فرز الصفقات الناجحة والفاشلة والنسبة الكلية -->
@@ -111,7 +138,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   </div>
 
   <div class="chart-box">
-   <div class="box-hd"><span>📈 منحنى نمو المحفظة</span><span id="k-pro" style="color:#4ade80">—</span></div>
+   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">—</span></div>
    <svg id="pnl-svg" viewBox="0 0 260 95" style="width:100%;height:95px;overflow:visible"></svg>
   </div>
 
@@ -123,7 +150,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   <div class="crew-bar" id="crew-bar"></div>
 
   <div class="goal-bar">
-   <div style="display:flex;justify-content:space-between"><span>🔬 ميدان الـ 50 صفقة لتجربة النظريات (<b id="pg-t">0/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.00x</b></div>
+   <div style="display:flex;justify-content:space-between"><span>🏆 رحلة الـ 10 أضعاف (600 ر.س) | التجارب (<b id="pg-t">0/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.00x</b></div>
    <div class="g-track"><div class="g-fill" id="pg-b" style="width:5%"></div></div>
    <div class="g-marks"><span>60 ر.س</span><span>1.25x (75)</span><span>1.5x (90)</span><span>2x (120)</span><span>10x (600)</span></div>
   </div>
@@ -142,14 +169,14 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
  </div>
 
  <div id="tab-lab" class="tab">
-  <div class="sys"><span>🔬 إجمالي الشموع المفحوصة</span><span style="color:var(--grn)" id="sc-cnt">574,224</span></div>
+  <div class="sys"><span>🔬 إجمالي الشموع المفحوصة</span><span style="color:var(--grn)">574,224</span></div>
   <div id="theory-rank"></div>
-  <div id="lab-list"></div>
+  <div id="withdraw-log"></div>
  </div>
 
  <div id="tab-sys" class="tab">
   <div class="sys"><span>📲 تثبيت كتطبيق مستقل</span><span style="color:var(--pri)">من قائمة المتصفح ⋮ اختر "إضافة للشاشة الرئيسية"</span></div>
-  <div class="sys"><span>🔔 قناة إشعارات المهم فقط (ntfy)</span><span style="color:var(--grn)" id="ntfy-code">smax_trader_vip_999</span></div>
+  <div class="sys"><span>🔔 قناة إشعارات الأهداف والـ 600 (ntfy)</span><span style="color:var(--grn)">smax_trader_vip_999</span></div>
   <div id="fav-tiers"></div>
   <div id="sysrows"></div>
  </div>
@@ -157,7 +184,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 
 <nav>
  <button class="nv act" onclick="tab('live',this)">🤖<span>غرفة القيادة</span></button>
- <button class="nv" onclick="tab('lab',this)">🧪<span>سباق النظريات</span></button>
+ <button class="nv" onclick="tab('lab',this)">🧪<span>النظريات والسحب</span></button>
  <button class="nv" onclick="tab('sys',this)">📲<span>التطبيق والنظام</span></button>
 </nav>
 
@@ -178,11 +205,17 @@ const BOTS=[
 ];
 
 function enableAlerts(){
- if(!("Notification" in window)){alert("لتلقي إشعارات المهم فقط والربح الكبير حتى والجوال مقفل: حمّل تطبيق ntfy المجاني واشترك في القناة: smax_trader_vip_999");return;}
- Notification.requestPermission().then(p=>{
-  if(p==="granted"){new Notification("Grok Bot • SM-A-X",{body:"تم تفعيل جرس الأحداث المهمة والصفقات الكبرى (2-4 ريال) بنجاح! 🔔"})}
-  else{alert("يمكنك أيضاً استخدام تطبيق ntfy والاشتراك في القناة: smax_trader_vip_999")}
- });
+ if("Notification" in window){
+  Notification.requestPermission().then(p=>{
+   if(p==="granted"){new Notification("Grok Bot • SM-A-X",{body:"تم تفعيل إشعارات محطات الـ 600 ر.س (1.25x, 1.5x, 2x, 10x) والسحب التلقائي! 🔔"})}
+  });
+ }
+ alert("🔔 إشعارات المهم مفعّلة!
+سيصلك تنبيه عند:
+1. كسر محطات الربح الجديدة نحو 600 ر.س (75، 90، 120، 300، 480، 600 ر.س)
+2. صيد صفقة كبرى (2 إلى 4 ريال)
+3. تنفيذ سحب تلقائي من الخزنة.
+(للإشعارات والجوال مقفل: اشترك بقناة smax_trader_vip_999 في تطبيق ntfy)");
 }
 
 function drawChart(curve,wallet){
@@ -212,18 +245,37 @@ function render(){
  if(!D)return; const L=D.live,s=L.stats,c=D.cfg;
  if(c.last_win_toast && c.last_win_toast!==lastToast){
   lastToast=c.last_win_toast;
-  if("Notification" in window && Notification.permission==="granted"){new Notification("🎯 صيد رابح!",{body:c.last_win_toast})}
+  if("Notification" in window && Notification.permission==="granted"){new Notification("🏆 إشعار مهم • Grok Bot",{body:c.last_win_toast})}
  }
+ const localWithdrawn=parseFloat(localStorage.getItem('local_withdrawn')||'0');
+ const srvWithdrawn=L.withdrawn_total||0;
+ const totalWithdrawn=Math.max(srvWithdrawn, localWithdrawn);
+ const availVault=Math.max(0, (L.personal_vault||0) - Math.max(0, localWithdrawn - srvWithdrawn));
+
  $('w').innerText=L.wallet.toFixed(2)+' ر.س';
- const tot=L.wallet-D.start;$('pnl').innerText='الصافي: '+sg(tot)+' ر.س';$('pnl').style.color=tot>=0?'#4ade80':'#fda4af';
- $('vault').innerText=(L.personal_vault||0).toFixed(2)+' ر.س';
+ const tot=(L.growth_total||L.wallet)-D.start;$('pnl').innerText='الصافي الكلي: '+sg(tot)+' ر.س';$('pnl').style.color=tot>=0?'#4ade80':'#fda4af';
+ $('vault').innerText=availVault.toFixed(2)+' ر.س';
+ $('w-tot').innerText=totalWithdrawn.toFixed(2);
+ $('manual-w-btn').disabled=(availVault<=0);
  $('split-rem').innerText='باقي '+(L.next_split_remaining||10).toFixed(2)+' ر.س للتقسيمة';
- $('mood-bdg').innerText=c.market_mood||'مستقر 🟢';
+ $('rem-600').innerText=(L.to_600_remaining||540).toFixed(1)+' ر.س';
  $('best-th').innerText=s.best_theory||'قيد المنافسة 🔬';
- $('k-n').innerText=`إجمالي ${s.n} صفقة مغلقة`;
+ $('mood-bdg').innerText=c.market_mood||'مستقر 🟢';
  $('k-pro').innerText=`بمحفظة ×10: ${sg(s.scaled_pnl||0)} ر.س`;
 
- // تحديث لوحة فرز الصفقات الناجحة والفاشلة والنسبة الكلية
+ // حالة أزرار السحب التلقائي
+ const awEnabled=localStorage.getItem('aw_en')!==null ? localStorage.getItem('aw_en')==='1' : (L.auto_withdraw_enabled!==false);
+ const awLimit=parseFloat(localStorage.getItem('aw_lim') || L.auto_withdraw_limit || 10);
+ if(awEnabled && availVault>=awLimit && awLimit>0){
+  withdrawNow(true, availVault);
+  return;
+ }
+ $('aw-off').className='abtn'+(!awEnabled?' on':'');
+ [5,10,25].forEach(v=>$('aw-'+v).className='abtn'+(awEnabled&&awLimit===v?' on':''));
+ const isCustom=awEnabled && ![5,10,25].includes(awLimit);
+ $('aw-custom').className='abtn'+(isCustom?' on':'');
+ $('aw-custom').innerText=isCustom?`✏️ كل ${awLimit} ر.س`:'✏️ رقم مخصص';
+
  $('sb-w-cnt').innerText=`${s.won||0} (${s.win_rate||0}%)`;
  $('sb-w-sar').innerText=`+${(s.gross_win||0).toFixed(2)} ر.س`;
  $('sb-l-cnt').innerText=`${s.lost||0} (${s.loss_rate||0}%)`;
@@ -245,7 +297,7 @@ function render(){
   <b class="bname">${b.id}</b><span class="brole">${esc(st.role)}</span><small style="font-size:8.5px;color:${b.color};font-weight:800">${pkInfo}</small></div>`;
  }).join('');
 
- const mult=(L.wallet/60).toFixed(2);$('goal-pct').innerText=mult+'x';
+ const mult=((L.growth_total||L.wallet)/60).toFixed(2);$('goal-pct').innerText=mult+'x';
  const g=Math.min(s.n,50);$('pg-t').innerText=s.n+'/50';$('pg-b').style.width=Math.max(6,(g/50*100))+'%';
 
  $('pockets-grid').innerHTML=['scalp','swing','reserve'].map(k=>{
@@ -261,12 +313,43 @@ function render(){
  $('live-list').innerHTML=cards(L.trades.filter(t=>flt==='all'||t.status===flt),'لا توجد صفقات في هذا القسم حالياً.');
 
  const ths=s.theories||{};
- $('theory-rank').innerHTML=Object.keys(ths).length?Object.entries(ths).map(([k,v])=>`<div class="sys"><span>⚡ ${esc(k)}</span><span style="color:${col(v.pnl)}">فوز ${v.w} | خسارة ${v.l} | ${sg(v.pnl)} ر.س</span></div>`).join(''):'<div class="empty">سيظهر ترتيب النظريات الأربع هنا مع كل صفقة تغلق في ميدان الـ 50 صفقة.</div>';
+ $('theory-rank').innerHTML=Object.keys(ths).length?Object.entries(ths).map(([k,v])=>`<div class="sys"><span>⚡ ${esc(k)}</span><span style="color:${col(v.pnl)}">فوز ${v.w} | خسارة ${v.l} | ${sg(v.pnl)} ر.س</span></div>`).join(''):'<div class="empty">سيظهر ترتيب النظريات الأربع هنا مع كل صفقة تغلق.</div>';
 
- const fv=D.favorites||{royal:[],testing:[]};
+ const wHist=L.withdraw_history||[];
+ $('withdraw-log').innerHTML=wHist.length?wHist.map(w=>`<div class="sys"><span>🏦 سحب (${esc(w.mode)}) — ${esc(w.time)}</span><span style="color:var(--grn)">+${Number(w.amount).toFixed(2)} ر.س</span></div>`).join(''):'<div class="empty">سجل السحوبات اليدوية والتلقائية سيظهر هنا.</div>';
+
+ const fv=D.favorites||{royal:[]};
  $('fav-tiers').innerHTML=`<div class="sys"><span>👑 النخبة الملكية</span><span style="color:var(--grn)">${fv.royal.map(x=>x.symbol).join(' • ')||'تتحدث تلقائياً'}</span></div>`;
  $('sysrows').innerHTML=`<div class="sys"><span>🕒 آخر فحص سحابي</span><span>${D.last_scan||'—'}</span></div>`;
  $('sub').innerText='آخر فحص: '+(D.last_scan||'—')+' • 32 أصلاً نشطاً';
+}
+
+async function withdrawNow(isAuto=false, autoAmt=0){
+ const L=D.live||{};
+ const localW=parseFloat(localStorage.getItem('local_withdrawn')||'0');
+ const srvW=L.withdrawn_total||0;
+ const avail=isAuto ? autoAmt : Math.max(0,(L.personal_vault||0)-Math.max(0,localW-srvW));
+ if(avail<=0){alert('الخزنة حالياً 0.00 ر.س — انتظر اكتمال تقسيمة الأرباح القادمة!');return;}
+ if(!isAuto && !confirm(`هل تريد سحب ${avail.toFixed(2)} ر.س من الخزنة إلى جيبك الخاص الآن؟`))return;
+ localStorage.setItem('local_withdrawn', String(Math.max(srvW,localW)+avail));
+ try{await fetch('/api/withdraw?amount='+avail)}catch(e){}
+ if("Notification" in window && Notification.permission==="granted"){
+  new Notification(isAuto?"⚡ سحب تلقائي ناجح!":"💸 سحب يدوي ناجح!",{body:`تم تحويل ${avail.toFixed(2)} ر.س من الخزنة إلى رصيدك المسحوب!`});
+ }
+ render();
+}
+
+async function setAutoW(en,lim){
+ localStorage.setItem('aw_en',String(en));
+ if(lim>0)localStorage.setItem('aw_lim',String(lim));
+ try{await fetch(`/api/auto_withdraw?enabled=${en}&limit=${lim||10}`)}catch(e){}
+ render();
+}
+
+function customAutoW(){
+ const v=prompt('اكتب المبلغ بالريال ليقوم البوت بسحبه تلقائياً كلما تجمّع في الخزنة (مثلاً 15 أو 30):','15');
+ const num=parseFloat(v);
+ if(num && num>0){setAutoW(1,num)}
 }
 
 async function setRisk(m){
