@@ -38,15 +38,14 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "ERA (+15%)",
     "GRAM (+4%)",
-    "MUB (+3%)"
+    "MUB (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 INJ-USD حقق ربح +0.05 ر.س (قناص القيعان المرتدة 🎯)",
+  "last_win_toast": "🎯 GRAM-USD حقق ربح +1.06 ر.س (انفجار الحيتان 3x 💎)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+0.40 ر.س)",
   "crew_state": {
     "KEST8": {
@@ -57,7 +56,7 @@
     "ORVEN": {
       "role": "6 محللي موجات",
       "status": "working",
-      "bubble": "قنص LINK-USD (زخم Aroon + فريم 1H 🌊)"
+      "bubble": "قنص SOL-USD (انفجار الحيتان 3x 💎)"
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
@@ -72,7 +71,7 @@
     "DUSKA": {
       "role": "5 حراس صفقات",
       "status": "working",
-      "bubble": "5 حراس يراقبون 6 صفقات 🛡️"
+      "bubble": "5 حراس يراقبون 5 صفقات 🛡️"
     }
   },
   "min_size": 5.0,
