@@ -42,8 +42,8 @@
   "crew_state": {
     "KEST8": {
       "role": "المضارب السريع",
-      "status": "scanning",
-      "bubble": "يمسح 27 أصلاً (5m) ⚡"
+      "status": "working",
+      "bubble": "قنص AAVE-USD (قناص القيعان المرتدة 🎯)"
     },
     "ORVEN": {
       "role": "صائد الموجات",
