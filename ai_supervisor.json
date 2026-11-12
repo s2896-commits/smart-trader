@@ -54,22 +54,22 @@
   "daily_score": 87,
   "market_mood": "متوازن (28) 🟢",
   "last_win_toast": "🎯 ETH-USD حقق ربح +0.16 ر.س (انفجار الحيتان 3x 💎)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+0.31 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+0.47 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 قناصي قيعان",
       "status": "scanning",
-      "bubble": "قناص القيعان يفحص 776 عملة 🎯"
+      "bubble": "Trailing Buy يفحص 776 عملة 🎯"
     },
     "ORVEN": {
       "role": "6 راصدي حيتان",
-      "status": "working",
-      "bubble": "قنص FIL-USD (قناص القيعان المرتدة 🎯)"
+      "status": "scanning",
+      "bubble": "يرصد جدران الحيتان (LuxAlgo) 🐋"
     },
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص ETC-USD (انفجار الحيتان 3x 💎)"
+      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
@@ -79,7 +79,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "الفاحص v6.0 يراقب 1 صفقات 🛠️"
+      "bubble": "عقل Obsidian يراقب 3 صفقات 🧠"
     }
   },
   "min_size": 5.0,
