@@ -59,44 +59,44 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+13%)",
+    "NEAR (+7%)",
     "HYPE (+7%)",
-    "PEPE (+3%)",
-    "TAO (+5%)",
     "SUI (+4%)",
-    "SNDKB (+4%)"
+    "ADA (+3%)",
+    "LINK (+3%)",
+    "DOGE (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (20) 🟡",
   "last_win_toast": "🎯 NEAR-USD حقق ربح +0.78 ر.س (انفجار الحيتان 3x 💎)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+1.99 ر.س)",
+  "best_theory": "انفجار الحيتان 3x 💎 (+2.35 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
       "status": "scanning",
-      "bubble": "Trailing Buy يفحص 776 عملة 🎯"
+      "bubble": "قناص القيعان (جيب 30%) 🎯"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
       "status": "scanning",
-      "bubble": "يرصد جدران الحيتان (LuxAlgo) 🐋"
+      "bubble": "جدار الحيتان القاعي (30%) 🐋"
     },
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
+      "bubble": "انفجار الحيتان 3x (30%) 💎"
     },
     "MIRAX": {
       "role": "الاحتياط الذكي (10%)",
       "status": "working",
-      "bubble": "يراقب السيولة"
+      "bubble": "احتياط الطوارئ 10% (6.3 ر.س) 🛡️"
     },
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 0 صفقات 🧠"
+      "bubble": "تحجيم الضمان v8.0 (0 حية) 🧠"
     }
   },
   "min_size": 5.0,
