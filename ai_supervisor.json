@@ -20,9 +20,13 @@
     "خطف السيولة السريع ⚡",
     "زخم Aroon + فريم 1H 🌊",
     "قناص اختراق القمم 🚀",
-    "Aroon Momentum"
+    "Aroon Momentum",
+    "جدار الحيتان (Order Block) 🐋"
   ],
-  "coin_reputation": {},
+  "coin_reputation": {
+    "SOL-USD": -2,
+    "FET-USD": -2
+  },
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -36,7 +40,10 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {},
+  "banned": {
+    "SOL-USD": "2026-11-13 17:18",
+    "FET-USD": "2026-11-13 17:18"
+  },
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -47,17 +54,15 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+5%)",
-    "SOXLB (+9%)",
-    "SPCXB (+2%)",
-    "HYPE (+2%)"
+    "NVDAB (+3%)",
+    "SOXLB (+4%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (20) 🟡",
   "last_win_toast": "🎯 BCH-USD حقق ربح +0.16 ر.س (جدار الحيتان (Order Block) 🐋)",
-  "best_theory": "انفجار الحيتان 3x 💎 (+1.19 ر.س)",
+  "best_theory": "انفجار الحيتان 3x 💎 (+1.35 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 قناصي قيعان",
@@ -72,7 +77,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص FET-USD (جدار الحيتان (Order Block"
+      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
