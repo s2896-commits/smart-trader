@@ -77,7 +77,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص ALGO-USD (قناص القيعان المرتدة 🎯)"
+      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
@@ -87,7 +87,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 0 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 2 صفقات 🧠"
     }
   },
   "min_size": 5.0,
