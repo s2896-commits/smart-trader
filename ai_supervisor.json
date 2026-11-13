@@ -47,16 +47,17 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+4%)",
-    "SOXLB (+5%)",
-    "SPCXB (+2%)"
+    "NVDAB (+5%)",
+    "SOXLB (+9%)",
+    "SPCXB (+2%)",
+    "HYPE (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "متوازن (28) 🟢",
-  "last_win_toast": "🎯 ATOM-USD حقق ربح +0.24 ر.س (انفجار الحيتان 3x 💎)",
-  "best_theory": "انفجار الحيتان 3x 💎 (+0.73 ر.س)",
+  "market_mood": "خوف (20) 🟡",
+  "last_win_toast": "🎯 BCH-USD حقق ربح +0.16 ر.س (جدار الحيتان (Order Block) 🐋)",
+  "best_theory": "انفجار الحيتان 3x 💎 (+1.19 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "8 قناصي قيعان",
@@ -71,7 +72,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
+      "bubble": "قنص FET-USD (جدار الحيتان (Order Block"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
@@ -81,7 +82,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 3 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 0 صفقات 🧠"
     }
   },
   "min_size": 5.0,
