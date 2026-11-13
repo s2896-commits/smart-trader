@@ -61,13 +61,14 @@
   ],
   "radar_discovered": [
     "NVDAB (+2%)",
+    "PEPE (+2%)",
     "SPCXB (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (20) 🟡",
-  "last_win_toast": "🎯 BCH-USD حقق ربح +0.16 ر.س (جدار الحيتان (Order Block) 🐋)",
+  "last_win_toast": "🎯 INJ-USD حقق ربح +1.56 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "انفجار الحيتان 3x 💎 (+1.35 ر.س)",
   "crew_state": {
     "KEST8": {
@@ -93,7 +94,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 2 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 1 صفقات 🧠"
     }
   },
   "min_size": 5.0,
