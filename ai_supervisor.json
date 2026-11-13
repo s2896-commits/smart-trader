@@ -58,7 +58,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NEAR (+2%)"
+    "NEAR (+1%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -70,7 +70,7 @@
     "KEST8": {
       "role": "قناص القيعان (30%)",
       "status": "working",
-      "bubble": "قنص OP-USD (7.2 ر.س)"
+      "bubble": "قنص XLM-USD (7.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -90,7 +90,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (0 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
     }
   },
   "min_size": 5.0,
