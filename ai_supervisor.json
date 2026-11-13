@@ -68,7 +68,7 @@
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (20) 🟡",
-  "last_win_toast": "🎯 INJ-USD حقق ربح +1.56 ر.س (قناص القيعان المرتدة 🎯)",
+  "last_win_toast": "🎯 APT21794-USD حقق ربح +0.38 ر.س (انفجار الحيتان 3x 💎)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+1.99 ر.س)",
   "crew_state": {
     "KEST8": {
@@ -94,7 +94,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 1 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 0 صفقات 🧠"
     }
   },
   "min_size": 5.0,
