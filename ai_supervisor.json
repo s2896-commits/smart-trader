@@ -28,7 +28,8 @@
     "ETH-USD": -2,
     "ALGO-USD": -2,
     "SAND-USD": -2,
-    "SOXLB-USD": -2
+    "SOXLB-USD": -2,
+    "ICP-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -44,7 +45,8 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "SOXLB-USD": "2026-11-14 04:16"
+    "SOXLB-USD": "2026-11-14 04:16",
+    "ICP-USD": "2026-11-14 12:21"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -56,9 +58,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NEAR (+2%)",
-    "TAO (+3%)",
-    "HYPE (+2%)"
+    "NEAR (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -69,8 +69,8 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (جيب 30%) 🎯"
+      "status": "working",
+      "bubble": "قنص OP-USD (7.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -90,7 +90,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (0 حية) 🧠"
     }
   },
   "min_size": 5.0,
