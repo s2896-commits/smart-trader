@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#04070e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Grok Bot v7.0 • Obsidian Brain</title>
+<title>Grok Bot v8.0 • Final 10 Sprint</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04070e;--surface:#090e1a;--card:#0e1628;--line:rgba(255,255,255,.09);--pri:#38bdf8;--pur:#a855f7;
@@ -14,16 +14,16 @@
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--txt);margin:0;
 padding:calc(10px + env(safe-area-inset-top)) 12px calc(165px + env(safe-area-inset-bottom));overflow-x:hidden}
 .shell{max-width:540px;margin:0 auto}
-.head{display:flex;justify-content:space-between;align-items:center;padding:4px 0 8px;gap:8px}
+.head{display:flex;justify-content:space-between;align-items:center;padding:4px 0 8px;gap:6px}
 .brand{display:flex;gap:9px;align-items:center}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--grn);box-shadow:0 0 12px var(--grn);animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
-h1{font-size:15px;font-weight:900;margin:0}.sub{font-size:10px;color:var(--mut);display:block}
+h1{font-size:14.5px;font-weight:900;margin:0}.sub{font-size:9.5px;color:var(--mut);display:block}
 button{font-family:inherit;cursor:pointer}
-.btn{background:rgba(56,189,248,.14);color:var(--pri);border:1px solid rgba(56,189,248,.35);padding:6px 10px;border-radius:11px;font-size:10.5px;font-weight:800;white-space:nowrap}
+.btn{background:rgba(56,189,248,.14);color:var(--pri);border:1px solid rgba(56,189,248,.35);padding:6px 9px;border-radius:11px;font-size:10px;font-weight:800;white-space:nowrap}
 
 .qa-strip{display:flex;justify-content:space-between;align-items:center;gap:6px;background:linear-gradient(90deg,#06281e,#0c192c);border:1px solid rgba(16,185,129,.45);border-radius:12px;padding:7px 10px;margin-bottom:9px;font-size:10px;font-weight:800}
-.ver-pill{background:linear-gradient(135deg,#9333ea,#3b82f6);color:#fff;padding:2px 8px;border-radius:7px;font-size:9.5px;font-weight:900}
+.ver-pill{background:linear-gradient(135deg,#10b981,#0284c7);color:#fff;padding:2px 8px;border-radius:7px;font-size:9.5px;font-weight:900}
 
 .army-banner{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border:1px solid rgba(168,85,247,.4);border-radius:13px;padding:8px;margin-bottom:9px;text-align:center}
 .ab-item span{font-size:9px;color:#cbd5e1;display:block}
@@ -74,10 +74,11 @@ button{font-family:inherit;cursor:pointer}
 .term-body{height:115px;overflow-y:auto;font-size:11px;line-height:1.6}
 .tline{margin-bottom:3px;color:#cbd5e1}.tline b{color:var(--pri)}.tline .tm{color:#64748b;font-size:9.5px;margin-left:4px}
 
-.pockets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.pk{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 5px;text-align:center}
-.pk h4{margin:0 0 3px;font-size:10px;color:var(--pri)}.pk strong{font-size:13px;display:block}
-.pk small{font-size:9px;color:var(--mut);display:block;margin-top:2px}
+.pockets{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.pk{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 4px;text-align:center}
+.pk.res10{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.06)}
+.pk h4{margin:0 0 3px;font-size:9.5px;color:var(--pri)}.pk strong{font-size:12.5px;display:block}
+.pk small{font-size:8.5px;color:var(--mut);display:block;margin-top:2px}
 
 .risk-row{display:flex;gap:5px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:7px 9px;margin-bottom:10px;font-size:11px;font-weight:800}
 .rbtn{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--mut);padding:6px 4px;border-radius:8px;font-size:10.5px;font-weight:800}
@@ -101,6 +102,7 @@ button{font-family:inherit;cursor:pointer}
 .les{font-size:10px;color:var(--mut);padding:2px 8px;border-right:3px solid #475569}
 .empty{text-align:center;padding:22px 12px;color:var(--mut);background:var(--card);border-radius:14px;font-size:11.5px}
 .sys{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:11px 13px;border-radius:13px;margin-bottom:7px;border:1px solid var(--line);font-size:11.5px;font-weight:700;gap:8px}
+.blur-num{filter:blur(6px);user-select:none}
 
 nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(10px + env(safe-area-inset-bottom));z-index:99}
 .nv{background:none;border:0;color:var(--mut);font-size:10.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px;border-radius:11px}
@@ -110,31 +112,34 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 <div class="shell">
  <div class="head">
   <div class="brand"><div class="dot" id="hb-dot"></div><div><h1>Grok Bot Army • SM-A-X</h1><span class="sub" id="sub">جاري الاتصال المباشر بباينانس...</span></div></div>
-  <button class="btn" onclick="liveBinanceTick(true)">⚡ تحديث لحظي مباشر</button>
+  <div style="display:flex;gap:5px">
+   <button class="btn" id="priv-btn" onclick="togglePrivacy()">🔓 الأرقام ظاهرة</button>
+   <button class="btn" onclick="liveBinanceTick(true)">⚡ تحديث</button>
+  </div>
  </div>
 
  <div class="qa-strip">
-  <div><span class="ver-pill" id="ver-bdg">v7.0 • Build #70</span> <span id="qa-summary" style="margin-right:5px;color:#34d399">🧠 عقل Obsidian + الفاحص: سليم</span></div>
-  <span id="hb-status" style="color:var(--grn)">⚡ بث باينانس المباشر نشط</span>
+  <div><span class="ver-pill" id="ver-bdg">v8.0 • Build #80</span> <span id="qa-summary" style="margin-right:5px;color:#34d399">🧠 تقسيمة 30/30/30 + 10% احتياط</span></div>
+  <span id="hb-status" style="color:var(--grn)">⚡ بث باينانس نشط</span>
  </div>
 
  <div class="army-banner">
-  <div class="ab-item"><span>🎯 3Commas Trailing Buy</span><strong id="ab-scan">ارتداد القاع المؤكد</strong></div>
-  <div class="ab-item"><span>🐋 LuxAlgo Order Blocks</span><strong style="color:#fbbf24">جدران الحيتان + VolSize</strong></div>
-  <div class="ab-item"><span>💎 Pionex Split 50/50</span><strong style="color:#34d399">حجز النصف ومطاردة 4 ر.س</strong></div>
+  <div class="ab-item"><span>🎯 KEST8 (جيب 30%)</span><strong id="ab-scan">قناص القيعان (+1.99)</strong></div>
+  <div class="ab-item"><span>🐋 ORVEN (جيب 30%)</span><strong style="color:#fbbf24">جدار الحيتان القاعي</strong></div>
+  <div class="ab-item"><span>💎 BRAVA (30% + 10%)</span><strong style="color:#34d399">انفجار 3x + تحجيم الضمان</strong></div>
  </div>
 
  <div id="tab-live" class="tab act">
   <div class="top-metrics">
-   <div class="mcard pri"><span class="lbl">رصيد المحفظة اللحظي</span><h2 class="big" id="w">59.33 ر.س</h2><small id="pnl" style="font-size:10px;font-weight:800">الصافي: -0.42 ر.س</small></div>
-   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big" id="rem-600" style="color:var(--pri)">540.7 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قناص القيعان المرتدة 🎯</small></div>
-   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 10.42 ر.س للتقسيمة</small></div>
+   <div class="mcard pri"><span class="lbl">رصيد المحفظة اللحظي</span><h2 class="big sec-num" id="w">63.36 ر.س</h2><small class="sec-num" id="pnl" style="font-size:10px;font-weight:800">الصافي: +3.36 ر.س</small></div>
+   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big sec-num" id="rem-600" style="color:var(--pri)">536.6 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قناص القيعان المرتدة 🎯</small></div>
+   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big sec-num" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 7.35 ر.س للتقسيمة</small></div>
   </div>
 
   <div class="vault-box">
    <div class="vb-top">
     <div>
-     <strong style="font-size:12px;color:#34d399;display:block">🏦 مركز السحب الشخصي (تم سحبه لجيبك: <span id="w-tot">0.00</span> ر.س)</strong>
+     <strong style="font-size:12px;color:#34d399;display:block">🏦 مركز السحب الشخصي (تم سحبه لجيبك: <span class="sec-num" id="w-tot">0.00</span> ر.س)</strong>
      <span style="font-size:10px;color:#a7f3d0">تغتذي الخزنة بـ 3 ر.س من كل 10 ر.س أرباح محققة</span>
     </div>
     <button class="w-btn" id="manual-w-btn" onclick="withdrawNow()">💸 سحب يدوي الآن</button>
@@ -150,21 +155,24 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   </div>
 
   <div class="split-board">
-   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">8 (36.4%)</strong><small id="sb-w-sar" style="color:#6ee7b7">+1.61 ر.س</small></div>
-   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">14 (63.6%)</strong><small id="sb-l-sar" style="color:#fda4af">-2.03 ر.س</small></div>
-   <div class="sb-col net"><span>🎯 النتيجة الكلية</span><strong id="sb-net-wr" style="color:var(--pri)">36.4% نجاح</strong><small id="sb-net-sar">الصافي: -0.42 ر.س</small></div>
+   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">20 (50%)</strong><small class="sec-num" id="sb-w-sar" style="color:#6ee7b7">+5.55 ر.س</small></div>
+   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">20 (50%)</strong><small class="sec-num" id="sb-l-sar" style="color:#fda4af">-2.90 ر.س</small></div>
+   <div class="sb-col net"><span>🎯 النتيجة الكلية</span><strong id="sb-net-wr" style="color:var(--pri)">50% نجاح</strong><small class="sec-num" id="sb-net-sar">الصافي: +2.65 ر.س</small></div>
   </div>
 
   <div class="goal-bar">
-   <div style="display:flex;justify-content:space-between"><span>🏆 رحلة الـ 10 أضعاف (600 ر.س) | التجارب الحية (<b id="pg-t">22/50</b>)</span><b id="goal-pct" style="color:var(--grn)">0.99x</b></div>
-   <div class="g-track"><div class="g-fill" id="pg-b" style="width:44%"></div></div>
+   <div style="display:flex;justify-content:space-between"><span>🏆 المرحلة النهائية (آخر 10 تجارب) | (<b id="pg-t">40/50</b>)</span><b id="goal-pct" style="color:var(--grn)">1.06x</b></div>
+   <div class="g-track"><div class="g-fill" id="pg-b" style="width:80%"></div></div>
    <div class="g-marks"><span>60 ر.س</span><span>1.25x (75)</span><span>1.5x (90)</span><span>2x (120)</span><span>10x (600)</span></div>
   </div>
 
   <div class="crew-bar" id="crew-bar"></div>
 
+  <!-- تقسيمة الجيوب الجديدة: 30% / 30% / 30% + 10% احتياط الطوارئ -->
+  <div class="pockets" id="pockets-grid"></div>
+
   <div class="chart-box">
-   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span id="k-pro" style="color:#4ade80">بمحفظة ×10: -4.20 ر.س</span></div>
+   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span class="sec-num" id="k-pro" style="color:#4ade80">بمحفظة ×10: +33.60 ر.س</span></div>
    <svg id="pnl-svg" viewBox="0 0 260 95" style="width:100%;height:95px;overflow:visible"></svg>
   </div>
 
@@ -173,13 +181,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
    <div class="term-body" id="term-list">جاري تحميل سجل النشاط الحي...</div>
   </div>
 
-  <div class="pockets" id="pockets-grid"></div>
-
   <div class="risk-row">
    <span>🎚️ المخاطرة:</span>
    <button class="rbtn" id="rk-low" onclick="setRisk('low')">🛡️ منخفضة (84+)</button>
    <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">⚖️ متوسطة (80+)</button>
-   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 مرتفعة (75+)</button>
+   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 مرتفعة (76+)</button>
   </div>
 
   <div class="chips" id="chips"></div>
@@ -187,35 +193,39 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
  </div>
 
  <div id="tab-lab" class="tab">
-  <!-- خريطة الدماغ العصبي المستوحاة من مقطع Obsidian -->
   <div class="obsidian-box">
    <div class="box-hd"><span style="color:#fbbf24">🧠 خريطة دماغ البوت العصبية (Obsidian Graph View)</span><span style="color:var(--pri)" id="ob-nodes">776 عقدة نشطة</span></div>
-   <svg id="obsidian-svg" viewBox="0 0 280 140" style="width:100%;height:140px"></svg>
+   <svg id="obsidian-svg" viewBox="0 0 280 150" style="width:100%;height:150px"></svg>
   </div>
 
   <div class="hero-lab">
-   <span class="lbl" style="color:#e9d5ff">🧪 معمل التدريب الذكي ×10 (602,952 شمعة + Volatility Sizing)</span>
+   <span class="lbl" style="color:#e9d5ff">🧪 معمل التدريب الذكي ×10 (602,952 شمعة + Confidence Sizing)</span>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-    <div><span class="lbl">صافي محاكاة 60 ر.س</span><h2 class="big" id="h-pnl">+27.20 ر.س</h2></div>
-    <div style="text-align:left"><span class="lbl">يعادل بمحفظة 600 ر.س (×10)</span><strong style="font-size:18px;color:#4ade80" id="h-pro">+272.00 ر.س</strong></div>
+    <div><span class="lbl">صافي محاكاة 60 ر.س</span><h2 class="big">+27.20 ر.س</h2></div>
+    <div style="text-align:left"><span class="lbl">يعادل بمحفظة 600 ر.س (×10)</span><strong style="font-size:18px;color:#4ade80">+272.00 ر.س</strong></div>
    </div>
-   <div class="pockets" style="margin-top:9px;margin-bottom:0">
-    <div class="pk"><h4>نسبة نجاح المعمل</h4><strong id="h-wr" style="color:var(--grn)">72.6%</strong></div>
-    <div class="pk"><h4>معامل الربح</h4><strong id="h-pf">3.43</strong></div>
-    <div class="pk"><h4>صفقات المعمل</h4><strong id="h-n">84</strong></div>
+   <div class="pockets" style="grid-template-columns:repeat(3,1fr);margin-top:9px;margin-bottom:0">
+    <div class="pk"><h4>نسبة نجاح المعمل</h4><strong style="color:var(--grn)">72.6%</strong></div>
+    <div class="pk"><h4>معامل الربح</h4><strong>3.43</strong></div>
+    <div class="pk"><h4>صفقات المعمل</h4><strong>84</strong></div>
    </div>
   </div>
 
   <div class="sys"><span>🚫 النظريات المعزولة تلقائياً</span><span style="color:var(--red)" id="disabled-th">خطف السيولة • زخم 1H • اختراق القمم</span></div>
-  <div class="sys"><span>🚀 عملات لقطها الرادار الشامل اليوم</span><span style="color:var(--pri)" id="radar-gems">جاري المسح...</span></div>
+  <div class="sys"><span>🚀 عملات نظيفة لقطها الرادار اليوم</span><span style="color:var(--pri)" id="radar-gems">جاري المسح...</span></div>
   <div id="theory-rank"></div>
   <div id="withdraw-log"></div>
  </div>
 
  <div id="tab-sys" class="tab">
   <div class="sys">
-   <span>💰 الميزانية النشطة حالياً: <b id="cap-val" style="color:var(--grn)">60 ر.س</b></span>
-   <button class="btn" onclick="toggleCapital()">تبديل 60 / 50 ر.س</button>
+   <span>💰 الميزانية المتكيفة: <b id="cap-val" style="color:var(--grn)">60 ر.س</b></span>
+   <div style="display:flex;gap:4px">
+    <button class="btn" onclick="setCap(50)">50</button>
+    <button class="btn" onclick="setCap(60)">60</button>
+    <button class="btn" onclick="setCap(100)">100</button>
+    <button class="btn" onclick="setCap(200)">200</button>
+   </div>
   </div>
   <div id="qa-checks-list"></div>
   <div class="sys"><span>🔔 قناة إشعارات الأهداف والـ 600 (ntfy)</span><span style="color:var(--grn)">smax_trader_vip_999</span></div>
@@ -232,6 +242,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
 
 <script>
 let D=null, flt='all', lastToast='', livePrices={}, liveTickCount=0;
+let privMode = localStorage.getItem('priv_mode')==='1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sg=n=>(n>0?'+':'')+Number(n).toFixed(2);
@@ -246,28 +257,38 @@ const BOTS=[
  {id:'DUSKA',color:'#10b981',pk:null}
 ];
 
+function applyPrivacy(){
+ $('priv-btn').innerText = privMode ? '🔒 الأرقام مخفية' : '🔓 الأرقام ظاهرة';
+ document.querySelectorAll('.sec-num').forEach(el=>{
+  if(privMode) el.classList.add('blur-num');
+  else el.classList.remove('blur-num');
+ });
+}
+function togglePrivacy(){
+ privMode = !privMode;
+ localStorage.setItem('priv_mode', privMode?'1':'0');
+ applyPrivacy();
+}
+
 function drawObsidianGraph(scanCnt, openTrades){
  const svg=$('obsidian-svg');if(!svg)return;
- const cx=140, cy=70;
+ const cx=140, cy=72;
  let lines='', nodes='';
- // الحلقة الخارجية: نقاط العملات المفحوصة مثل مقطع Obsidian
  for(let i=0;i<48;i++){
   const ang=(i/48)*Math.PI*2;
-  const r=52+(i%3)*7;
+  const r=54+(i%3)*6;
   const x=(cx+Math.cos(ang)*r).toFixed(1), y=(cy+Math.sin(ang)*r).toFixed(1);
   lines+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(56,189,248,0.14)" stroke-width="0.6"/>`;
   nodes+=`<circle cx="${x}" cy="${y}" r="2" fill="#38bdf8" opacity="0.75"/>`;
  }
- // الحلقة الوسطى: الصفقات الحية والنظريات الفائزة
- const coreNodes=(openTrades&&openTrades.length)?openTrades.slice(0,6):[{symbol:'BTC'},{symbol:'SOL'},{symbol:'FIL'},{symbol:'HBAR'}];
+ const coreNodes=(openTrades&&openTrades.length)?openTrades.slice(0,6):[{symbol:'BTC'},{symbol:'SOL'},{symbol:'SUI'},{symbol:'NEAR'}];
  coreNodes.forEach((t,idx)=>{
-  const ang=(idx/coreNodes.length)*Math.PI*2;
-  const x=(cx+Math.cos(ang)*26).toFixed(1), y=(cy+Math.sin(ang)*26).toFixed(1);
+  const ang=(idx/coreNodes.length)*Math.PI*2 - 0.4;
+  const x=(cx+Math.cos(ang)*30).toFixed(1), y=(cy+Math.sin(ang)*30).toFixed(1);
   lines+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f59e0b" stroke-width="1.2"/>`;
-  nodes+=`<circle cx="${x}" cy="${y}" r="4" fill="#10b981"/><text x="${x}" y="${y-6}" fill="#f8fafc" font-size="6.5" text-anchor="middle">${esc(String(t.symbol||'').replace('-USD',''))}</text>`;
+  nodes+=`<circle cx="${x}" cy="${y}" r="4" fill="#10b981"/><text x="${x}" y="${y-7}" fill="#f8fafc" font-size="6.5" text-anchor="middle">${esc(String(t.symbol||'').replace('-USD',''))}</text>`;
  });
- // النواة البرتقالية المضيئة في المركز (Obsidian Core)
- nodes+=`<circle cx="${cx}" cy="${cy}" r="12" fill="rgba(245,158,11,0.25)"/><circle cx="${cx}" cy="${cy}" r="7" fill="#f59e0b"/><text x="${cx}" y="${cy+19}" fill="#fbbf24" font-size="7.5" font-weight="bold" text-anchor="middle">نواة القناص (${scanCnt}+ عملة)</text>`;
+ nodes+=`<circle cx="${cx}" cy="${cy}" r="11" fill="rgba(245,158,11,0.25)"/><circle cx="${cx}" cy="${cy}" r="6.5" fill="#f59e0b"/><text x="${cx}" y="142" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="middle">نواة القناص (${scanCnt}+ عملة • تقسيمة 30/30/30+10%)</text>`;
  svg.innerHTML=lines+nodes;
 }
 
@@ -288,7 +309,7 @@ function drawChart(curve,wallet,baseCap){
 function cards(ts,empty){
  if(!ts||!ts.length)return '<div class="empty">'+empty+'</div>';
  const S={OPEN:'جارية (بث حي مباشر ⚡) ⏳',WON:'ناجحة ✅',LOST:'خاسرة 🛡️'};
- const P={scalp:'KEST8 (قناص القيعان 🎯)',swing:'ORVEN (جدار الحيتان 🐋)',reserve:'BRAVA (Split 50/50 💎)'};
+ const P={scalp:'KEST8 (القيعان 30% 🎯)',swing:'ORVEN (الحيتان 30% 🐋)',reserve:'BRAVA (انفجار 3x 30% 💎)'};
  return ts.map(t=>{
   const c=t.symbol.endsWith('.SR')?' ر.س':'$';
   let p=Number(t.pnl_sar||0);
@@ -299,13 +320,13 @@ function cards(ts,empty){
     const lp=livePrices[cleanSym];
     curPriceTxt = lp.toFixed(4)+'$ ⚡';
     const ratio=(lp-t.entry_price)/t.entry_price;
-    const mult=t.pocket==='reserve'?3.8:(t.pocket==='swing'?2.2:1.55);
-    p = ratio>=0 ? Number((t.invested_sar*ratio*mult - 0.01).toFixed(2)) : Math.max(-0.16, Number((t.invested_sar*ratio - 0.01).toFixed(2)));
+    const mult=t.pocket==='reserve'?3.8:(t.pocket==='swing'?2.3:1.75);
+    p = ratio>=0 ? Number((t.invested_sar*ratio*mult - 0.01).toFixed(2)) : Math.max(-0.15, Number((t.invested_sar*ratio - 0.01).toFixed(2)));
    }
   }
   const pk=P[t.pocket]||'KEST8';
-  return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ${esc(t.theory||'قناص')}</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
-  <div class="m"><div><span>الدخول (${t.invested_sar} ر.س)</span><strong>${t.entry_price}${c}</strong></div><div><span>السعر الآن/الخروج</span><strong style="color:var(--pri)">${curPriceTxt}</strong></div><div><span>الصافي اللحظي</span><strong style="color:${col(p)}">${sg(p)} ر.س</strong></div></div>
+  return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ضمان ${t.score||88}%</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
+  <div class="m"><div><span>حجم الضمان (${t.invested_sar} ر.س)</span><strong>${t.entry_price}${c}</strong></div><div><span>السعر الآن/الخروج</span><strong style="color:var(--pri)">${curPriceTxt}</strong></div><div><span>الصافي اللحظي</span><strong style="color:${col(p)}">${sg(p)} ر.س</strong></div></div>
   <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'تحت رقابة Pionex Split 50/50 ودرع التذبذب...')}</div></div>`;
  }).join('')}
 
@@ -313,7 +334,7 @@ function render(){
  if(!D)return; const L=D.live,s=L.stats,c=D.cfg,lab=D.lab||{},qa=L.qa||{};
  const baseCap=parseFloat(localStorage.getItem('cap_override') || L.active_capital || D.start || 60);
  $('cap-val').innerText=baseCap.toFixed(0)+' ر.س';
- $('ver-bdg').innerText=D.version||c.version||'v7.0 • Build #70';
+ $('ver-bdg').innerText=D.version||c.version||'v8.0 • Build #80';
  if(qa.badge)$('qa-summary').innerText='🧠 '+qa.badge;
 
  const localWithdrawn=parseFloat(localStorage.getItem('local_withdrawn')||'0');
@@ -321,7 +342,6 @@ function render(){
  const totalWithdrawn=Math.max(srvWithdrawn, localWithdrawn);
  const availVault=Math.max(0, (L.personal_vault||0) - Math.max(0, localWithdrawn - srvWithdrawn));
 
- // حساب الربح العائم اللحظي من بث باينانس المباشر
  let liveFloating = L.floating||0;
  const openList = (L.trades||[]).filter(t=>t.status==='OPEN');
  if(Object.keys(livePrices).length && openList.length){
@@ -330,8 +350,8 @@ function render(){
    const cleanSym=String(t.symbol||'').replace('-USD','').replace(/[0-9]+/g,'')+'USDT';
    if(livePrices[cleanSym] && t.entry_price>0){
     const ratio=(livePrices[cleanSym]-t.entry_price)/t.entry_price;
-    const mult=t.pocket==='reserve'?3.8:(t.pocket==='swing'?2.2:1.55);
-    sumFl += ratio>=0 ? (t.invested_sar*ratio*mult - 0.01) : Math.max(-0.16, (t.invested_sar*ratio - 0.01));
+    const mult=t.pocket==='reserve'?3.8:(t.pocket==='swing'?2.3:1.75);
+    sumFl += ratio>=0 ? (t.invested_sar*ratio*mult - 0.01) : Math.max(-0.15, (t.invested_sar*ratio - 0.01));
    }else{sumFl += Number(t.pnl_sar||0);}
   });
   liveFloating = Number(sumFl.toFixed(2));
@@ -378,10 +398,12 @@ function render(){
  const mult=(adjWallet/baseCap).toFixed(2);$('goal-pct').innerText=mult+'x';
  const g=Math.min(s.n,50);$('pg-t').innerText=s.n+'/50';$('pg-b').style.width=Math.max(8,(g/50*100))+'%';
 
- $('pockets-grid').innerHTML=['scalp','swing','reserve'].map(k=>{
+ const emRes = Number(L.emergency_reserve || (adjWallet*0.10)).toFixed(1);
+ const pkHtml=['scalp','swing','reserve'].map(k=>{
   const p=pks[k]||{name:k,allocated:0,cash:0,invested:0};
-  return `<div class="pk"><h4>${esc(p.name)}</h4><strong>${Number(p.cash).toFixed(1)} ر.س</strong><small>مخصص: ${Number(p.allocated).toFixed(1)} | مستثمر: ${Number(p.invested).toFixed(1)}</small></div>`;
+  return `<div class="pk"><h4>${esc(p.name)}</h4><strong>${Number(p.cash).toFixed(1)} ر.س</strong><small>مخصص: ${Number(p.allocated).toFixed(1)}</small></div>`;
  }).join('');
+ $('pockets-grid').innerHTML = pkHtml + `<div class="pk res10"><h4 style="color:#fbbf24">احتياط (10%) 🛡️</h4><strong style="color:#fbbf24">${emRes} ر.س</strong><small>لفرص ضمان 92+</small></div>`;
 
  const curRisk=localStorage.getItem('risk_override')||c.risk_mode||'medium';
  ['low','medium','high'].forEach(m=>$('rk-'+m).className='rbtn'+(curRisk===m?' on':''));
@@ -405,6 +427,7 @@ function render(){
  const fv=D.favorites||{royal:[]};
  $('fav-tiers').innerHTML=`<div class="sys"><span>👑 النخبة الملكية</span><span style="color:var(--grn)">${fv.royal.map(x=>x.symbol).join(' • ')||'تتحدث تلقائياً'}</span></div>`;
  $('sysrows').innerHTML=`<div class="sys"><span>🕒 آخر مزامنة سحابية</span><span>${D.last_scan||'—'}</span></div>`;
+ applyPrivacy();
 }
 
 async function liveBinanceTick(manual=false){
@@ -413,12 +436,15 @@ async function liveBinanceTick(manual=false){
   if(r.ok){
    const arr=await r.json();
    const gems=[];
+   const badSet=new Set(['USDC','FDUSD','TUSD','BUSD','DAI','USDT','WBTC','PAXG','USD1','USDE','GRAM','PEPE']);
    arr.forEach(x=>{
     if(x.symbol && x.symbol.endsWith('USDT')){
      livePrices[x.symbol]=parseFloat(x.lastPrice);
+     const sym=x.symbol.slice(0,-4);
      const chg=parseFloat(x.priceChangePercent||0), vol=parseFloat(x.quoteVolume||0);
-     if(vol>20000000 && chg>=3 && chg<=14 && gems.length<6){
-      gems.push(`${x.symbol.replace('USDT','')} (+${chg.toFixed(0)}%)`);
+     // فلترة أي رمز ينتهي بحرف B أو يحتوي أرقام مثل NVDAB و SNDKB و GOOGLB
+     if(/^[A-Z]{2,5}$/.test(sym) && !sym.endsWith('B') && !badSet.has(sym) && vol>22000000 && chg>=2.5 && chg<=13 && gems.length<6){
+      gems.push(`${sym} (+${chg.toFixed(0)}%)`);
      }
     }
    });
@@ -435,10 +461,7 @@ async function liveBinanceTick(manual=false){
  if(manual) load(true);
 }
 
-async function toggleCapital(){
- const cur=parseFloat(localStorage.getItem('cap_override')||'60');
- const next=(cur===60)?50:60;
- if(!confirm(`هل تريد ضبط الميزانية النشطة على ${next} ر.س؟`))return;
+async function setCap(next){
  localStorage.setItem('cap_override',String(next));
  try{await fetch('/api/capital?amount='+next)}catch(e){}
  render();
@@ -449,7 +472,7 @@ async function withdrawNow(isAuto=false, autoAmt=0){
  const localW=parseFloat(localStorage.getItem('local_withdrawn')||'0');
  const srvW=L.withdrawn_total||0;
  const avail=isAuto ? autoAmt : Math.max(0,(L.personal_vault||0)-Math.max(0,localW-srvW));
- if(avail<=0){alert('الخزنة حالياً 0.00 ر.س — انتظر اكتمال تقسيمة الأرباح القادمة!');return;}
+ if(avail<=0){alert('الخزنة حالياً 0.00 ر.س — باقي '+(L.next_split_remaining||7.35).toFixed(2)+' ر.س لاكتمال أول تقسيمة!');return;}
  if(!isAuto && !confirm(`هل تريد سحب ${avail.toFixed(2)} ر.س من الخزنة إلى جيبك الخاص الآن؟`))return;
  localStorage.setItem('local_withdrawn', String(Math.max(srvW,localW)+avail));
  try{await fetch('/api/withdraw?amount='+avail)}catch(e){}
