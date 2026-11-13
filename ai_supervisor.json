@@ -56,9 +56,9 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NEAR (+3%)",
-    "HYPE (+2%)",
-    "TAO (+2%)"
+    "NEAR (+2%)",
+    "TAO (+3%)",
+    "HYPE (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
