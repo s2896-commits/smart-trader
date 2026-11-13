@@ -25,7 +25,8 @@
   ],
   "coin_reputation": {
     "SOL-USD": -2,
-    "FET-USD": -2
+    "FET-USD": -2,
+    "ETH-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -42,7 +43,8 @@
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
     "SOL-USD": "2026-11-13 17:18",
-    "FET-USD": "2026-11-13 17:18"
+    "FET-USD": "2026-11-13 17:18",
+    "ETH-USD": "2026-11-13 18:19"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -55,7 +57,7 @@
   ],
   "radar_discovered": [
     "NVDAB (+2%)",
-    "SOXLB (+5%)"
+    "SOXLB (+4%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -77,7 +79,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
+      "bubble": "قنص SAND-USD (قناص القيعان المرتدة 🎯)"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
@@ -87,7 +89,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 2 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 1 صفقات 🧠"
     }
   },
   "min_size": 5.0,
