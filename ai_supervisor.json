@@ -44,7 +44,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "ETH-USD": "2026-11-13 18:19",
     "ALGO-USD": "2026-11-13 21:16",
     "SAND-USD": "2026-11-13 21:16",
     "SOXLB-USD": "2026-11-14 04:16"
@@ -59,12 +58,10 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NEAR (+6%)",
-    "HYPE (+7%)",
-    "SUI (+4%)",
-    "ADA (+3%)",
-    "LINK (+3%)",
-    "DOGE (+2%)"
+    "NEAR (+4%)",
+    "HYPE (+3%)",
+    "TAO (+3%)",
+    "SUI (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -75,8 +72,8 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (جيب 30%) 🎯"
+      "status": "working",
+      "bubble": "قنص ICP-USD (7.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
