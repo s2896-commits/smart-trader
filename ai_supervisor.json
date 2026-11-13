@@ -44,8 +44,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "ALGO-USD": "2026-11-13 21:16",
-    "SAND-USD": "2026-11-13 21:16",
     "SOXLB-USD": "2026-11-14 04:16"
   },
   "ban_ref": {},
@@ -58,10 +56,9 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NEAR (+4%)",
-    "HYPE (+3%)",
-    "TAO (+3%)",
-    "SUI (+2%)"
+    "NEAR (+3%)",
+    "HYPE (+2%)",
+    "TAO (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -72,8 +69,8 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "working",
-      "bubble": "قنص ICP-USD (7.2 ر.س)"
+      "status": "scanning",
+      "bubble": "قناص القيعان (جيب 30%) 🎯"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -93,7 +90,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (0 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
     }
   },
   "min_size": 5.0,
