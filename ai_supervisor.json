@@ -60,10 +60,10 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+6%)",
+    "NVDAB (+5%)",
     "SOXLB (+4%)",
-    "PEPE (+3%)",
-    "HYPE (+2%)"
+    "PEPE (+2%)",
+    "HYPE (+3%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -85,7 +85,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص NEAR-USD (انفجار الحيتان 3x 💎)"
+      "bubble": "قنص SOXLB-USD (انفجار الحيتان 3x 💎)"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
@@ -95,7 +95,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "عقل Obsidian يراقب 0 صفقات 🧠"
+      "bubble": "عقل Obsidian يراقب 1 صفقات 🧠"
     }
   },
   "min_size": 5.0,
