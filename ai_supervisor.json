@@ -28,7 +28,8 @@
     "FET-USD": -2,
     "ETH-USD": -2,
     "ALGO-USD": -2,
-    "SAND-USD": -2
+    "SAND-USD": -2,
+    "SOXLB-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -48,7 +49,8 @@
     "FET-USD": "2026-11-13 17:18",
     "ETH-USD": "2026-11-13 18:19",
     "ALGO-USD": "2026-11-13 21:16",
-    "SAND-USD": "2026-11-13 21:16"
+    "SAND-USD": "2026-11-13 21:16",
+    "SOXLB-USD": "2026-11-14 04:16"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -60,10 +62,14 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+5%)",
-    "SOXLB (+4%)",
-    "PEPE (+2%)",
-    "HYPE (+3%)"
+    "NVDAB (+6%)",
+    "ZEC (+2%)",
+    "HYPE (+6%)",
+    "PEPE (+4%)",
+    "TAO (+3%)",
+    "SPCXB (+2%)",
+    "SNDKB (+2%)",
+    "SUI (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -85,7 +91,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "قنص SOXLB-USD (انفجار الحيتان 3x 💎)"
+      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
