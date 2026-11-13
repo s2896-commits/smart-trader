@@ -60,9 +60,10 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "NVDAB (+3%)",
-    "PEPE (+2%)",
-    "SPCXB (+1%)"
+    "NVDAB (+6%)",
+    "SOXLB (+4%)",
+    "PEPE (+3%)",
+    "HYPE (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -84,7 +85,7 @@
     "BRAVA": {
       "role": "6 قناصي 4 ريال",
       "status": "working",
-      "bubble": "Split TP 50/50 + قناص 4 ر.س 💎"
+      "bubble": "قنص NEAR-USD (انفجار الحيتان 3x 💎)"
     },
     "MIRAX": {
       "role": "5 حراس + درع BTC",
