@@ -1,17 +1,20 @@
 {
-  "version": "v8.0 (Build #80 • 30/30/30+10%)",
+  "version": "v9.0 (Build #90 • المرحلة 2: 100 صفقة)",
   "capital_override": 60.0,
+  "prep_withdraw_mode": false,
+  "highest_wallet": 63.54,
+  "ratchet_floor": 62.65,
   "rsi_min": 32,
   "rsi_max": 58,
   "tp_pct": 1.25,
-  "sl_pct": -0.8,
-  "trail_trigger": 0.65,
-  "trail_gap": 0.18,
-  "breakeven_trigger": 0.42,
+  "sl_pct": -0.78,
+  "trail_trigger": 0.62,
+  "trail_gap": 0.17,
+  "breakeven_trigger": 0.38,
   "breakeven_lock": 0.24,
   "trade_size": 5.0,
   "max_open": 6,
-  "max_hold_h": 2.5,
+  "max_hold_h": 2.2,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
@@ -68,19 +71,19 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+6%)"
+    "INJ (+7%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (13) 🟡",
   "last_win_toast": "🎯 XLM-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "انفجار الحيتان 3x 💎 (+2.26 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (جيب 30%) 🎯"
+      "status": "working",
+      "bubble": "قنص UNI7083-USD (10.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -93,12 +96,12 @@
       "bubble": "انفجار الحيتان 3x (30%) 💎"
     },
     "MIRAX": {
-      "role": "الاحتياط الذكي (10%)",
+      "role": "الاحتياط + السقف (10%)",
       "status": "working",
       "bubble": "احتياط الطوارئ 10% (6.3 ر.س) 🛡️"
     },
     "DUSKA": {
-      "role": "الفاحص + Obsidian",
+      "role": "الفاحص v9.0 (100)",
       "status": "working",
       "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
     }
