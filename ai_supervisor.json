@@ -58,29 +58,30 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+8%)"
+    "INJ (+8%)",
+    "TAO (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "خوف (20) 🟡",
+  "market_mood": "خوف (13) 🟡",
   "last_win_toast": "🎯 OP-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "انفجار الحيتان 3x 💎 (+2.35 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "working",
-      "bubble": "قنص SOL-USD (4.7 ر.س)"
+      "status": "scanning",
+      "bubble": "قناص القيعان (جيب 30%) 🎯"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
-      "status": "scanning",
-      "bubble": "جدار الحيتان القاعي (30%) 🐋"
+      "status": "working",
+      "bubble": "قنص ATOM-USD (7.2 ر.س)"
     },
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "انفجار الحيتان 3x (30%) 💎"
+      "bubble": "قنص INJ-USD (10.2 ر.س)"
     },
     "MIRAX": {
       "role": "الاحتياط الذكي (10%)",
@@ -90,7 +91,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (2 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (3 حية) 🧠"
     }
   },
   "min_size": 5.0,
