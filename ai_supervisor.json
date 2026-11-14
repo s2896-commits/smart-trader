@@ -31,7 +31,8 @@
     "SOXLB-USD": -2,
     "ICP-USD": -2,
     "INJ-USD": -2,
-    "ATOM-USD": -2
+    "ATOM-USD": -2,
+    "NEAR-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -47,11 +48,11 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "SOXLB-USD": "2026-11-14 04:16",
     "ICP-USD": "2026-11-14 12:21",
     "SOL-USD": "2026-11-14 16:02",
     "INJ-USD": "2026-11-14 16:02",
-    "ATOM-USD": "2026-11-14 16:02"
+    "ATOM-USD": "2026-11-14 16:02",
+    "NEAR-USD": "2026-11-14 20:54"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -63,7 +64,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+8%)",
+    "INJ (+13%)",
     "TAO (+3%)"
   ],
   "radar_total_scanned": 776,
@@ -71,7 +72,7 @@
   "daily_score": 87,
   "market_mood": "خوف (13) 🟡",
   "last_win_toast": "🎯 XLM-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "انفجار الحيتان 3x 💎 (+2.35 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.30 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
@@ -86,17 +87,17 @@
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "انفجار الحيتان 3x (30%) 💎"
+      "bubble": "قنص ETC-USD (10.2 ر.س)"
     },
     "MIRAX": {
       "role": "الاحتياط الذكي (10%)",
       "status": "working",
-      "bubble": "احتياط الطوارئ 10% (6.4 ر.س) 🛡️"
+      "bubble": "احتياط الطوارئ 10% (6.3 ر.س) 🛡️"
     },
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (0 حية) 🧠"
     }
   },
   "min_size": 5.0,
