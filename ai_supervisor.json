@@ -23,13 +23,15 @@
     "Aroon Momentum"
   ],
   "coin_reputation": {
-    "SOL-USD": -2,
+    "SOL-USD": -4,
     "FET-USD": -2,
     "ETH-USD": -2,
     "ALGO-USD": -2,
     "SAND-USD": -2,
     "SOXLB-USD": -2,
-    "ICP-USD": -2
+    "ICP-USD": -2,
+    "INJ-USD": -2,
+    "ATOM-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -46,7 +48,10 @@
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
     "SOXLB-USD": "2026-11-14 04:16",
-    "ICP-USD": "2026-11-14 12:21"
+    "ICP-USD": "2026-11-14 12:21",
+    "SOL-USD": "2026-11-14 16:02",
+    "INJ-USD": "2026-11-14 16:02",
+    "ATOM-USD": "2026-11-14 16:02"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -59,13 +64,13 @@
   ],
   "radar_discovered": [
     "INJ (+8%)",
-    "TAO (+2%)"
+    "TAO (+3%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "خوف (13) 🟡",
-  "last_win_toast": "🎯 OP-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
+  "last_win_toast": "🎯 XLM-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "انفجار الحيتان 3x 💎 (+2.35 ر.س)",
   "crew_state": {
     "KEST8": {
@@ -75,23 +80,23 @@
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
-      "status": "working",
-      "bubble": "قنص ATOM-USD (7.2 ر.س)"
+      "status": "scanning",
+      "bubble": "جدار الحيتان القاعي (30%) 🐋"
     },
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "قنص INJ-USD (10.2 ر.س)"
+      "bubble": "انفجار الحيتان 3x (30%) 💎"
     },
     "MIRAX": {
       "role": "الاحتياط الذكي (10%)",
       "status": "working",
-      "bubble": "احتياط الطوارئ 10% (6.3 ر.س) 🛡️"
+      "bubble": "احتياط الطوارئ 10% (6.4 ر.س) 🛡️"
     },
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (3 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
     }
   },
   "min_size": 5.0,
