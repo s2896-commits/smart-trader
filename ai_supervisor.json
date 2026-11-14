@@ -64,8 +64,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+10%)",
-    "TAO (+1%)"
+    "INJ (+7%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -76,8 +75,8 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (جيب 30%) 🎯"
+      "status": "working",
+      "bubble": "قنص BCH-USD (7.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
