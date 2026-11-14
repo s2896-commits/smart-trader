@@ -32,7 +32,9 @@
     "ICP-USD": -2,
     "INJ-USD": -2,
     "ATOM-USD": -2,
-    "NEAR-USD": -2
+    "NEAR-USD": -2,
+    "ETC-USD": -2,
+    "STX4847-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -52,7 +54,9 @@
     "SOL-USD": "2026-11-14 16:02",
     "INJ-USD": "2026-11-14 16:02",
     "ATOM-USD": "2026-11-14 16:02",
-    "NEAR-USD": "2026-11-14 20:54"
+    "NEAR-USD": "2026-11-14 20:54",
+    "ETC-USD": "2026-11-14 22:19",
+    "STX4847-USD": "2026-11-14 22:19"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -64,7 +68,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+7%)"
+    "INJ (+6%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -75,8 +79,8 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "working",
-      "bubble": "قنص BCH-USD (7.2 ر.س)"
+      "status": "scanning",
+      "bubble": "قناص القيعان (جيب 30%) 🎯"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -96,7 +100,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (2 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
     }
   },
   "min_size": 5.0,
