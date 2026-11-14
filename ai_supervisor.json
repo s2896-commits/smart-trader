@@ -64,7 +64,8 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "TAO (+4%)"
+    "INJ (+10%)",
+    "TAO (+1%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -86,7 +87,7 @@
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "قنص STX4847-USD (10.2 ر.س)"
+      "bubble": "انفجار الحيتان 3x (30%) 💎"
     },
     "MIRAX": {
       "role": "الاحتياط الذكي (10%)",
@@ -96,7 +97,7 @@
     "DUSKA": {
       "role": "الفاحص + Obsidian",
       "status": "working",
-      "bubble": "تحجيم الضمان v8.0 (1 حية) 🧠"
+      "bubble": "تحجيم الضمان v8.0 (2 حية) 🧠"
     }
   },
   "min_size": 5.0,
