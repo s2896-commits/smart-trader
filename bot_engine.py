@@ -90,6 +90,7 @@ def market_status():
         "crypto": True,
         "tasi": sa.weekday() in (6, 0, 1, 2, 3) and dtime(10, 0) <= sa.time() < dtime(15, 0),
         "us": us.weekday() < 5 and dtime(9, 30) <= us.time() < dtime(16, 0),
+        "hour_sa": sa.hour,
     }
 
 def indicators(df):
@@ -136,11 +137,14 @@ def is_1h_anchor_bullish(df_1h):
         return True
 
 def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, brain, favs, summary, tf_mode="15m"):
-    """الإصدار v8.0: فصل المسارات الثلاثة (30%/30%/30%) + تحديد حجم الصفقة حسب نسبة الضمان + دعم الاحتياط 10%."""
+    """الإصدار v9.0: ساعة السيولة ⏰ + قفل الأرباح التصاعدي 🔒 + درع تعزيز المكافأة 🛡️."""
+    if cfg.get("prep_withdraw_mode", False):
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
+
     c, o, h, l = d["Close"].iloc[:-1], d["Open"].iloc[:-1], d["High"].iloc[:-1], d["Low"].iloc[:-1]
     v = d["Volume"].iloc[:-1] if "Volume" in d else pd.Series(1, index=c.index)
     if len(c) < 52 or btc_flash_drop < -0.45:
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     sma20, sma50, rsi, atr_pct, vol_avg, aroon_up, aroon_dn, aroon_osc = indicators(d.iloc[:-1])
     price, prev = float(c.iloc[-1]), float(c.iloc[-2])
@@ -153,11 +157,11 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
 
     prof = brain.get("asset_profiles", {}).get(symbol, {})
     if prof.get("isolated", False) or db.on_cooldown(symbol, cfg.get("cooldown_min", 12)):
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     candle_jump = ((price - prev) / prev) * 100.0 if prev else 0.0
-    if candle_jump > 3.4 or cur_rsi > 60 or cur_vol < avg_vol * 0.65:
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+    if candle_jump > 3.3 or cur_rsi > 60 or cur_vol < avg_vol * 0.65:
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     anchor_ok = is_1h_anchor_bullish(d_1h)
     vol_ratio = cur_vol / max(avg_vol, 1e-9)
@@ -172,26 +176,23 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
     target_pocket = None
     base_score = 65
 
-    # المسار 1 (مخصص لجيب KEST8 - 30%): قناص القيعان المرتدة 🎯 (+1.99 ر.س)
     if trailing_buy_confirmed and 18 <= cur_rsi <= 41:
         theory = "قناص القيعان المرتدة 🎯"
         target_pocket = "scalp"
         base_score = 89 + (4 if cur_rsi <= 32 else 0)
-    # المسار 2 (مخصص لجيب ORVEN - 30%): جدار الحيتان القاعي المطور 🐋 (ممنوع الشراء إلا في قاع RSI <= 39 مع سيولة حيتان)
     elif trailing_buy_confirmed and order_block_support and 22 <= cur_rsi <= 39 and vol_ratio >= 1.1:
         theory = "جدار الحيتان (Order Block) 🐋"
         target_pocket = "swing"
         base_score = 88 + (4 if vol_ratio >= 1.6 else 0)
-    # المسار 3 (مخصص لجيب BRAVA - 30%): انفجار الحيتان 3x 💎 (+1.57 ر.س)
     elif anchor_ok and vol_ratio >= 1.50 and a_up >= 75 and a_osc >= 32 and price > cur_sma20 and price > cur_open and 35 <= cur_rsi <= 56:
         theory = "انفجار الحيتان 3x 💎"
         target_pocket = "reserve"
         base_score = 91 + (3 if vol_ratio >= 2.0 else 0)
     else:
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     if theory in cfg.get("disabled_theories", []):
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     rep_bonus = int(cfg.get("coin_reputation", {}).get(symbol, 0))
     base_score += rep_bonus
@@ -202,16 +203,30 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
     total_score = min(99, base_score)
 
     risk_mode = cfg.get("risk_mode", "medium")
-    min_req = 84 if risk_mode == "low" else (76 if risk_mode == "high" else 80)
+    min_req = 85 if risk_mode == "low" else (77 if risk_mode == "high" else 81)
+
+    # 1. ساعة السيولة الذكية (Liquidity Clock): تشديد الشرط بين 3 و 7 فجراً بتوقيت السعودية
+    hour_sa = datetime.now(TZ_SA).hour
+    if 3 <= hour_sa < 7:
+        min_req += 3
+
+    # 2. قفل الأرباح التصاعدي (Compound Ratchet): إذا اقترب الرصيد من خط الأمان لا يدخل إلا الفرص شبه المضمونة (88+)
+    if float(summary.get("growth_total") or 63.19) <= float(cfg.get("ratchet_floor") or 62.65):
+        min_req = max(min_req, 88)
+
+    # 3. درع تعزيز المكافأة الحذر (عند تفعيل 150 أو 200 ر.س)
+    active_cap = float(summary.get("active_capital") or 60.0)
+    if active_cap >= 150.0:
+        min_req = max(min_req, 85)
+
     if cfg.get("observer_mode"):
         min_req = max(min_req, 90)
     if total_score < min_req:
-        return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+        return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
     pockets = summary["pockets"]
     emergency_res = float(summary.get("emergency_reserve") or 6.0)
 
-    # إذا كان الجيب الأساسي ممتلئاً والفرصة مضمونة جداً (91+) يسمح لها بالعبور للجيب المتاح
     chosen_pocket = target_pocket
     if pockets[chosen_pocket]["paused"] or pockets[chosen_pocket]["cash"] < 4.5:
         for alt_pk in ("scalp", "swing", "reserve"):
@@ -219,27 +234,25 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
                 chosen_pocket = alt_pk
                 break
         else:
-            return 0, "scalp", 0.0, 1.0, -0.80, "", ""
+            return 0, "scalp", 0.0, 1.0, -0.78, "", ""
 
-    # تحديد حجم الصفقة حسب نسبة الضمان (Confidence Sizing) + دعم من الـ 10% احتياط للفرص المضمونة (92+)
-    active_cap = float(summary.get("active_capital") or 60.0)
     if total_score >= 92:
-        desired_size = round(active_cap * 0.17, 1)  # حوالي 10.2 إلى 11.0 ر.س للفرصة المضمونة جداً
+        desired_size = round(active_cap * 0.17, 1)
         avail_with_reserve = pockets[chosen_pocket]["cash"] + (emergency_res * 0.5)
         invest_size = min(desired_size, avail_with_reserve)
         conf_label = "ضمان فائق 92+ 🔥"
     elif total_score >= 86:
-        desired_size = round(active_cap * 0.12, 1)  # حوالي 7.2 ر.س للفرصة القوية
+        desired_size = round(active_cap * 0.12, 1)
         invest_size = min(desired_size, pockets[chosen_pocket]["cash"])
         conf_label = "ضمان عالي ✅"
     else:
-        desired_size = round(active_cap * 0.08, 1)  # حوالي 4.8 ر.س للفرصة العادية
+        desired_size = round(active_cap * 0.08, 1)
         invest_size = min(desired_size, pockets[chosen_pocket]["cash"])
         conf_label = "حجم متوازن 🛡️"
 
-    dynamic_sl = round(-max(0.70, min(0.95, cur_atr * 1.10)), 2)
-    tp_pct = round(max(2.6, cur_atr * 2.5), 2) if chosen_pocket == "reserve" else (
-        round(max(1.2, cur_atr * 1.5), 2) if chosen_pocket == "swing" else round(max(0.90, cur_atr * 1.25), 2)
+    dynamic_sl = round(-max(0.68, min(0.92, cur_atr * 1.08)), 2)
+    tp_pct = round(max(2.5, cur_atr * 2.4), 2) if chosen_pocket == "reserve" else (
+        round(max(1.15, cur_atr * 1.45), 2) if chosen_pocket == "swing" else round(max(0.88, cur_atr * 1.20), 2)
     )
 
     reason = f"[{theory}] ضمان {total_score}% ({conf_label}) | ارتداد +{bounce_from_low_pct:.2f}% | RSI {cur_rsi:.0f}"
@@ -283,10 +296,10 @@ def supervisor():
 
     guard_active = bool(guard_until and guard_until > db.fmt(t))
     cfg["observer_mode"] = guard_active or news_info["danger"]
-    cfg["market_mood"] = "درع الحماية 🛡️" if guard_active else news_info["mood"]
+    cfg["market_mood"] = "تجهيز السحب 🛬" if cfg.get("prep_withdraw_mode") else ("درع الحماية 🛡️" if guard_active else news_info["mood"])
 
     summ = db.get_summary()
-    cfg["best_theory"] = summ["stats"].get("best_theory", "قناص القيعان المرتدة 🎯")
+    cfg["best_theory"] = summ["stats"].get("best_theory", "انفجار الحيتان 3x 💎")
     db.save_ai_config(cfg)
     return cfg, news_info
 
@@ -315,7 +328,7 @@ def _single_scan_pass():
             prices[s] = float(d["Close"].iloc[-1])
 
     db.update_open_trades(prices)
-    if cfg.get("paused"):
+    if cfg.get("paused") or cfg.get("prep_withdraw_mode"):
         return
 
     btc_chg = 0.0
@@ -333,9 +346,9 @@ def _single_scan_pass():
     db.update_crew("KEST8", "scanning", "قناص القيعان (جيب 30%) 🎯")
     db.update_crew("ORVEN", "scanning", "جدار الحيتان القاعي (30%) 🐋")
     db.update_crew("BRAVA", "working", "انفجار الحيتان 3x (30%) 💎")
-    db.update_crew("MIRAX", "working", f"احتياط الطوارئ 10% ({summ['emergency_reserve']:.1f} ر.س) 🛡️")
-    db.update_crew("DUSKA", "working", f"تحجيم الضمان v8.0 ({len(open_syms)} حية) 🧠")
-    db.log_thought("Obsidian v8.0 🧠", f"فحص {total_mkt_coins} عملة | تقسيمة 30/30/30 + 10% احتياط | تحجيم حسب الضمان", "info")
+    db.update_crew("MIRAX", "working", f"قفل الأرباح ({summ['ratchet_floor']:.2f} ر.س) 🔒")
+    db.update_crew("DUSKA", "working", f"المرحلة 2 ({summ['stats']['n']}/100) 🚀")
+    db.log_thought("Obsidian v9.0 🧠", f"المرحلة 2 ({summ['stats']['n']}/100) | قفل الأرباح عند {summ['ratchet_floor']:.2f} ر.س | فحص {total_mkt_coins} عملة", "info")
 
     candidates = []
     for s in active_symbols:
@@ -347,7 +360,7 @@ def _single_scan_pass():
             score, pocket, size, tp_pct, sl_pct, reason, theory = evaluate_squads(
                 s, d_map[s], data_1h.get(s), btc_chg, btc_flash_drop, news_info, cfg, brain, favs, summ, tf_mode=tf_label
             )
-            if score >= 76 and size >= 4.5:
+            if score >= 77 and size >= 4.5:
                 candidates.append((score, s, pocket, size, tp_pct, sl_pct, reason, theory, full_watchlist[s]))
                 break
 
