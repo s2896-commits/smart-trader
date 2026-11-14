@@ -71,7 +71,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+7%)"
+    "INJ (+5%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -93,7 +93,7 @@
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "قنص SEI-USD (7.2 ر.س)"
+      "bubble": "انفجار الحيتان 3x (30%) 💎"
     },
     "MIRAX": {
       "role": "الاحتياط + السقف (10%)",
