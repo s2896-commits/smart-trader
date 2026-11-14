@@ -87,13 +87,13 @@
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
-      "status": "working",
-      "bubble": "قنص OP-USD (7.2 ر.س)"
+      "status": "scanning",
+      "bubble": "جدار الحيتان القاعي (30%) 🐋"
     },
     "BRAVA": {
       "role": "انفجار 3x (30%)",
       "status": "working",
-      "bubble": "انفجار الحيتان 3x (30%) 💎"
+      "bubble": "قنص SEI-USD (7.2 ر.س)"
     },
     "MIRAX": {
       "role": "الاحتياط + السقف (10%)",
