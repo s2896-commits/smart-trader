@@ -39,7 +39,9 @@
     "ETC-USD": -2,
     "STX4847-USD": -2,
     "OP-USD": -2,
-    "SEI-USD": -2
+    "SEI-USD": -2,
+    "ADA-USD": -2,
+    "AAVE-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -55,11 +57,12 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "NEAR-USD": "2026-11-14 20:54",
     "ETC-USD": "2026-11-14 22:19",
     "STX4847-USD": "2026-11-14 22:19",
     "OP-USD": "2026-11-15 04:13",
-    "SEI-USD": "2026-11-15 04:13"
+    "SEI-USD": "2026-11-15 04:13",
+    "ADA-USD": "2026-11-15 09:46",
+    "AAVE-USD": "2026-11-15 09:46"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -78,12 +81,12 @@
   "daily_score": 87,
   "market_mood": "خوف (13) 🟡",
   "last_win_toast": "🎯 ARB11841-USD حقق ربح +0.18 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.05 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
       "status": "working",
-      "bubble": "قنص AAVE-USD (10.2 ر.س)"
+      "bubble": "قنص MANA-USD (7.2 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -103,7 +106,7 @@
     "DUSKA": {
       "role": "الفاحص v9.0 (100)",
       "status": "working",
-      "bubble": "المرحلة 2 (57/100) 🚀"
+      "bubble": "المرحلة 2 (59/100) 🚀"
     }
   },
   "min_size": 5.0,
