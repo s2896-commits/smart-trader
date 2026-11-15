@@ -2,8 +2,8 @@
   "version": "v10.0 (Build #100 • القناص الصبور 1:1)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 63.54,
-  "ratchet_floor": 62.65,
+  "highest_wallet": 63.66,
+  "ratchet_floor": 62.81,
   "rsi_min": 32,
   "rsi_max": 58,
   "tp_pct": 2.8,
@@ -71,8 +71,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "ADA-USD": "2026-11-15 09:46",
-    "AAVE-USD": "2026-11-15 09:46",
     "MANA-USD": "2026-11-15 13:46"
   },
   "ban_ref": {},
@@ -85,7 +83,8 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "TRX (-1%)",
+    "ZEC (+0%)",
+    "TRX (-2%)",
     "XAUT (-1%)"
   ],
   "radar_total_scanned": 776,
