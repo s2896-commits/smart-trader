@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "SOL-USD",
-    "name": "سولانا (SOL)",
-    "theory": "قناص القيعان الصبور 🎯",
-    "score": 94,
-    "entry": 0.0,
-    "tp1_pct": 2.5,
-    "tp2_pct": 5.5,
-    "sl_pct": -1.3,
-    "status": "🟢 جاهزة للمراقبة والدخول",
-    "updated_at": ""
+    "symbol": "SAND-USD",
+    "name": "ساند بوكس",
+    "theory": "جدار الحيتان (Order Block) 🐋",
+    "score": 86,
+    "entry": 0.0362,
+    "tp1_pct": 1.5,
+    "tp2_pct": 2.7,
+    "sl_pct": -0.85,
+    "status": "🟢 البوت دخلها الآن — متاحة لك!",
+    "updated_at": "17:39"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -83,32 +83,32 @@
   "radar_discovered": [
     "BTC (-2%)",
     "ETH (-2%)",
+    "SOL (-3%)",
     "XRP (-2%)",
     "ZEC (+1%)",
-    "HYPE (+1%)",
-    "ADA (-2%)"
+    "NEAR (-3%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 FIL-USD حقق ربح صافي +0.16 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.01 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.48 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
-      "status": "scanning",
-      "bubble": "قناص القيعان الصبور (RSI<36) 🎯"
+      "status": "working",
+      "bubble": "قنص FET-USD (7.8 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
-      "status": "scanning",
-      "bubble": "جدار الحيتان القاعي (30%) 🐋"
+      "status": "working",
+      "bubble": "قنص SAND-USD (7.8 ر.س)"
     },
     "BRAVA": {
       "role": "موجات الحيتان (30%)",
       "status": "working",
-      "bubble": "المصعد التصاعدي (+2.5% إلى +6%) 💎"
+      "bubble": "انفجار الحيتان + المصعد 💎"
     },
     "MIRAX": {
       "role": "رادار صالح + السقف",
@@ -118,7 +118,7 @@
     "DUSKA": {
       "role": "الفاحص (محطة 70)",
       "status": "working",
-      "bubble": "الحسبة الحقيقية 1:1 (63/100) 🚀"
+      "bubble": "محطة التقييم (63/70) 🚀"
     }
   },
   "min_size": 5.0,
