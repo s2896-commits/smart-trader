@@ -85,19 +85,19 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
-    "ETH (-1%)",
-    "SOL (-2%)",
-    "ZEC (+4%)",
-    "XRP (-1%)",
-    "UNI (+4%)"
+    "BTC (+1%)",
+    "ETH (+3%)",
+    "ZEC (+11%)",
+    "SOL (+3%)",
+    "HYPE (+11%)",
+    "XRP (+5%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 FIL-USD حقق ربح صافي +0.16 ر.س (قناص القيعان المرتدة 🎯)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.39 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.29 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
