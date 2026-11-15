@@ -85,19 +85,20 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "INJ (+5%)"
+    "TRX (-1%)",
+    "XAUT (-1%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "خوف (10) 🟡",
+  "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 ICP-USD حقق ربح +0.38 ر.س (قناص القيعان المرتدة 🎯)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+2.01 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
       "status": "scanning",
-      "bubble": "قناص القيعان (جيب 30%) 🎯"
+      "bubble": "قناص القيعان الصبور (RSI<36) 🎯"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
@@ -107,17 +108,17 @@
     "BRAVA": {
       "role": "موجات كبرى (30%)",
       "status": "working",
-      "bubble": "انفجار الحيتان 3x (30%) 💎"
+      "bubble": "المصعد التصاعدي (+2.5% إلى +6%) 💎"
     },
     "MIRAX": {
       "role": "رادار صالح + السقف",
       "status": "working",
-      "bubble": "قفل الأرباح (62.65 ر.س) 🔒"
+      "bubble": "يحدث توصيات صالح الشخصية 📡"
     },
     "DUSKA": {
       "role": "الفاحص الحقيقي 1:1",
       "status": "working",
-      "bubble": "المرحلة 2 (61/100) 🚀"
+      "bubble": "الحسبة الحقيقية 1:1 (61/100) 🚀"
     }
   },
   "min_size": 5.0,
