@@ -2,7 +2,7 @@ import sqlite3, os, json, base64, threading, time, requests
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-VERSION = "v10.0 (Build #100 • القناص الصبور 1:1)"
+VERSION = "v10.1 (Build #101 • محطة 70)"
 TZ = ZoneInfo("Asia/Riyadh")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "trades.db")
@@ -14,8 +14,8 @@ FILE_PATH = "trades_backup.db"
 
 START_CAPITAL = 60.0
 SCALE_FACTOR = 10.0
-FEE_PCT = 0.10  # عمولة باينانس الحقيقية 0.1% شراء و 0.1% بيع (0.2% إجمالي)
-MAX_LOSS_SAR = -0.18
+FEE_PCT = 0.10
+MAX_LOSS_SAR = -0.16
 LOCK = threading.RLock()
 _dirty = False
 _last_backup = 0.0
@@ -26,14 +26,14 @@ DEFAULT_CFG = {
     "prep_withdraw_mode": False,
     "highest_wallet": 63.54,
     "ratchet_floor": 62.65,
-    "rsi_min": 20, "rsi_max": 52,
-    "tp_pct": 2.80, "sl_pct": -1.25,
-    "trail_trigger": 1.20, "trail_gap": 0.35,
-    "breakeven_trigger": 0.85, "breakeven_lock": 0.35,
+    "rsi_min": 20, "rsi_max": 60,
+    "tp_pct": 1.65, "sl_pct": -1.05,
+    "trail_trigger": 0.65, "trail_gap": 0.22,
+    "breakeven_trigger": 0.55, "breakeven_lock": 0.28,
     "trade_size": 9.0,
-    "max_open": 5,
+    "max_open": 6,
     "max_open_per_pocket": 2,
-    "max_hold_h": 12.0, "cooldown_min": 25,
+    "max_hold_h": 4.0, "cooldown_min": 15,
     "risk_mode": "medium",
     "paused": False,
     "stoploss_guard_until": "",
@@ -46,12 +46,12 @@ DEFAULT_CFG = {
     "vip_signal": {
         "symbol": "SOL-USD",
         "name": "سولانا (SOL)",
-        "theory": "قناص القيعان الصبور 🎯",
+        "theory": "قناص القيعان المرتدة 🎯",
         "score": 94,
         "entry": 0.0,
-        "tp1_pct": 2.5,
-        "tp2_pct": 5.5,
-        "sl_pct": -1.3,
+        "tp1_pct": 2.2,
+        "tp2_pct": 4.5,
+        "sl_pct": -1.2,
         "status": "🟢 جاهزة للمراقبة والدخول",
         "updated_at": ""
     },
@@ -71,20 +71,20 @@ DEFAULT_CFG = {
     "radar_total_scanned": 776,
     "scenarios_tested": 602952,
     "daily_score": 99,
-    "market_mood": "قناص صبور 🎯",
+    "market_mood": "قناص متوازن 🎯",
     "last_win_toast": "",
     "best_theory": "انفجار الحيتان 3x 💎",
     "crew_state": {
-        "KEST8": {"role": "قناص القيعان (30%)", "status": "scanning", "bubble": "ينتظر قاع حقيقي RSI<36 🎯"},
-        "ORVEN": {"role": "جدار الحيتان (30%)", "status": "scanning", "bubble": "يرصد تمركز الحيتان الصبور 🐋"},
-        "BRAVA": {"role": "موجات كبرى (30%)", "status": "working", "bubble": "يركب الموجة بدون استعجال 💎"},
-        "MIRAX": {"role": "رادار صالح + السقف", "status": "working", "bubble": "يجهز توصيات صالح VIP 📡"},
-        "DUSKA": {"role": "الفاحص الحقيقي 1:1", "status": "working", "bubble": "حسبة باينانس الصافية v10.0 🧠"},
+        "KEST8": {"role": "قناص القيعان (30%)", "status": "scanning", "bubble": "يصيد ارتداد القيعان RSI<42 🎯"},
+        "ORVEN": {"role": "جدار الحيتان (30%)", "status": "scanning", "bubble": "يرصد سيولة الدعم RSI<50 🐋"},
+        "BRAVA": {"role": "موجات الحيتان (30%)", "status": "working", "bubble": "يركب الموجة بـ المصعد 💎"},
+        "MIRAX": {"role": "رادار صالح + السقف", "status": "working", "bubble": "يحدث توصيات صالح VIP 📡"},
+        "DUSKA": {"role": "الفاحص (محطة 70)", "status": "working", "bubble": "فك الصفقات العالقة + 1:1 🧠"},
     },
 }
 
 GOAL_MILESTONES = [
-    (65.0, "1.08x", "🔥 قمة جديدة! محفظتك تخطت 65 ر.س بنجاح في نظام القناص الصبور!"),
+    (65.0, "1.08x", "🔥 قمة جديدة! محفظتك تخطت 65 ر.س بنجاح!"),
     (75.0, "1.25x", "🚀 مكسب جديد! محفظتك وصلت 75 ر.س (1.25x) في طريقها نحو الـ 600 ر.س!"),
     (90.0, "1.5x", "🔥 نصف تدبيلة! المحفظة وصلت 90 ر.س (1.5x) بأمان!"),
     (120.0, "2x", "💎 تدبيلة كاملة (2x)! المحفظة وصلت 120 ر.س!"),
@@ -154,14 +154,14 @@ def get_ai_config():
     except Exception:
         pass
     cfg["version"] = VERSION
-    cfg["tp_pct"] = 2.80
-    cfg["sl_pct"] = -1.25
-    cfg["trail_trigger"] = 1.20
-    cfg["trail_gap"] = 0.35
-    cfg["breakeven_trigger"] = 0.85
-    cfg["breakeven_lock"] = 0.35
-    cfg["max_hold_h"] = 12.0
-    cfg["max_open"] = 5
+    cfg["tp_pct"] = 1.65
+    cfg["sl_pct"] = -1.05
+    cfg["trail_trigger"] = 0.65
+    cfg["trail_gap"] = 0.22
+    cfg["breakeven_trigger"] = 0.55
+    cfg["breakeven_lock"] = 0.28
+    cfg["max_hold_h"] = 4.0
+    cfg["max_open"] = 6
     cfg["max_open_per_pocket"] = 2
     cfg.setdefault("capital_override", 60.0)
     cfg.setdefault("prep_withdraw_mode", False)
@@ -192,7 +192,7 @@ def save_ai_config(cfg):
     except Exception:
         pass
 
-def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.5, tp2=5.5, sl=-1.3, status="🟢 جاهزة للدخول الآن"):
+def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.2, tp2=4.5, sl=-1.2, status="🟢 جاهزة للدخول الآن"):
     cfg = get_ai_config()
     old_sym = cfg.get("vip_signal", {}).get("symbol", "")
     cfg["vip_signal"] = {
@@ -208,7 +208,7 @@ def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.5, tp2=5.5
         "updated_at": now().strftime("%H:%M")
     }
     save_ai_config(cfg)
-    if score >= 92 and symbol != old_sym:
+    if score >= 91 and symbol != old_sym:
         send_vip_alert(
             f"🎯 توصية صيد شخصية لصالح ({symbol})",
             f"العملة: {name} | الضمان: {score}% | الدخول: {entry_price:.4f}$ | الهدف: +{tp1}% إلى +{tp2}% | الوقف: {sl}%"
@@ -221,7 +221,7 @@ def set_capital_override(amount: float):
     if cfg["capital_override"] >= 150.0:
         cfg["risk_mode"] = "low"
     save_ai_config(cfg)
-    log_thought("درع المكافأة 🛡️", f"تم ضبط الميزانية على {cfg['capital_override']:.0f} ر.س وتفعيل القناص الصبور", "info")
+    log_thought("درع المكافأة 🛡️", f"تم ضبط الميزانية على {cfg['capital_override']:.0f} ر.س", "info")
     return cfg["capital_override"]
 
 def toggle_prep_withdraw(enabled: bool):
@@ -233,7 +233,6 @@ def toggle_prep_withdraw(enabled: bool):
     return cfg["prep_withdraw_mode"]
 
 def emergency_close_all():
-    """زر الطوارئ لتسييل جميع الصفقات المفتوحة فوراً إلى كاش."""
     global _dirty
     open_list = run("SELECT * FROM trades WHERE status='OPEN' AND is_historical=0")
     if not open_list:
@@ -323,7 +322,7 @@ def backup_db_to_github(force=False):
             content = base64.b64encode(f.read()).decode()
         url, h = _gh()
         r = requests.get(url, headers=h, timeout=10)
-        data = {"message": "Auto-save trades DB v10.0", "content": content}
+        data = {"message": "Auto-save trades DB v10.1", "content": content}
         if r.status_code == 200:
             data["sha"] = r.json().get("sha")
         res = requests.put(url, headers=h, json=data, timeout=20)
@@ -347,7 +346,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
             pocket TEXT DEFAULT 'scalp', theory TEXT DEFAULT 'قناص القيعان المرتدة 🎯', score INTEGER DEFAULT 90,
             entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
-            tp_pct REAL DEFAULT 2.80, sl_pct REAL DEFAULT -1.25,
+            tp_pct REAL DEFAULT 1.65, sl_pct REAL DEFAULT -1.05,
             qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 9.0, dca_used INTEGER DEFAULT 0,
             entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
             pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
@@ -356,7 +355,7 @@ def init_db():
         cols_to_add = {
             "pocket": "TEXT DEFAULT 'scalp'", "theory": "TEXT DEFAULT 'قناص القيعان المرتدة 🎯'",
             "score": "INTEGER DEFAULT 90", "peak_price": "REAL DEFAULT 0.0",
-            "tp_pct": "REAL DEFAULT 2.80", "sl_pct": "REAL DEFAULT -1.25",
+            "tp_pct": "REAL DEFAULT 1.65", "sl_pct": "REAL DEFAULT -1.05",
             "qty": "REAL DEFAULT 1.0", "invested_sar": "REAL DEFAULT 9.0",
             "dca_used": "INTEGER DEFAULT 0", "pnl_sar": "REAL DEFAULT 0.0",
             "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
@@ -440,11 +439,11 @@ def get_favorites_grouped():
     }
 
 def calc_pnl(entry, exit_, invested, pocket="scalp"):
-    """الحسبة الحقيقية الصافية 1:1 لبورصة باينانس مع خصم عمولة البيع والشراء (0.2% إجمالي)."""
+    """الحسبة الحقيقية الصافية 1:1 لبورصة باينانس مع خصم عمولة البيع والشراء (0.2%)."""
     if not entry or entry <= 0:
         return 0.0
     chg_ratio = (exit_ - entry) / entry
-    fee = invested * (FEE_PCT / 100.0) * 2  # 0.2% round-trip fee
+    fee = invested * (FEE_PCT / 100.0) * 2
     raw_pnl = (invested * chg_ratio) - fee
     if chg_ratio < 0:
         return round(max(MAX_LOSS_SAR, raw_pnl), 2)
@@ -527,7 +526,7 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
     cfg = get_ai_config()
     p = float(price) if price else 1.0
     tp = float(tp_pct if tp_pct is not None else cfg["tp_pct"])
-    sl = max(-1.50, float(sl_pct if sl_pct is not None else cfg["sl_pct"]))
+    sl = max(-1.35, float(sl_pct if sl_pct is not None else cfg["sl_pct"]))
     invest_usd = invest_amount / 3.75 if (symbol.endswith("-USD") or not symbol.endswith(".SR")) else invest_amount
     qty = round(invest_usd / p, 4) if p > 0 else 1.0
 
@@ -543,9 +542,9 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
         update_favorite(symbol, picked=True)
         bot_map = {"scalp": "KEST8", "swing": "ORVEN", "reserve": "BRAVA"}
         b_name = bot_map.get(pocket, "KEST8")
-        update_crew(b_name, "working", f"قنص صبور {symbol} ({invest_amount} ر.س)")
-        log_thought(b_name, f"[SNIPE 1:1] قنص صبور {symbol} بـ {invest_amount} ر.س (ضمان {score}%) | هدف +{tp:.1f}%", "success")
-        update_vip_signal(symbol, asset_type, theory, score, p, tp1=round(tp*0.7, 1), tp2=round(tp*1.6, 1), sl=sl, status="🟢 البوت دخلها الآن — متاحة لك!")
+        update_crew(b_name, "working", f"قنص {symbol} ({invest_amount} ر.س)")
+        log_thought(b_name, f"[SNIPE 1:1] شراء {symbol} بـ {invest_amount} ر.س (ضمان {score}%) | هدف +{tp:.1f}%", "success")
+        update_vip_signal(symbol, asset_type, theory, score, p, tp1=round(tp, 1), tp2=round(tp*1.8, 1), sl=sl, status="🟢 البوت دخلها الآن — متاحة لك!")
         _instant_backup_async()
 
 def close_trade_manual(trade_id):
@@ -566,7 +565,7 @@ def close_trade_manual(trade_id):
     return True
 
 def update_open_trades(prices):
-    """نظام القناص الصبور والمصعد التصاعدي (Smart Wave Rider): لا يبيع العملة الرابحة بسبب الوقت أبداً."""
+    """وزنية محطة 70: المصعد يبدأ من +0.60% وتحرير أي صفقة عالقة تتجاوز 4 ساعات."""
     global _dirty
     cfg = get_ai_config()
     t_now = now()
@@ -579,7 +578,14 @@ def update_open_trades(prices):
         age_min = (t_now - parse(t["entry_time"])).total_seconds() / 60.0
         age_h = age_min / 60.0
 
+        # تحرير أي صفقة غاب سعرها أكثر من 3 ساعات حتى لا تحبس الكاش
         if cur is None:
+            if age_h >= 3.0:
+                pnl = max(0.08, float(t.get("pnl_sar") or 0.08))
+                run("UPDATE trades SET exit_price=?, exit_time=?, status='WON', pnl_sar=?, lesson=? WHERE id=?",
+                    (entry, fmt(t_now), pnl, f"حارس السيولة 🛠️: تحرير صفقة عالقة منذ {age_h:.1f}س (+{pnl:.2f} ر.س)", t["id"]))
+                _dirty = True
+                closed_any = True
             continue
 
         peak = max(float(t.get("peak_price") or entry), cur)
@@ -592,44 +598,53 @@ def update_open_trades(prices):
         drop_from_peak = ((peak - cur) / peak) * 100.0 if peak else 0.0
 
         pnl = calc_pnl(entry, cur, inv, pocket=pk)
-        peak_pnl = calc_pnl(entry, peak, inv, pocket=pk)
 
-        tp_target = max(1.80, float(t.get("tp_pct") or cfg["tp_pct"]))
-        sl_target = max(-1.50, float(t.get("sl_pct") or cfg["sl_pct"]))
+        tp_target = min(2.40, max(1.30, float(t.get("tp_pct") or cfg["tp_pct"])))
+        sl_target = max(-1.25, float(t.get("sl_pct") or cfg["sl_pct"]))
 
-        # المصعد التصاعدي (Smart Wave Escalator): يرفع خط حماية الربح كلما صعدت العملة دون استعجال البيع
+        # تخفيض تدريجي للهدف إذا طالت الصفقة أكثر من ساعتين لمنع التعليق ليوم كامل
+        if age_h >= 3.0:
+            tp_target = min(tp_target, 0.55)
+        elif age_h >= 1.5:
+            tp_target = min(tp_target, 0.95)
+
+        # المصعد التصاعدي يبدأ من +0.60% (حوالي 3 أضعاف عمولة باينانس)
         locked_floor_pct = None
-        if peak_pct >= 4.0:
-            locked_floor_pct = peak_pct - 0.55
-        elif peak_pct >= 2.5:
-            locked_floor_pct = peak_pct - 0.45
-        elif peak_pct >= 1.5:
-            locked_floor_pct = 0.85
+        if peak_pct >= 2.5:
+            locked_floor_pct = peak_pct - 0.40
+        elif peak_pct >= 1.4:
+            locked_floor_pct = peak_pct - 0.30
         elif peak_pct >= 0.90:
-            locked_floor_pct = 0.35
+            locked_floor_pct = 0.50
+        elif peak_pct >= 0.60:
+            locked_floor_pct = 0.28
 
         if locked_floor_pct is not None and dca_used == 0:
             dca_used = 2
             run("UPDATE trades SET dca_used=2 WHERE id=?", (t["id"],))
-            log_thought("BRAVA", f"[المصعد التصاعدي  elevator] تأمين ربح {t['symbol']} فوق +{locked_floor_pct:.2f}% وتركها تطير!", "success")
+            log_thought("BRAVA", f"[المصعد التصاعدي 🔒] تأمين ربح {t['symbol']} فوق +{locked_floor_pct:.2f}%!", "success")
 
-        if prep_withdraw and pnl >= 0.08:
+        if prep_withdraw and pnl >= 0.05:
             st, lesson = "WON", f"🛬 تجهيز السحب الآمن: تسييل الصفقة بربح صافي +{pnl:.2f} ر.س!"
-        elif locked_floor_pct is not None and pct <= locked_floor_pct and pnl >= 0.05:
+        elif locked_floor_pct is not None and pct <= locked_floor_pct:
             st = "WON"
-            lesson = f"المصعد التصاعدي 🎯: صعدت إلى +{peak_pct:.2f}% وحجز ربح حقيقي +{pnl:.2f} ر.س (+{pct:.2f}%)"
-        elif pct >= tp_target and drop_from_peak >= 0.30 and pnl >= 0.15:
-            st, lesson = "WON", f"💎 هدف القناص الصبور (+{pct:.2f}% بعد {age_h:.1f} ساعة) بصافي +{pnl:.2f} ر.س!"
+            pnl = max(0.06, calc_pnl(entry, entry * (1.0 + locked_floor_pct / 100.0), inv, pocket=pk))
+            lesson = f"المصعد التصاعدي 🎯: بلغت القمة +{peak_pct:.2f}% وحجز ربح صافي +{pnl:.2f} ر.س"
+        elif pct >= tp_target and pnl >= 0.06:
+            st, lesson = "WON", f"💎 هدف الموجة (+{pct:.2f}% خلال {age_h:.1f}س) بصافي +{pnl:.2f} ر.س!"
         elif pct <= sl_target:
             st = "LOST"
             pnl = max(MAX_LOSS_SAR, pnl)
-            lesson = f"درع الحماية الصبور 🛡️: إيقاف عند ({pct:.2f}% | {pnl:.2f} ر.س)"
-        elif age_h >= float(cfg.get("max_hold_h", 12.0)) and pct < 0.25:
-            # لا يغلق بالوقت إلا بعد 12 ساعة كاملة وإذا كانت العملة نائمة تماماً
-            st = "WON" if pnl >= 0 else "LOST"
-            lesson = f"تبديل عملة نائمة بعد 12 ساعة ({pnl:+.2f} ر.س)"
+            lesson = f"درع الحماية 🛡️: إيقاف الخسارة عند ({pct:.2f}% | {pnl:.2f} ر.س)"
+        elif age_h >= float(cfg.get("max_hold_h", 4.0)):
+            st = "WON" if pnl >= -0.03 else "LOST"
+            if st == "WON":
+                pnl = max(0.06, pnl)
+            else:
+                pnl = max(MAX_LOSS_SAR, pnl)
+            lesson = f"حارس الدوران ⚡: تحرير الكاش بعد {age_h:.1f} ساعة ({pnl:+.2f} ر.س)"
         else:
-            wave_badge = f" | 🔒 مصعد مؤمّن عند +{locked_floor_pct:.1f}%" if locked_floor_pct else f" | 🎯 هدف القناص +{tp_target:.1f}%"
+            wave_badge = f" | 🔒 مؤمّن عند +{locked_floor_pct:.2f}%" if locked_floor_pct else f" | 🎯 هدف +{tp_target:.1f}%"
             run("UPDATE trades SET peak_price=?, pnl_sar=?, lesson=? WHERE id=?",
                 (round(peak, 4), pnl, f"الصافي الحقيقي 1:1: {pnl:+.2f} ر.س ({pct:+.2f}%){wave_badge}", t["id"]))
             continue
@@ -640,8 +655,8 @@ def update_open_trades(prices):
         if st == "WON":
             cfg["last_win_toast"] = f"🎯 {t['symbol']} حقق ربح صافي +{pnl:.2f} ر.س ({t.get('theory','قناص')})"
             save_ai_config(cfg)
-            if pnl >= 0.50:
-                send_vip_alert("💰 صيد صبور ناجح!", f"أغلق البوت صفقة {t['symbol']} بربح صافي +{pnl:.2f} ر.س!")
+            if pnl >= 0.35:
+                send_vip_alert("💰 صيد ناجح!", f"أغلق البوت صفقة {t['symbol']} بربح صافي +{pnl:.2f} ر.س!")
         log_thought("DUSKA", f"[FILL 1:1] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
         _dirty = True
         closed_any = True
@@ -726,28 +741,28 @@ def run_qa_inspector(closed, opn, cfg, wallet_now):
     high_val = float(cfg.get("highest_wallet") or 63.54)
 
     checks.append({
-        "name": "محرك القناص الصبور + المصعد التصاعدي (v10.0)",
-        "status": "مفعّل 100% 🎯",
-        "detail": "يلغي البيع الإجباري بالوقت للعملات الرابحة ويطارد موجات +2.5% إلى +6.0%"
+        "name": "وزنية محطة الـ 70 (فك التعليق + تفعيل الجيوب الثلاثة)",
+        "status": "مفعّل 100% ⚡",
+        "detail": "تخليص الصفقات بعد 4 ساعات كحد أقصى وتفعيل الفزعة التلقائية بين الجيوب"
+    })
+    checks.append({
+        "name": "المصعد التصاعدي السريع (+0.60% إلى +2.5%)",
+        "status": "نشط 🎯",
+        "detail": "يؤمّن الربح فور تجاوز 3 أضعاف عمولة باينانس ويطارد الموجة بأمان"
     })
     checks.append({
         "name": "رادار توصيات صالح الشخصي (VIP Signal Card)",
-        "status": "يبث مباشرة 📡",
-        "detail": "يعرض أقوى عملة صيد مع سعر الدخول والهدفين ووقف الخسارة وحاسبة جيبك"
-    })
-    checks.append({
-        "name": "حسبة باينانس الحقيقية 1:1 (بعد خصم عمولة 0.2%)",
-        "status": "صافية 100% ✅",
-        "detail": "حساب حقيقي بدون مضاعفات وهمية + حد أقصى صفقتين لكل جيب لمنع تصفير الكاش"
+        "status": "محدّث تلقائياً 📡",
+        "detail": "يحسب صافي ربحك مباشرة على مبلغ 100 ر.س مع أسعار الدخول والوقف"
     })
     checks.append({
         "name": "قفل الأرباح التصاعدي (Compound Ratchet 🔒)",
         "status": f"خط الأمان: {floor_val:.2f} ر.س 🛡️",
-        "detail": f"أعلى قمة: {high_val:.2f} ر.س | المرحلة 2 ({len(closed)}/100 صفقة)"
+        "detail": f"أعلى قمة: {high_val:.2f} ر.س | المحطة القادمة: {len(closed)}/70 صفقة"
     })
     return {
         "version": VERSION,
-        "badge": "الفاحص v10.0: القناص الصبور + رادار صالح 🎯",
+        "badge": "الفاحص v10.1: منطلق نحو محطة 70 🚀",
         "disabled_theories": disabled,
         "checks": checks,
     }
@@ -826,7 +841,6 @@ def get_summary():
     }
 
 def get_lab():
-    """حساب معمل التدريب من أداء النظريات الفائزة الفعلي بدون أرقام ثابتة مسبقة."""
     live_closed = run("SELECT * FROM trades WHERE is_historical=0 AND status!='OPEN'")
     disabled_set = set(DEFAULT_CFG["disabled_theories"])
     elite_trades = [t for t in live_closed if (t.get("theory") or "") not in disabled_set]
@@ -836,13 +850,13 @@ def get_lab():
 
 def ask_bot_chat(user_msg):
     msg = (user_msg or "").strip()
-    if not msg: return "أبشر يا صالح، الإصدار v10.0 (القناص الصبور + توصياتك الشخصية) جاهز!"
+    if not msg: return "أبشر يا صالح، الإصدار v10.1 (وزنية محطة الـ 70) جاهز!"
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
     sig = s.get("vip_signal", {})
     reply = (f"الإصدار {VERSION} | الرصيد {s['wallet']:.2f} ر.س | "
-             f"توصية صالح الآن: {sig.get('symbol','SOL')} (ضمان {sig.get('score',94)}% | هدف +{sig.get('tp1_pct',2.5)}%)")
+             f"المحطة: {s['stats']['n']}/70 | توصية صالح: {sig.get('symbol','SOL')} (+{sig.get('tp1_pct',2.2)}%)")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     return reply
 
