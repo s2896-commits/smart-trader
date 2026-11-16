@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "FIL-USD",
-    "name": "فايل كوين",
-    "theory": "قناص القيعان المرتدة 🎯",
-    "score": 93,
-    "entry": 0.6006,
-    "tp1_pct": 1.3,
-    "tp2_pct": 2.3,
-    "sl_pct": -0.85,
+    "symbol": "INJ-USD",
+    "name": "إنجيكتيف",
+    "theory": "جدار الحيتان (Order Block) 🐋",
+    "score": 90,
+    "entry": 6.704,
+    "tp1_pct": 1.6,
+    "tp2_pct": 2.8,
+    "sl_pct": -1.02,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "04:12"
+    "updated_at": "11:04"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -55,7 +55,9 @@
     "SEI-USD": -2,
     "ADA-USD": -2,
     "AAVE-USD": -2,
-    "MANA-USD": -2
+    "MANA-USD": -2,
+    "ARB11841-USD": -2,
+    "FIL-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -71,9 +73,8 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "FET-USD": "2026-11-16 05:41",
-    "SAND-USD": "2026-11-16 05:41",
-    "ICP-USD": "2026-11-16 07:37"
+    "ARB11841-USD": "2026-11-16 23:04",
+    "FIL-USD": "2026-11-16 23:04"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -85,34 +86,34 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+3%)",
-    "ETH (+5%)",
-    "SOL (+3%)",
-    "XRP (+4%)",
-    "ZEC (+3%)",
-    "UNI (+7%)"
+    "BTC (+1%)",
+    "ETH (+2%)",
+    "SOL (+2%)",
+    "ASTER (+4%)",
+    "UNI (+4%)",
+    "ZEC (+0%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
-  "last_win_toast": "🎯 FIL-USD حقق ربح صافي +0.16 ر.س (قناص القيعان المرتدة 🎯)",
+  "last_win_toast": "🎯 UNI7083-USD حقق ربح صافي +0.13 ر.س (جدار الحيتان (Order Block) 🐋)",
   "best_theory": "قناص القيعان المرتدة 🎯 (+2.29 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (30%)",
       "status": "working",
-      "bubble": "قنص FIL-USD (9.6 ر.س)"
+      "bubble": "قنص 7010.SR (7.8 ر.س)"
     },
     "ORVEN": {
       "role": "جدار الحيتان (30%)",
       "status": "working",
-      "bubble": "قنص UNI7083-USD (9.6 ر.س)"
+      "bubble": "قنص INJ-USD (7.8 ر.س)"
     },
     "BRAVA": {
       "role": "موجات الحيتان (30%)",
       "status": "working",
-      "bubble": "قنص HBAR-USD (9.6 ر.س)"
+      "bubble": "انفجار الحيتان + المصعد 💎"
     },
     "MIRAX": {
       "role": "رادار صالح + السقف",
@@ -122,7 +123,7 @@
     "DUSKA": {
       "role": "الفاحص (محطة 70)",
       "status": "working",
-      "bubble": "محطة التقييم (66/70) 🚀"
+      "bubble": "محطة التقييم (72/70) 🚀"
     }
   },
   "min_size": 5.0,
