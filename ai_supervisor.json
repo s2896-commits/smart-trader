@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "LTC-USD",
-    "name": "لايتكوين",
-    "theory": "جدار الحيتان (Order Block) 🐋",
+    "symbol": "SEI-USD",
+    "name": "سي نتورك",
+    "theory": "انفجار الحيتان 3x 💎",
     "score": 94,
-    "entry": 44.456,
-    "tp1_pct": 1.3,
-    "tp2_pct": 2.3,
-    "sl_pct": -0.85,
+    "entry": 0.0392,
+    "tp1_pct": 1.4,
+    "tp2_pct": 2.4,
+    "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "13:30"
+    "updated_at": "13:31"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -103,27 +103,27 @@
     "KEST8": {
       "role": "الخزان العادي (15+)",
       "status": "working",
-      "bubble": "قنص LTC-USD (9.6 ر.س)"
+      "bubble": "قنص SEI-USD (9.0 ر.س)"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
       "status": "scanning",
-      "bubble": "جدار الحيتان (RSI<50) 🐋"
+      "bubble": "خزان الفزعة (10 ر.س للمضمون) 🔥"
     },
     "BRAVA": {
       "role": "قفل السلة الجماعي",
       "status": "working",
-      "bubble": "انفجار الحيتان + المصعد 💎"
+      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺"
     },
     "MIRAX": {
       "role": "طوارئ حديدي (5 ر.س)",
       "status": "working",
-      "bubble": "يحدث توصيات صالح الشخصية 📡"
+      "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️"
     },
     "DUSKA": {
       "role": "الفاحص v11.0 (100)",
       "status": "working",
-      "bubble": "محطة التقييم (72/70) 🚀"
+      "bubble": "المرحلة النهائية (72/100) 🚀"
     }
   },
   "max_open_per_pocket": 2,
