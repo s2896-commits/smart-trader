@@ -52,7 +52,7 @@
     "ETC-USD": -2,
     "STX4847-USD": -2,
     "OP-USD": -2,
-    "SEI-USD": -2,
+    "SEI-USD": -4,
     "ADA-USD": -2,
     "AAVE-USD": -2,
     "MANA-USD": -2,
@@ -74,7 +74,8 @@
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
     "ARB11841-USD": "2026-11-16 23:04",
-    "FIL-USD": "2026-11-16 23:04"
+    "FIL-USD": "2026-11-16 23:04",
+    "SEI-USD": "2026-11-17 09:27"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -86,18 +87,18 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-2%)",
-    "ETH (-1%)",
-    "SOL (-1%)",
-    "ZEC (-3%)",
-    "XRP (-1%)",
-    "ASTER (+2%)"
+    "BTC (+0%)",
+    "ETH (-0%)",
+    "SOL (+0%)",
+    "ASTER (+5%)",
+    "ZEC (-1%)",
+    "XRP (+1%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
-  "last_win_toast": "🎯 UNI7083-USD حقق ربح صافي +0.13 ر.س (جدار الحيتان (Order Block) 🐋)",
+  "last_win_toast": "🎯 LTC-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
   "best_theory": "قناص القيعان المرتدة 🎯 (+2.09 ر.س)",
   "crew_state": {
     "KEST8": {
@@ -123,7 +124,7 @@
     "DUSKA": {
       "role": "الفاحص v11.0 (100)",
       "status": "working",
-      "bubble": "المرحلة النهائية (72/100) 🚀"
+      "bubble": "المرحلة النهائية (77/100) 🚀"
     }
   },
   "max_open_per_pocket": 2,
