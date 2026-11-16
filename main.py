@@ -101,7 +101,7 @@ PAGE = r'''<!DOCTYPE html>
 <meta name="theme-color" content="#04070e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Grok Bot v10.1 • Checkpoint 70</title>
+<title>Grok Bot v11.0 • 3-Tank System & Basket TP</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#04070e;--surface:#090e1a;--card:#0e1628;--line:rgba(255,255,255,.09);--pri:#38bdf8;--pur:#a855f7;
@@ -119,11 +119,11 @@ button{font-family:inherit;cursor:pointer}
 .btn{background:rgba(56,189,248,.14);color:var(--pri);border:1px solid rgba(56,189,248,.35);padding:6px 9px;border-radius:11px;font-size:10px;font-weight:800;white-space:nowrap}
 
 .qa-strip{display:flex;justify-content:space-between;align-items:center;gap:6px;background:linear-gradient(90deg,#06281e,#0c192c);border:1px solid rgba(16,185,129,.45);border-radius:12px;padding:7px 10px;margin-bottom:9px;font-size:10px;font-weight:800}
-.ver-pill{background:linear-gradient(135deg,#10b981,#38bdf8);color:#04070e;padding:2px 8px;border-radius:7px;font-size:9.5px;font-weight:900}
+.ver-pill{background:linear-gradient(135deg,#f59e0b,#10b981);color:#04070e;padding:2px 8px;border-radius:7px;font-size:9.5px;font-weight:900}
 
 .army-banner{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border:1px solid rgba(168,85,247,.4);border-radius:13px;padding:8px;margin-bottom:9px;text-align:center}
 .ab-item span{font-size:9px;color:#cbd5e1;display:block}
-.ab-item strong{font-size:10.5px;color:#38bdf8;font-weight:900}
+.ab-item strong{font-size:10px;color:#38bdf8;font-weight:900}
 
 .top-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
 .mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
@@ -183,8 +183,8 @@ button{font-family:inherit;cursor:pointer}
 .pockets{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
 .pk{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px 4px;text-align:center}
 .pk.res10{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.06)}
-.pk h4{margin:0 0 3px;font-size:9px;color:var(--pri)}.pk strong{font-size:12px;display:block}
-.pk small{font-size:8px;color:var(--mut);display:block;margin-top:2px;line-height:1.3}
+.pk h4{margin:0 0 3px;font-size:8.8px;color:var(--pri)}.pk strong{font-size:12px;display:block}
+.pk small{font-size:7.8px;color:var(--mut);display:block;margin-top:2px;line-height:1.3}
 
 .risk-row{display:flex;gap:5px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:7px 9px;margin-bottom:10px;font-size:11px;font-weight:800}
 .rbtn{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--mut);padding:6px 4px;border-radius:8px;font-size:10.5px;font-weight:800}
@@ -225,33 +225,33 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
  </div>
 
  <div class="qa-strip">
-  <div><span class="ver-pill" id="ver-bdg">v10.1 • محطة 70</span> <span id="qa-summary" style="margin-right:5px;color:#34d399">🚀 فك التعليق + تفعيل الجيوب الـ 3</span></div>
+  <div><span class="ver-pill" id="ver-bdg">v11.0 • Build #110</span> <span id="qa-summary" style="margin-right:5px;color:#34d399">🛡️ خزانات 15/10/5 + قفل السلة الجماعي</span></div>
   <span id="hb-status" style="color:var(--grn)">⚡ بث باينانس نشط</span>
  </div>
 
  <div class="army-banner">
-  <div class="ab-item"><span>⚡ دوران متوازن (1-4س)</span><strong style="color:#34d399">موجات +1.3% إلى +2.8%</strong></div>
-  <div class="ab-item"><span>🤝 الفزعة بين الجيوب</span><strong style="color:#fbbf24">تحويل الفرص للجيب الفاضي</strong></div>
-  <div class="ab-item"><span>⚖️ الحسبة الحقيقية 1:1</span><strong style="color:#38bdf8">تقييم الأداء عند 70 صفقة</strong></div>
+  <div class="ab-item"><span>⛽ خزانات السيولة</span><strong style="color:#34d399">15 عادي • 10 فزعة • 5 طوارئ</strong></div>
+  <div class="ab-item"><span>🧺 قفل السلة الجماعي</span><strong style="color:#fbbf24">يحجز القمة عند +0.45 ر.س</strong></div>
+  <div class="ab-item"><span>💰 تقسيمة كل 10 ر.س</span><strong style="color:#38bdf8">3 ر.س سحب + 7 ر.س للأساسي</strong></div>
  </div>
 
  <div id="tab-live" class="tab act">
   <div class="top-metrics">
-   <div class="mcard pri"><span class="lbl">رصيد المحفظة اللحظي</span><h2 class="big sec-num" id="w">63.34 ر.س</h2><small class="sec-num" id="pnl" style="font-size:10px;font-weight:800">الصافي: +3.34 ر.س</small></div>
-   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big sec-num" id="rem-600" style="color:var(--pri)">536.7 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">انفجار الحيتان 3x 💎</small></div>
-   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big sec-num" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 6.89 ر.س للتقسيمة</small></div>
+   <div class="mcard pri"><span class="lbl">رصيد المحفظة اللحظي</span><h2 class="big sec-num" id="w">63.06 ر.س</h2><small class="sec-num" id="pnl" style="font-size:10px;font-weight:800">الصافي: +3.06 ر.س</small></div>
+   <div class="mcard"><span class="lbl">باقي لهدف 600 (10x)</span><h2 class="big sec-num" id="rem-600" style="color:var(--pri)">536.9 ر.س</h2><small id="best-th" style="font-size:9px;color:var(--grn)">قناص القيعان المرتدة 🎯</small></div>
+   <div class="mcard vlt"><span class="lbl">خزنة السحب 💰</span><h2 class="big sec-num" id="vault" style="color:#34d399">0.00 ر.س</h2><small id="split-rem" style="font-size:9px;color:#a7f3d0">باقي 6.83 ر.س للتقسيمة</small></div>
   </div>
 
   <div class="vip-card">
    <div class="vip-hd">
     <div>
      <strong style="font-size:12px;color:#fbbf24">🎯 رادار توصيات صالح الشخصي (ادخل مع البوت)</strong>
-     <span id="vip-status" style="font-size:9.5px;color:#34d399;display:block">🟢 جاهزة للمراقبة والدخول</span>
+     <span id="vip-status" style="font-size:9.5px;color:#34d399;display:block">🟢 منطقة دخول مباشر — سيولة عالية</span>
     </div>
     <span class="bd OPEN" id="vip-score">ضمان 94%</span>
    </div>
    <div class="vip-grid">
-    <div><span>العملة المرشحة</span><strong id="vip-sym" style="color:var(--pri)">SOL/USDT</strong></div>
+    <div><span>العملة المرشحة</span><strong id="vip-sym" style="color:var(--pri)">BTC/USDT</strong></div>
     <div><span>سعر الدخول</span><strong id="vip-entry" style="color:#f8fafc">مباشر</strong></div>
     <div><span>هدف 1 / هدف 2</span><strong id="vip-tp" style="color:var(--grn)">+2.2% / +4.5%</strong></div>
     <div><span>وقف الحماية</span><strong id="vip-sl" style="color:var(--red)">-1.2%</strong></div>
@@ -272,7 +272,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
    <div class="vb-top">
     <div>
      <strong style="font-size:11.5px;color:#34d399;display:block">🏦 مركز السحب وتصفية المكافأة (مسحوب: <span class="sec-num" id="w-tot">0.00</span> ر.س)</strong>
-     <span style="font-size:9.5px;color:#a7f3d0">فعل "تجهيز السحب" قبل سحب مبلغ التعزيز بـ 12 ساعة لتسييل الصفقات بربح</span>
+     <span style="font-size:9.5px;color:#a7f3d0">كل 10 ر.س أرباح = 3 ر.س لخزنة السحب + 7 ر.س تضاف للمبلغ الأساسي وتكبر الخزانات</span>
     </div>
     <div style="display:flex;gap:5px">
      <button class="prep-btn" id="prep-w-btn" onclick="togglePrepW()">🛬 تجهيز السحب</button>
@@ -290,22 +290,23 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   </div>
 
   <div class="split-board">
-   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">27 (44.3%)</strong><small class="sec-num" id="sb-w-sar" style="color:#6ee7b7">+7.61 ر.س</small></div>
-   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">34 (55.7%)</strong><small class="sec-num" id="sb-l-sar" style="color:#fda4af">-4.50 ر.س</small></div>
-   <div class="sb-col net"><span>🔥 كفاءة النظريات النشطة</span><strong id="sb-net-wr" style="color:var(--pri)">50% للجيل الجديد</strong><small class="sec-num" id="sb-net-sar">الصافي المغلق: +3.11 ر.س</small></div>
+   <div class="sb-col win"><span>✅ الصفقات الناجحة</span><strong id="sb-w-cnt" style="color:var(--grn)">31 (43.1%)</strong><small class="sec-num" id="sb-w-sar" style="color:#6ee7b7">+8.27 ر.س</small></div>
+   <div class="sb-col loss"><span>🛡️ الصفقات الخاسرة</span><strong id="sb-l-cnt" style="color:var(--red)">41 (56.9%)</strong><small class="sec-num" id="sb-l-sar" style="color:#fda4af">-5.10 ر.س</small></div>
+   <div class="sb-col net"><span>🔥 كفاءة النظريات النشطة</span><strong id="sb-net-wr" style="color:var(--pri)">47.5% للجيل الجديد</strong><small class="sec-num" id="sb-net-sar">الصافي المغلق: +3.17 ر.س</small></div>
   </div>
 
   <div class="goal-bar">
-   <div style="display:flex;justify-content:space-between"><span>🏆 محطة الفحص القادمة (من 61 إلى 70 صفقة) | (<b id="pg-t">61/70</b>)</span><b id="goal-pct" style="color:var(--grn)">1.06x</b></div>
-   <div class="g-track"><div class="g-fill" id="pg-b" style="width:87%"></div></div>
-   <div class="g-marks"><span>تخرج 50 ✅</span><span>61 الحالية</span><span>65 صفقة</span><span>فحص 70 🎯</span><span>100 👑</span></div>
+   <div style="display:flex;justify-content:space-between"><span>🏆 المرحلة النهائية نحو 100 صفقة (خزانات 15/10/5) | (<b id="pg-t">72/100</b>)</span><b id="goal-pct" style="color:var(--grn)">1.05x</b></div>
+   <div class="g-track"><div class="g-fill" id="pg-b" style="width:72%"></div></div>
+   <div class="g-marks"><span>تخرج 50 ✅</span><span>محطة 70 ✅</span><span>80 صفقة</span><span>90 صفقة</span><span>تخرج 100 👑</span></div>
   </div>
 
   <div class="crew-bar" id="crew-bar"></div>
+  <!-- عرض الخزانات الثلاثة + قفل السلة الجماعي -->
   <div class="pockets" id="pockets-grid"></div>
 
   <div class="chart-box">
-   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span class="sec-num" id="k-pro" style="color:#4ade80">بمحفظة ×10: +33.40 ر.س</span></div>
+   <div class="box-hd"><span>📈 منحنى نمو المحفظة نحو الـ 600 ر.س</span><span class="sec-num" id="k-pro" style="color:#4ade80">بمحفظة ×10: +31.70 ر.س</span></div>
    <svg id="pnl-svg" viewBox="0 0 260 95" style="width:100%;height:95px;overflow:visible"></svg>
   </div>
 
@@ -317,8 +318,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   <div class="risk-row">
    <span>🎚️ نمط الصيد:</span>
    <button class="rbtn" id="rk-low" onclick="setRisk('low')">🛡️ قناص حذر (85+)</button>
-   <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">🎯 قناص متوازن (81+)</button>
-   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 قناص نشط (78+)</button>
+   <button class="rbtn on" id="rk-medium" onclick="setRisk('medium')">🎯 قناص متوازن (82+)</button>
+   <button class="rbtn" id="rk-high" onclick="setRisk('high')">🔥 قناص نشط (79+)</button>
   </div>
 
   <div class="chips" id="chips"></div>
@@ -334,13 +335,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
   <div class="hero-lab">
    <span class="lbl" style="color:#e9d5ff">🧪 إحصائيات النظريات النشطة الفعلية (بدون النظريات المعزولة)</span>
    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-    <div><span class="lbl">صافي أرباح النظريات الفائزة</span><h2 class="big" id="lab-real-pnl">+3.92 ر.س</h2></div>
-    <div style="text-align:left"><span class="lbl">يعادل بمحفظة 600 ر.س (×10)</span><strong style="font-size:18px;color:#4ade80" id="lab-real-10x">+39.20 ر.س</strong></div>
+    <div><span class="lbl">صافي أرباح النظريات الفائزة</span><h2 class="big" id="lab-real-pnl">+3.80 ر.س</h2></div>
+    <div style="text-align:left"><span class="lbl">يعادل بمحفظة 600 ر.س (×10)</span><strong style="font-size:18px;color:#4ade80" id="lab-real-10x">+38.00 ر.س</strong></div>
    </div>
    <div class="pockets" style="grid-template-columns:repeat(3,1fr);margin-top:9px;margin-bottom:0">
-    <div class="pk"><h4>نسبة نجاح النخبة</h4><strong style="color:var(--grn)" id="lab-real-wr">55.3%</strong></div>
-    <div class="pk"><h4>معامل الربح</h4><strong id="lab-real-pf">1.69</strong></div>
-    <div class="pk"><h4>صفقات النخبة</h4><strong id="lab-real-n">38</strong></div>
+    <div class="pk"><h4>نسبة نجاح النخبة</h4><strong style="color:var(--grn)" id="lab-real-wr">47.5%</strong></div>
+    <div class="pk"><h4>معامل الربح</h4><strong id="lab-real-pf">1.62</strong></div>
+    <div class="pk"><h4>صفقات النخبة</h4><strong id="lab-real-n">44</strong></div>
    </div>
   </div>
 
@@ -362,8 +363,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,14,26,.97);backdrop
    </div>
   </div>
   <div class="sys">
-   <span>🚨 تحرير الصفقات العالقة فوراً</span>
-   <button class="btn" style="background:rgba(244,63,94,.2);color:#fda4af;border-color:#f43f5e" onclick="emergencyKill()">إغلاق الصفقات المفتوحة وتحرير الكاش</button>
+   <span>🧺 قفل السلة الجماعي يدويًا</span>
+   <button class="btn" style="background:rgba(16,185,129,.2);color:#34d399;border-color:#10b981" onclick="emergencyKill()">إغلاق السلة وإرجاع الكاش للخزانات</button>
   </div>
   <div id="qa-checks-list"></div>
   <div class="sys"><span>🔔 قناة إشعارات الأهداف وتوصيات صالح (ntfy)</span><span style="color:var(--grn)">smax_trader_vip_999</span></div>
@@ -406,8 +407,8 @@ function setMyBet(amt){
 
 function updateVipCardUI(){
  [50,100,200,300].forEach(v=>{if($('my-'+v))$('my-'+v).className='cbtn'+(myBetSar===v?' on':'');});
- const sig = liveVipSignal || (D && D.live && D.live.vip_signal) || {symbol:'SOL-USD',score:94,entry:0,tp1_pct:2.2,tp2_pct:4.5,sl_pct:-1.2,status:'🟢 جاهزة للمراقبة والدخول'};
- const cleanSym = String(sig.symbol||'SOL-USD').replace('-USD','').replace(/[0-9]+/g,'');
+ const sig = liveVipSignal || (D && D.live && D.live.vip_signal) || {symbol:'BTC-USD',score:94,entry:0,tp1_pct:2.2,tp2_pct:4.5,sl_pct:-1.2,status:'🟢 منطقة دخول مباشر — سيولة عالية'};
+ const cleanSym = String(sig.symbol||'BTC-USD').replace('-USD','').replace(/[0-9]+/g,'');
  const curP = livePrices[cleanSym+'USDT'] || sig.entry || 0;
  $('vip-sym').innerText = cleanSym + ' / USDT';
  $('vip-score').innerText = `ضمان ${sig.score||94}%`;
@@ -447,14 +448,14 @@ function drawObsidianGraph(scanCnt, openTrades){
   lines+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(56,189,248,0.14)" stroke-width="0.6"/>`;
   nodes+=`<circle cx="${x}" cy="${y}" r="2" fill="#38bdf8" opacity="0.75"/>`;
  }
- const coreNodes=(openTrades&&openTrades.length)?openTrades.slice(0,6):[{symbol:'BTC'},{symbol:'SOL'},{symbol:'INJ'},{symbol:'FIL'}];
+ const coreNodes=(openTrades&&openTrades.length)?openTrades.slice(0,6):[{symbol:'BTC'},{symbol:'SOL'},{symbol:'INJ'},{symbol:'SUI'}];
  coreNodes.forEach((t,idx)=>{
   const ang=(idx/coreNodes.length)*Math.PI*2 - 0.4;
   const x=(cx+Math.cos(ang)*30).toFixed(1), y=(cy+Math.sin(ang)*30).toFixed(1);
   lines+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f59e0b" stroke-width="1.2"/>`;
   nodes+=`<circle cx="${x}" cy="${y}" r="4" fill="#10b981"/><text x="${x}" y="${y-7}" fill="#f8fafc" font-size="6.5" text-anchor="middle">${esc(String(t.symbol||'').replace('-USD',''))}</text>`;
  });
- nodes+=`<circle cx="${cx}" cy="${cy}" r="11" fill="rgba(245,158,11,0.25)"/><circle cx="${cx}" cy="${cy}" r="6.5" fill="#f59e0b"/><text x="${cx}" y="142" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="middle">نواة القناص (${scanCnt}+ عملة • محطة 70)</text>`;
+ nodes+=`<circle cx="${cx}" cy="${cy}" r="11" fill="rgba(245,158,11,0.25)"/><circle cx="${cx}" cy="${cy}" r="6.5" fill="#f59e0b"/><text x="${cx}" y="142" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="middle">نواة الخزانات الثلاثة (15 / 10 / 5 ر.س • قفل السلة)</text>`;
  svg.innerHTML=lines+nodes;
 }
 
@@ -474,8 +475,8 @@ function drawChart(curve,wallet,baseCap){
 
 function cards(ts,empty){
  if(!ts||!ts.length)return '<div class="empty">'+empty+'</div>';
- const S={OPEN:'جارية (ركوب الموجة 🎯) ⏳',WON:'ناجحة ✅',LOST:'خاسرة 🛡️'};
- const P={scalp:'KEST8 (القيعان 30% 🎯)',swing:'ORVEN (الحيتان 30% 🐋)',reserve:'BRAVA (الموجات 30% 💎)'};
+ const S={OPEN:'جارية (مراقبة السلة 🧺) ⏳',WON:'ناجحة ✅',LOST:'خاسرة 🛡️'};
+ const P={scalp:'خزان الدخول العادي 🎯',swing:'خزان الفزعة (10 ر.س) 🔥',reserve:'قفل السلة والموجات 💎'};
  return ts.map(t=>{
   const c=t.symbol.endsWith('.SR')?' ر.س':'$';
   let p=Number(t.pnl_sar||0);
@@ -487,21 +488,21 @@ function cards(ts,empty){
     curPriceTxt = lp.toFixed(4)+'$ ⚡';
     const ratio=(lp-t.entry_price)/t.entry_price;
     const fee = t.invested_sar * 0.002;
-    p = ratio>=0 ? Number(((t.invested_sar*ratio) - fee).toFixed(2)) : Math.max(-0.16, Number(((t.invested_sar*ratio) - fee).toFixed(2)));
+    p = ratio>=0 ? Number(((t.invested_sar*ratio) - fee).toFixed(2)) : Math.max(-0.15, Number(((t.invested_sar*ratio) - fee).toFixed(2)));
    }
   }
-  const pk=P[t.pocket]||'KEST8';
+  const pk=P[t.pocket]||'خزان عادي';
   return `<div class="t ${t.status}"><div class="tt"><div><span class="sym">${esc(t.symbol)}</span><span class="as">${esc(t.asset_type)} • ${pk} • ضمان ${t.score||90}%</span></div><span class="bd ${t.status}">${S[t.status]||t.status}</span></div>
   <div class="m"><div><span>مبلغ الصفقة (${t.invested_sar} ر.س)</span><strong>${t.entry_price}${c}</strong></div><div><span>السعر الآن/الخروج</span><strong style="color:var(--pri)">${curPriceTxt}</strong></div><div><span>الصافي الحقيقي 1:1</span><strong style="color:${col(p)}">${sg(p)} ر.س</strong></div></div>
-  <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'تحت رقابة المصعد التصاعدي (+0.60%) وحارس الـ 4 ساعات...')}</div></div>`;
+  <div class="note">💡 ${esc(t.reason)}</div><div class="les">📌 ${esc(t.lesson||'تحت رقابة قفل السلة الجماعي (+0.45 ر.س) والمصعد التصاعدي...')}</div></div>`;
  }).join('')}
 
 function render(){
  if(!D)return; const L=D.live,s=L.stats,c=D.cfg,lab=D.lab||{},qa=L.qa||{};
  const baseCap=parseFloat(localStorage.getItem('cap_override') || L.active_capital || D.start || 60);
  $('cap-val').innerText=baseCap.toFixed(0)+' ر.س';
- $('ver-bdg').innerText=D.version||c.version||'v10.1 • محطة 70';
- if(qa.badge)$('qa-summary').innerText='🚀 '+qa.badge;
+ $('ver-bdg').innerText=D.version||c.version||'v11.0 • Build #110';
+ if(qa.badge)$('qa-summary').innerText='🛡️ '+qa.badge;
 
  const prepOn = localStorage.getItem('prep_w')==='1' || Boolean(L.prep_withdraw_mode);
  $('prep-w-btn').className = 'prep-btn' + (prepOn?' on':'');
@@ -521,7 +522,7 @@ function render(){
    if(livePrices[cleanSym] && t.entry_price>0){
     const ratio=(livePrices[cleanSym]-t.entry_price)/t.entry_price;
     const fee = t.invested_sar * 0.002;
-    sumFl += ratio>=0 ? ((t.invested_sar*ratio) - fee) : Math.max(-0.16, ((t.invested_sar*ratio) - fee));
+    sumFl += ratio>=0 ? ((t.invested_sar*ratio) - fee) : Math.max(-0.15, ((t.invested_sar*ratio) - fee));
    }else{sumFl += Number(t.pnl_sar||0);}
   });
   liveFloating = Number(sumFl.toFixed(2));
@@ -535,7 +536,7 @@ function render(){
  $('manual-w-btn').disabled=(availVault<=0);
  $('split-rem').innerText='باقي '+(L.next_split_remaining||10).toFixed(2)+' ر.س للتقسيمة';
  $('rem-600').innerText=(600-adjWallet).toFixed(1)+' ر.س';
- $('best-th').innerText=s.best_theory||'انفجار الحيتان 3x 💎';
+ $('best-th').innerText=s.best_theory||'قناص القيعان المرتدة 🎯';
  $('k-pro').innerText=`بمحفظة ×10: ${sg(tot*10)} ر.س`;
 
  updateVipCardUI();
@@ -549,15 +550,15 @@ function render(){
  $('sb-w-sar').innerText=`+${(s.gross_win||0).toFixed(2)} ر.س`;
  $('sb-l-cnt').innerText=`${s.lost||0} (${s.loss_rate||0}%)`;
  $('sb-l-sar').innerText=`-${(s.gross_loss||0).toFixed(2)} ر.س`;
- $('sb-net-wr').innerText=`${s.elite_wr||55.0}% للجيل الجديد`;
+ $('sb-net-wr').innerText=`${s.elite_wr||47.5}% للجيل الجديد`;
  $('sb-net-sar').innerText=`الصافي المغلق: ${sg(s.pnl||0)} ر.س`;
 
  if($('lab-real-pnl')){
-  const ep = Number(s.elite_pnl || s.pnl || 3.11);
+  const ep = Number(s.elite_pnl || s.pnl || 3.17);
   $('lab-real-pnl').innerText = sg(ep) + ' ر.س';
   $('lab-real-10x').innerText = sg(ep*10) + ' ر.س';
-  $('lab-real-wr').innerText = (s.elite_wr||55.0) + '%';
-  $('lab-real-pf').innerText = s.pf || '1.69';
+  $('lab-real-wr').innerText = (s.elite_wr||47.5) + '%';
+  $('lab-real-pf').innerText = s.pf || '1.62';
   $('lab-real-n').innerText = (s.elite_w||0) + (s.elite_l||0);
  }
 
@@ -577,16 +578,17 @@ function render(){
  }).join('');
 
  const mult=(adjWallet/baseCap).toFixed(2);$('goal-pct').innerText=mult+'x';
- const targetStation = s.n < 70 ? 70 : 100;
- $('pg-t').innerText = `${s.n}/${targetStation}`;
- $('pg-b').style.width = Math.min(100, Math.max(10, (s.n/targetStation)*100)) + '%';
+ $('pg-t').innerText = `${s.n}/100`;
+ $('pg-b').style.width = Math.min(100, Math.max(10, s.n)) + '%';
 
- const emRes = Number(L.emergency_reserve || (adjWallet*0.10)).toFixed(1);
- const pkHtml=['scalp','swing','reserve'].map(k=>{
-  const p=pks[k]||{name:k,allocated:18.9,cash:18.9,invested:0};
-  return `<div class="pk"><h4>${esc(p.name)}</h4><strong style="color:#f8fafc">${Number(p.allocated).toFixed(1)} ر.س</strong><small>متاح: <b style="color:var(--grn)">${Number(p.cash).toFixed(1)}</b> | شغال: <b style="color:var(--amb)">${Number(p.invested).toFixed(1)}</b></small></div>`;
- }).join('');
- $('pockets-grid').innerHTML = pkHtml + `<div class="pk res10"><h4 style="color:#fbbf24">احتياط (10%) 🛡️</h4><strong style="color:#fbbf24">${emRes} ر.س</strong><small>طوارئ وضمان 92+</small></div>`;
+ // عرض الخزانات الثلاثة (العادي + الفزعة 10 + الطوارئ 5 بنصفه المتاح) + حالة السلة الجماعية
+ const tk = L.tanks || {normal_alloc:45, normal_cash:45, boost_alloc:10, boost_cash:10, iron_total:5, iron_usable:2.5, iron_locked:2.5};
+ $('pockets-grid').innerHTML = `
+  <div class="pk"><h4>خزان الدخول العادي 🎯</h4><strong style="color:#f8fafc">${Number(tk.normal_alloc).toFixed(1)} ر.س</strong><small>متاح الآن: <b style="color:var(--grn)">${Number(tk.normal_cash).toFixed(1)} ر.س</b></small></div>
+  <div class="pk"><h4>خزان الفزعة (91%+) 🔥</h4><strong style="color:#38bdf8">${Number(tk.boost_alloc).toFixed(1)} ر.س</strong><small>متاح للمضمون: <b style="color:var(--grn)">${Number(tk.boost_cash).toFixed(1)} ر.س</b></small></div>
+  <div class="pk res10"><h4 style="color:#fbbf24">خزان الطوارئ (5) 🛡️</h4><strong style="color:#fbbf24">${Number(tk.iron_total).toFixed(1)} ر.س</strong><small>متاح: <b>${Number(tk.iron_usable).toFixed(1)}</b> | مقفل: <b>${Number(tk.iron_locked).toFixed(1)}</b></small></div>
+  <div class="pk"><h4>ربح السلة المفتوحة 🧺</h4><strong style="color:${col(liveFloating)}">${sg(liveFloating)} ر.س</strong><small>يقفل جماعياً عند <b style="color:var(--grn)">+0.45</b></small></div>
+ `;
 
  const curRisk=localStorage.getItem('risk_override')||c.risk_mode||'medium';
  ['low','medium','high'].forEach(m=>$('rk-'+m).className='rbtn'+(curRisk===m?' on':''));
@@ -654,7 +656,7 @@ async function liveBinanceTick(manual=false){
 }
 
 async function emergencyKill(){
- if(!confirm('🚨 هل تريد إغلاق جميع الصفقات المفتوحة الآن وتحرير الكاش بالكامل؟'))return;
+ if(!confirm('🧺 هل تريد إغلاق جميع الصفقات المفتوحة الآن وإرجاع السيولة للخزانات؟'))return;
  try{await fetch('/api/kill_switch')}catch(e){}
  load(true);
 }
@@ -681,7 +683,7 @@ async function withdrawNow(isAuto=false, autoAmt=0){
  const localW=parseFloat(localStorage.getItem('local_withdrawn')||'0');
  const srvW=L.withdrawn_total||0;
  const avail=isAuto ? autoAmt : Math.max(0,(L.personal_vault||0)-Math.max(0,localW-srvW));
- if(avail<=0){alert('الخزنة حالياً 0.00 ر.س — باقي '+(L.next_split_remaining||6.89).toFixed(2)+' ر.س لاكتمال أول تقسيمة!');return;}
+ if(avail<=0){alert('الخزنة حالياً 0.00 ر.س — باقي '+(L.next_split_remaining||6.83).toFixed(2)+' ر.س لاكتمال أول تقسيمة!');return;}
  if(!isAuto && !confirm(`هل تريد سحب ${avail.toFixed(2)} ر.س من الخزنة إلى جيبك الخاص الآن؟`))return;
  localStorage.setItem('local_withdrawn', String(Math.max(srvW,localW)+avail));
  try{await fetch('/api/withdraw?amount='+avail)}catch(e){}
