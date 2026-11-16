@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "SEI-USD",
-    "name": "سي نتورك",
-    "theory": "انفجار الحيتان 3x 💎",
+    "symbol": "XLM-USD",
+    "name": "ستيلر",
+    "theory": "جدار الحيتان (Order Block) 🐋",
     "score": 94,
-    "entry": 0.0392,
+    "entry": 0.1375,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
-    "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "13:31"
+    "status": "🟢 فرصة صيد جاهزة للدخول الآن",
+    "updated_at": "13:34"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -86,10 +86,10 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
+    "BTC (-2%)",
     "ETH (-1%)",
     "SOL (-1%)",
-    "ZEC (-2%)",
+    "ZEC (-3%)",
     "XRP (-1%)",
     "ASTER (+2%)"
   ],
@@ -102,8 +102,8 @@
   "crew_state": {
     "KEST8": {
       "role": "الخزان العادي (15+)",
-      "status": "working",
-      "bubble": "قنص SEI-USD (9.0 ر.س)"
+      "status": "scanning",
+      "bubble": "خزان التداول العادي (15+) 🎯"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
