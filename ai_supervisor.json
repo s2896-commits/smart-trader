@@ -1,21 +1,21 @@
 {
-  "version": "v10.1 (Build #101 • محطة 70)",
+  "version": "v11.0 (Build #110 • خزانات 15/10/5 + قفل السلة)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
   "highest_wallet": 63.66,
   "ratchet_floor": 62.81,
   "rsi_min": 32,
   "rsi_max": 58,
-  "tp_pct": 1.65,
-  "sl_pct": -1.05,
-  "trail_trigger": 0.65,
-  "trail_gap": 0.22,
-  "breakeven_trigger": 0.55,
-  "breakeven_lock": 0.28,
+  "tp_pct": 1.45,
+  "sl_pct": -0.95,
+  "trail_trigger": 0.55,
+  "trail_gap": 0.2,
+  "breakeven_trigger": 0.45,
+  "breakeven_lock": 0.25,
   "trade_size": 5.0,
-  "max_open": 6,
-  "max_open_per_pocket": 2,
-  "max_hold_h": 4.0,
+  "max_open": 5,
+  "max_entries_per_scan": 2,
+  "max_hold_h": 3.5,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "INJ-USD",
-    "name": "إنجيكتيف",
+    "symbol": "LTC-USD",
+    "name": "لايتكوين",
     "theory": "جدار الحيتان (Order Block) 🐋",
-    "score": 90,
-    "entry": 6.704,
-    "tp1_pct": 1.6,
-    "tp2_pct": 2.8,
-    "sl_pct": -1.02,
+    "score": 94,
+    "entry": 44.456,
+    "tp1_pct": 1.3,
+    "tp2_pct": 2.3,
+    "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "11:04"
+    "updated_at": "13:30"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -86,46 +86,47 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+1%)",
-    "ETH (+2%)",
-    "SOL (+2%)",
-    "ASTER (+4%)",
-    "UNI (+4%)",
-    "ZEC (+0%)"
+    "BTC (-1%)",
+    "ETH (-1%)",
+    "SOL (-1%)",
+    "ZEC (-2%)",
+    "XRP (-1%)",
+    "ASTER (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 UNI7083-USD حقق ربح صافي +0.13 ر.س (جدار الحيتان (Order Block) 🐋)",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.29 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.09 ر.س)",
   "crew_state": {
     "KEST8": {
-      "role": "قناص القيعان (30%)",
+      "role": "الخزان العادي (15+)",
       "status": "working",
-      "bubble": "قنص 7010.SR (7.8 ر.س)"
+      "bubble": "قنص LTC-USD (9.6 ر.س)"
     },
     "ORVEN": {
-      "role": "جدار الحيتان (30%)",
-      "status": "working",
-      "bubble": "قنص INJ-USD (7.8 ر.س)"
+      "role": "خزان الفزعة (10 ر.س)",
+      "status": "scanning",
+      "bubble": "جدار الحيتان (RSI<50) 🐋"
     },
     "BRAVA": {
-      "role": "موجات الحيتان (30%)",
+      "role": "قفل السلة الجماعي",
       "status": "working",
       "bubble": "انفجار الحيتان + المصعد 💎"
     },
     "MIRAX": {
-      "role": "رادار صالح + السقف",
+      "role": "طوارئ حديدي (5 ر.س)",
       "status": "working",
       "bubble": "يحدث توصيات صالح الشخصية 📡"
     },
     "DUSKA": {
-      "role": "الفاحص (محطة 70)",
+      "role": "الفاحص v11.0 (100)",
       "status": "working",
       "bubble": "محطة التقييم (72/70) 🚀"
     }
   },
+  "max_open_per_pocket": 2,
   "min_size": 5.0,
   "med_size": 10.0,
   "max_size": 15.0,
