@@ -27,25 +27,25 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "ICP-USD",
-    "name": "إنترنت كمبيوتر",
+    "symbol": "FET-USD",
+    "name": "فيتش AI",
     "theory": "قناص القيعان المرتدة 🎯",
     "score": 87,
-    "entry": 2.4089,
-    "tp1_pct": 1.4,
-    "tp2_pct": 2.4,
-    "sl_pct": -0.8,
+    "entry": 0.1293,
+    "tp1_pct": 1.8,
+    "tp2_pct": 3.3,
+    "sl_pct": -1.14,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "14:34"
+    "updated_at": "22:25"
   },
   "coin_reputation": {
     "SOL-USD": -4,
     "FET-USD": -4,
-    "ETH-USD": -2,
+    "ETH-USD": -4,
     "ALGO-USD": -2,
     "SAND-USD": -4,
     "SOXLB-USD": -2,
-    "ICP-USD": -4,
+    "ICP-USD": -5,
     "INJ-USD": -2,
     "ATOM-USD": -2,
     "NEAR-USD": -2,
@@ -72,7 +72,10 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {},
+  "banned": {
+    "ETH-USD": "2026-11-18 10:25",
+    "ICP-USD": "2026-11-18 10:25"
+  },
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -83,25 +86,25 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+0%)",
-    "ETH (+0%)",
-    "HYPE (+3%)",
-    "XRP (+1%)",
-    "DOGE (+1%)",
-    "ENA (+0%)"
+    "BTC (-2%)",
+    "ETH (-2%)",
+    "SOL (+2%)",
+    "ZEC (+4%)",
+    "XRP (+0%)",
+    "UNI (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (12) 🎯",
-  "last_win_toast": "🎯 BCH-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
+  "last_win_toast": "🎯 DOT-USD حقق ربح صافي +0.06 ر.س وعاد أصل المبلغ للخزان!",
   "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (15+) 🎯",
-      "stage": "⚙️ شغال بالصفقات"
+      "status": "working",
+      "bubble": "قنص FET-USD (7.5 ر.س)",
+      "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -124,8 +127,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "فحص سريع لـ 776 عملة",
-      "stage": "✅ تم الفحص السريع"
+      "bubble": "سلّم FET-USD إلى KEST8",
+      "stage": "🧠 سلّم KEST8"
     }
   },
   "max_open_per_pocket": 2,
