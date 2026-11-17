@@ -31,7 +31,7 @@ IGNORE_BASES = {
 
 TZ_SA, TZ_US = ZoneInfo("Asia/Riyadh"), ZoneInfo("America/New_York")
 _scan_lock = threading.Lock()
-_news_cache = {"ts": 0, "score": 20, "mood": "خزانات 15/10/5 🛡️", "danger": False}
+_news_cache = {"ts": 0, "score": 20, "mood": "القائد الذكي v12.0 🧠", "danger": False}
 
 def is_clean_crypto_symbol(sym: str) -> bool:
     if not sym.isalpha() or sym in IGNORE_BASES or len(sym) > 5:
@@ -116,7 +116,7 @@ def check_news_and_mood():
     global _news_cache
     if time.time() - _news_cache["ts"] < 90:
         return _news_cache
-    score, danger, mood = 20, False, "خزانات 15/10/5 🛡️"
+    score, danger, mood = 20, False, "القائد الذكي v12.0 🧠"
     try:
         r = requests.get("https://api.alternative.me/fng/?limit=1", timeout=4)
         if r.status_code == 200:
@@ -140,8 +140,8 @@ def is_1h_anchor_bullish(df_1h):
         return True
 
 def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, brain, favs, summary, tf_mode="15m"):
-    """الإصدار v11.0: السحب المتدرج من الخزانات الثلاثة (العادي -> خزان الفزعة 10 -> نصف خزان الطوارئ 2.5)."""
-    if cfg.get("prep_withdraw_mode", False):
+    """الإصدار v12.0: الفحص السريع من القائد واختيار المساعد الأنسب + السحب المتدرج من الخزانات."""
+    if cfg.get("prep_withdraw_mode", False) or cfg.get("paused", False):
         return 0, "scalp", 0.0, 1.45, -0.95, "", "", 0.0
 
     c, o, h, l = d["Close"].iloc[:-1], d["Open"].iloc[:-1], d["High"].iloc[:-1], d["Low"].iloc[:-1]
@@ -177,16 +177,20 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
 
     theory = None
     base_score = 65
+    helper_bot = "KEST8"
 
     if green_bounce and 18 <= cur_rsi <= 41:
         theory = "قناص القيعان المرتدة 🎯"
         base_score = 89 + (4 if cur_rsi <= 33 else 0)
+        helper_bot = "KEST8"
     elif green_bounce and order_block_support and anchor_ok and 26 <= cur_rsi <= 47 and vol_ratio >= 1.05:
         theory = "جدار الحيتان (Order Block) 🐋"
         base_score = 88 + (4 if vol_ratio >= 1.45 else 0)
+        helper_bot = "ORVEN"
     elif anchor_ok and vol_ratio >= 1.35 and a_up >= 70 and a_osc >= 25 and price >= cur_sma20 and price > cur_open and 36 <= cur_rsi <= 56:
         theory = "انفجار الحيتان 3x 💎"
         base_score = 91 + (3 if vol_ratio >= 1.75 else 0)
+        helper_bot = "BRAVA"
     else:
         return 0, "scalp", 0.0, 1.45, -0.95, "", "", price
 
@@ -208,7 +212,7 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
     if 3 <= hour_sa < 7:
         min_req += 2
 
-    if float(summary.get("growth_total") or 63.06) <= float(cfg.get("ratchet_floor") or 62.85):
+    if float(summary.get("growth_total") or 63.66) <= float(cfg.get("ratchet_floor") or 63.00):
         min_req = max(min_req, 86)
 
     if cfg.get("observer_mode"):
@@ -216,7 +220,6 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
     if total_score < min_req:
         return 0, "scalp", 0.0, 1.45, -0.95, "", "", price
 
-    # منطق الخزانات الثلاثة المتدرجة (15 عادي / 10 فزعة للمضمون / 5 طوارئ يسحب نصفها فقط)
     tanks = summary.get("tanks", {})
     normal_cash = float(tanks.get("normal_cash", 15.0))
     boost_cash = float(tanks.get("boost_cash", 10.0))
@@ -228,19 +231,16 @@ def evaluate_squads(symbol, d, d_1h, btc_chg, btc_flash_drop, news_info, cfg, br
     invest_size = 0.0
     tank_label = ""
 
-    # 1. إذا كان خزان الدخول العادي متاحاً فيه سيولة كافية: يدخل منه أولاً
     if normal_cash >= 6.0 * scale:
-        chosen_pocket = "scalp"
+        chosen_pocket = "scalp" if helper_bot == "KEST8" else ("reserve" if helper_bot == "BRAVA" else "scalp")
         desired = (9.0 if total_score >= 91 else 7.5) * scale
         invest_size = min(round(desired, 1), normal_cash)
-        tank_label = "خزان الدخول العادي 🎯"
-    # 2. إذا امتلأ الخزان العادي وجاءت فرصة مضمونة جداً (91%+): يفتح خزان الفزعة (10 ر.س)
+        tank_label = f"اختيار القائد: {helper_bot} • خزان عادي 🎯"
     elif total_score >= 91 and boost_cash >= 5.5 * scale:
         chosen_pocket = "swing"
-        # إذا كانت الفرصة خارقة (94%+) يدعمها بنصف خزان الطوارئ (2.5 ر.س) دون لمس النصف الثاني أبداً!
         extra_iron = iron_usable if total_score >= 94 else 0.0
         invest_size = min(round(10.0 * scale, 1), round(boost_cash + extra_iron, 1))
-        tank_label = "خزان الفزعة 10 ر.س 🔥" + (" + نصف الطوارئ 🛡️" if extra_iron > 0 else "")
+        tank_label = "اختيار القائد: ORVEN • خزان الفزعة 10 🔥" + (" + نصف الطوارئ 🛡️" if extra_iron > 0 else "")
     else:
         return 0, "scalp", 0.0, 1.45, -0.95, "", "", price
 
@@ -288,10 +288,10 @@ def supervisor():
 
     guard_active = bool(guard_until and guard_until > db.fmt(t))
     cfg["observer_mode"] = guard_active or news_info["danger"]
-    cfg["market_mood"] = "تجهيز السحب 🛬" if cfg.get("prep_withdraw_mode") else ("درع الصبر 🛡️" if guard_active else news_info["mood"])
+    cfg["market_mood"] = "موقوف مؤقتاً ⏸️" if cfg.get("paused") else ("تجهيز السحب 🛬" if cfg.get("prep_withdraw_mode") else ("درع الصبر 🛡️" if guard_active else news_info["mood"]))
 
     summ = db.get_summary()
-    cfg["best_theory"] = summ["stats"].get("best_theory", "انفجار الحيتان 3x 💎")
+    cfg["best_theory"] = summ["stats"].get("best_theory", "قناص القيعان المرتدة 🎯")
     db.save_ai_config(cfg)
     return cfg, news_info
 
@@ -335,12 +335,12 @@ def _single_scan_pass():
     favs = db.get_favorites_grouped()
     brain = db.get_brain()
 
-    db.update_crew("KEST8", "scanning", "خزان التداول العادي (15+) 🎯")
-    db.update_crew("ORVEN", "scanning", "خزان الفزعة (10 ر.س للمضمون) 🔥")
-    db.update_crew("BRAVA", "working", "قفل ربح السلة (+0.45 ر.س) 🧺")
-    db.update_crew("MIRAX", "working", "طوارئ (5 ر.س • نصفها مقفل) 🛡️")
-    db.update_crew("DUSKA", "working", f"المرحلة النهائية ({summ['stats']['n']}/100) 🚀")
-    db.log_thought("خزانات v11.0 🛡️", f"فحص {total_mkt_coins} عملة | خزانات 15/10/5 + قفل السلة الجماعي ({summ['stats']['n']}/100)", "info")
+    db.update_crew("DUSKA", "working", f"فحص سريع لـ {total_mkt_coins} عملة", stage="✅ تم الفحص السريع")
+    db.update_crew("KEST8", "scanning", "قناص القيعان (15+) 🎯", stage="⚙️ شغال بالصفقات" if len(open_syms) > 0 else "⏳ ينتظر إشارة")
+    db.update_crew("ORVEN", "scanning", "خزان الفزعة (10 ر.س) 🔥", stage="⏳ ينتظر 91%+")
+    db.update_crew("BRAVA", "working", "قفل ربح السلة (+0.45 ر.س) 🧺", stage="⚙️ يراقب السلة")
+    db.update_crew("MIRAX", "working", "طوارئ (5 ر.س • نصفها مقفل) 🛡️", stage="🛡️ يحرس الكاش")
+    db.log_thought("القائد v12.0 🧠", f"الفحص السريع شمل {total_mkt_coins} عملة | كفاءة النخبة {summ['stats']['elite_wr']}% ({summ['stats']['n']}/100)", "info")
 
     candidates = []
     for s in active_symbols:
@@ -360,9 +360,8 @@ def _single_scan_pass():
 
     if candidates:
         top = candidates[0]
-        db.update_vip_signal(top[1], top[8], top[7], top[0], top[9], tp1=round(top[4], 1), tp2=round(top[4]*1.8, 1), sl=top[5], status="🟢 فرصة صيد جاهزة للدخول الآن")
+        db.update_vip_signal(top[1], top[8], top[7], top[0], top[9], tp1=round(top[4], 1), tp2=round(top[4]*1.8, 1), sl=top[5], status="🟢 فرصة صيد رشحها القائد الآن")
 
-    # فلتر منع التكدس (Anti-Cluster): أقصى دخول في الفحص الواحد صفقتان فقط!
     entries_this_scan = 0
     max_per_scan = int(cfg.get("max_entries_per_scan", 2))
 
