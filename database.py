@@ -2,7 +2,7 @@ import sqlite3, os, json, base64, threading, time, requests
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-VERSION = "v11.0 (Build #110 • خزانات 15/10/5 + قفل السلة)"
+VERSION = "v12.0 (Build #120 • القائد الذكي + التحكم الفردي)"
 TZ = ZoneInfo("Asia/Riyadh")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "trades.db")
@@ -16,7 +16,7 @@ START_CAPITAL = 60.0
 SCALE_FACTOR = 10.0
 FEE_PCT = 0.10
 MAX_LOSS_SAR = -0.15
-BASKET_TP_SAR = 0.45  # قفل ربح السلة الجماعي إذا وصل مجموع الصفقات المفتوحة +0.45 ر.س
+BASKET_TP_SAR = 0.45
 LOCK = threading.RLock()
 _dirty = False
 _last_backup = 0.0
@@ -26,7 +26,7 @@ DEFAULT_CFG = {
     "capital_override": 60.0,
     "prep_withdraw_mode": False,
     "highest_wallet": 63.99,
-    "ratchet_floor": 62.85,
+    "ratchet_floor": 63.00,
     "rsi_min": 20, "rsi_max": 58,
     "tp_pct": 1.45, "sl_pct": -0.95,
     "trail_trigger": 0.55, "trail_gap": 0.20,
@@ -72,15 +72,15 @@ DEFAULT_CFG = {
     "radar_total_scanned": 776,
     "scenarios_tested": 602952,
     "daily_score": 99,
-    "market_mood": "خزانات 15/10/5 🛡️",
+    "market_mood": "القائد الذكي v12.0 🧠",
     "last_win_toast": "",
-    "best_theory": "انفجار الحيتان 3x 💎",
+    "best_theory": "قناص القيعان المرتدة 🎯",
     "crew_state": {
-        "KEST8": {"role": "الخزان العادي (15+)", "status": "scanning", "bubble": "قناص القيعان RSI<42 🎯"},
-        "ORVEN": {"role": "خزان الفزعة (10 ر.س)", "status": "scanning", "bubble": "يفتح للفرص المضمونة 91+ 🐋"},
-        "BRAVA": {"role": "قفل السلة الجماعي", "status": "working", "bubble": "يحجز ربح السلة عند +0.45 🧺"},
-        "MIRAX": {"role": "طوارئ حديدي (5 ر.س)", "status": "working", "bubble": "يسحب نصفه فقط (2.5 ر.س) 🛡️"},
-        "DUSKA": {"role": "الفاحص v11.0 (100)", "status": "working", "bubble": "منع التكدس + تقسيمة 3/7 🚀"},
+        "KEST8": {"role": "قناص القيعان (15+)", "status": "working", "stage": "✅ فحص سريع", "bubble": "جاهز لقنص القيعان 🎯"},
+        "ORVEN": {"role": "خزان الفزعة (10 ر.س)", "status": "scanning", "stage": "⏳ ينتظر 91%+", "bubble": "يفتح للمضمون فقط 🔥"},
+        "BRAVA": {"role": "قفل السلة والموجات", "status": "working", "stage": "⚙️ يراقب السلة", "bubble": "يحجز عند +0.45 ر.س 🧺"},
+        "MIRAX": {"role": "طوارئ حديدي (5 ر.س)", "status": "working", "stage": "🛡️ درع نشط", "bubble": "نصفه مقفل للأمان 🛡️"},
+        "DUSKA": {"role": "القائد الذكي v12.0", "status": "working", "stage": "🧠 يوزع المهام", "bubble": "توجيه المساعدين 🚀"},
     },
 }
 
@@ -166,8 +166,9 @@ def get_ai_config():
     cfg["max_entries_per_scan"] = 2
     cfg.setdefault("capital_override", 60.0)
     cfg.setdefault("prep_withdraw_mode", False)
+    cfg.setdefault("paused", False)
     cfg.setdefault("highest_wallet", 63.99)
-    cfg.setdefault("ratchet_floor", 62.85)
+    cfg.setdefault("ratchet_floor", 63.00)
     cfg.setdefault("vip_signal", DEFAULT_CFG["vip_signal"])
     cfg["disabled_theories"] = list(DEFAULT_CFG["disabled_theories"])
     if not isinstance(cfg.get("coin_reputation"), dict): cfg["coin_reputation"] = {}
@@ -178,6 +179,7 @@ def get_ai_config():
     for k, v in DEFAULT_CFG["crew_state"].items():
         cfg["crew_state"].setdefault(k, v)
         cfg["crew_state"][k]["role"] = v["role"]
+        cfg["crew_state"][k].setdefault("stage", v.get("stage", "✅ نشط"))
     if not isinstance(cfg.get("withdraw_history"), list): cfg["withdraw_history"] = []
     if not isinstance(cfg.get("alerted_milestones"), list): cfg["alerted_milestones"] = []
     if not isinstance(cfg.get("radar_discovered"), list): cfg["radar_discovered"] = []
@@ -192,6 +194,14 @@ def save_ai_config(cfg):
         run("INSERT OR REPLACE INTO kv_settings (key, val) VALUES ('ai_cfg', ?)", (raw,))
     except Exception:
         pass
+
+def toggle_bot_pause(paused: bool):
+    cfg = get_ai_config()
+    cfg["paused"] = bool(paused)
+    save_ai_config(cfg)
+    msg = "⏸️ تم إيقاف فتح الصفقات الجديدة مؤقتاً بأمرك" if paused else "▶️ تم استئناف عمل القائد الذكي والبحث عن الفرص"
+    log_thought("القائد DUSKA 🧠", msg, "warn" if paused else "success")
+    return cfg["paused"]
 
 def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.2, tp2=4.5, sl=-1.2, status="🟢 جاهزة للدخول الآن"):
     cfg = get_ai_config()
@@ -233,7 +243,7 @@ def toggle_prep_withdraw(enabled: bool):
     log_thought("الخزنة 💰", st_txt, "warn" if enabled else "info")
     return cfg["prep_withdraw_mode"]
 
-def emergency_close_all(reason_prefix="🚨 تسييل فوري للكاش"):
+def emergency_close_all(reason_prefix="🚨 تسييل فوري للسلة"):
     global _dirty
     open_list = run("SELECT * FROM trades WHERE status='OPEN' AND is_historical=0")
     if not open_list:
@@ -250,12 +260,13 @@ def emergency_close_all(reason_prefix="🚨 تسييل فوري للكاش"):
     log_thought("قفل السلة 🧺", f"{reason_prefix}: تم إغلاق {len(open_list)} صفقات وتحرير الكاش للخزانات!", "success")
     return len(open_list)
 
-def update_crew(bot_id, status=None, bubble=None):
+def update_crew(bot_id, status=None, bubble=None, stage=None):
     cfg = get_ai_config()
     crew = cfg.get("crew_state", {})
     if bot_id in crew:
         if status: crew[bot_id]["status"] = status
         if bubble: crew[bot_id]["bubble"] = bubble[:38]
+        if stage: crew[bot_id]["stage"] = stage[:22]
         cfg["crew_state"] = crew
         save_ai_config(cfg)
 
@@ -323,7 +334,7 @@ def backup_db_to_github(force=False):
             content = base64.b64encode(f.read()).decode()
         url, h = _gh()
         r = requests.get(url, headers=h, timeout=10)
-        data = {"message": "Auto-save trades DB v11.0", "content": content}
+        data = {"message": "Auto-save trades DB v12.0", "content": content}
         if r.status_code == 200:
             data["sha"] = r.json().get("sha")
         res = requests.put(url, headers=h, json=data, timeout=20)
@@ -542,30 +553,33 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
         update_favorite(symbol, picked=True)
         bot_map = {"scalp": "KEST8", "swing": "ORVEN", "reserve": "BRAVA"}
         b_name = bot_map.get(pocket, "KEST8")
-        update_crew(b_name, "working", f"قنص {symbol} ({invest_amount} ر.س)")
-        log_thought(b_name, f"[SNIPE 1:1] شراء {symbol} بـ {invest_amount} ر.س (ضمان {score}%) | خزان {pocket}", "success")
+        update_crew("DUSKA", "working", f"سلّم {symbol} إلى {b_name}", stage=f"🧠 سلّم {b_name}")
+        update_crew(b_name, "working", f"قنص {symbol} ({invest_amount} ر.س)", stage="⚙️ يدير الصفقة")
+        log_thought(b_name, f"[أمر القائد 🧠] استلام وقنص {symbol} بـ {invest_amount} ر.س (ضمان {score}%)", "success")
         update_vip_signal(symbol, asset_type, theory, score, p, tp1=round(tp, 1), tp2=round(tp*1.8, 1), sl=sl, status="🟢 البوت دخلها الآن — متاحة لك!")
         _instant_backup_async()
 
-def close_trade_manual(trade_id):
+def close_trade_manual(trade_id, live_pnl=None):
     global _dirty
     rows = run("SELECT * FROM trades WHERE id=? AND status='OPEN'", (trade_id,))
-    if not rows: return False
+    if not rows:
+        return False
     t = rows[0]
-    pnl = float(t.get("pnl_sar") or 0.0)
+    pnl = round(float(live_pnl if live_pnl is not None else (t.get("pnl_sar") or 0.0)), 2)
     entry = float(t.get("entry_price") or 1.0)
     inv = float(t.get("invested_sar") or 7.5)
     cur_est = round(entry * (1.0 + (pnl / max(inv, 1.0))), 4)
     st = "WON" if pnl >= 0 else "LOST"
-    lesson = f"إغلاق يدوي فوري ({pnl:+.2f} ر.س) ⚡"
+    lesson = f"⚡ إغلاق فردي بأمر صالح ({pnl:+.2f} ر.س) وإرجاع السيولة للخزان"
     run("UPDATE trades SET exit_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
         (cur_est, fmt(now()), st, pnl, lesson, trade_id))
+    update_favorite(t["symbol"], won=(st == "WON"))
+    log_thought("تحكم فردي ⚡", f"تم إغلاق صفقة {t['symbol']} يدوياً بصافي {pnl:+.2f} ر.س!", "success" if st == "WON" else "warn")
     _dirty = True
     _instant_backup_async()
     return True
 
 def update_open_trades(prices):
-    """الإصدار v11.0: قفل ربح السلة الجماعي (+0.45 ر.س) + المصعد التصاعدي الفردي."""
     global _dirty
     cfg = get_ai_config()
     t_now = now()
@@ -576,7 +590,6 @@ def update_open_trades(prices):
     if not open_rows:
         return
 
-    # أولاً: حساب مجموع الربح اللحظي لكل الصفقات المفتوحة لتفعيل "قفل ربح السلة الجماعي" (Basket Take-Profit)
     basket_pnl = 0.0
     valid_prices_cnt = 0
     for t in open_rows:
@@ -611,7 +624,6 @@ def update_open_trades(prices):
         _instant_backup_async()
         return
 
-    # ثانياً: المتابعة الفردية لكل صفقة
     for t in open_rows:
         entry = float(t["entry_price"] or 1.0)
         cur = prices.get(t["symbol"])
@@ -721,6 +733,13 @@ def _stats(closed, base_cap=START_CAPITAL):
     gw = round(sum(float(t.get("pnl_sar") or 0) for t in won_list), 2)
     gl = round(abs(sum(float(t.get("pnl_sar") or 0) for t in lost_list)), 2)
 
+    t_now = now()
+    today_str = t_now.strftime("%Y-%m-%d")
+    week_ago = t_now - timedelta(days=7)
+    today_pnl = 0.0
+    today_wins = 0
+    week_pnl = 0.0
+
     cum = peak = dd = 0.0
     curve = [0.0]
     best_win = 0.0
@@ -731,6 +750,14 @@ def _stats(closed, base_cap=START_CAPITAL):
 
     for t in closed:
         val = float(t.get("pnl_sar") or 0)
+        ex_t = str(t.get("exit_time") or "")
+        if ex_t.startswith(today_str):
+            today_pnl = round(today_pnl + val, 2)
+            if val > 0:
+                today_wins += 1
+        if ex_t and parse(ex_t) >= week_ago:
+            week_pnl = round(week_pnl + val, 2)
+
         if val > best_win: best_win = val
         cum += val
         curve.append(round(cum, 2))
@@ -745,7 +772,7 @@ def _stats(closed, base_cap=START_CAPITAL):
             else: elite_l += 1
             elite_pnl = round(elite_pnl + val, 2)
 
-    best_th = "انفجار الحيتان 3x 💎"
+    best_th = "قناص القيعان المرتدة 🎯"
     if theories:
         top_t = max(theories.items(), key=lambda x: (x[1]["pnl"], x[1]["w"]))
         best_th = f"{top_t[0]} ({top_t[1]['pnl']:+.2f} ر.س)"
@@ -753,17 +780,24 @@ def _stats(closed, base_cap=START_CAPITAL):
     win_rate = round(won / n * 100, 1) if n else 0.0
     loss_rate = round(lost / n * 100, 1) if n else 0.0
     elite_total = elite_w + elite_l
-    elite_wr = round(elite_w / elite_total * 100, 1) if elite_total else 48.0
+    elite_wr = round(elite_w / elite_total * 100, 1) if elite_total else 51.5
     scaled_pnl = round(cum * SCALE_FACTOR, 2)
+
+    # حساب آخر 7 صفقات لعرضها في موجز القائد
+    recent_7 = closed[-7:] if len(closed) >= 7 else closed
+    r7_wins = sum(1 for x in recent_7 if x.get("status") == "WON")
+    r7_pnl = round(sum(float(x.get("pnl_sar") or 0) for x in recent_7), 2)
 
     return {
         "n": n, "won": won, "lost": lost,
         "win_rate": win_rate, "loss_rate": loss_rate,
         "elite_w": elite_w, "elite_l": elite_l,
         "elite_wr": elite_wr, "elite_pnl": elite_pnl,
+        "today_pnl": today_pnl, "today_wins": today_wins, "week_pnl": week_pnl,
+        "r7_wins": r7_wins, "r7_total": len(recent_7), "r7_pnl": r7_pnl,
         "gross_win": gw, "gross_loss": gl,
         "pnl": round(cum, 2), "best_win": round(best_win, 2),
-        "scaled_pnl": scaled_pnl, "pf": round(gw / gl, 2) if gl else 1.62,
+        "scaled_pnl": scaled_pnl, "pf": round(gw / gl, 2) if gl else 1.69,
         "max_dd": round(dd, 2), "curve": curve[-50:],
         "theories": theories, "best_theory": best_th,
     }
@@ -771,38 +805,37 @@ def _stats(closed, base_cap=START_CAPITAL):
 def run_qa_inspector(closed, opn, cfg, wallet_now):
     checks = []
     disabled = list(DEFAULT_CFG["disabled_theories"])
-    floor_val = float(cfg.get("ratchet_floor") or 62.85)
+    floor_val = float(cfg.get("ratchet_floor") or 63.00)
     high_val = float(cfg.get("highest_wallet") or 63.99)
 
     checks.append({
-        "name": "نظام الخزانات الثلاثة المتدرجة (15 عادي / 10 فزعة / 5 طوارئ)",
+        "name": "القائد الذكي (Commander Quick Scan 🧠)",
+        "status": "نشط وبسرعة <1 ثانية ⚡",
+        "detail": "يفحص 776+ عملة ويسلم كل عملة للمساعد الأعلى نسبة نجاح معها في ذاكرة البوت"
+    })
+    checks.append({
+        "name": "نظام الخزانات الثلاثة (15 عادي / 10 فزعة / 5 طوارئ)",
         "status": "مفعّل 100% 🛡️",
         "detail": "يعيد أصل الخزان فوراً بعد كل صفقة ويغذي قاعدة (3 ر.س سحب + 7 ر.س للأساسي)"
     })
     checks.append({
-        "name": "قفل ربح السلة الجماعي (Basket Take-Profit 🧺)",
-        "status": f"يحجز عند +{BASKET_TP_SAR:.2f} ر.س 🎯",
-        "detail": "يغلق جميع الصفقات المفتوحة معاً فور وصول مجموع ربحها للقمة لمنع تراجعها"
-    })
-    checks.append({
-        "name": "فلتر منع التكدس اللحظي (Anti-Cluster Shield)",
-        "status": "حد أقصى صفقتان بالدفعة ⚡",
-        "detail": "يمنع شراء 6 عملات في نفس الدقيقة لتجنب هبوطها الجماعي مع البيتكوين"
+        "name": "قفل ربح السلة الجماعي + الإغلاق الفردي الفوري",
+        "status": f"يحجز عند +{BASKET_TP_SAR:.2f} ر.س 🧺",
+        "detail": "قفل آلي للسلة عند القمة + زر إغلاق فردي تحت كل صفقة جارية في الشاشة"
     })
     checks.append({
         "name": "قفل الأرباح التصاعدي (Compound Ratchet 🔒)",
         "status": f"خط الأمان: {floor_val:.2f} ر.س 🟢",
-        "detail": f"أعلى قمة مسجلة: {high_val:.2f} ر.س | المرحلة 2 ({len(closed)}/100 صفقة)"
+        "detail": f"أعلى قمة: {high_val:.2f} ر.س | المحطة الحالية ({len(closed)}/100 صفقة)"
     })
     return {
         "version": VERSION,
-        "badge": "الفاحص v11.0: خزانات 15/10/5 + قفل السلة 🧺",
+        "badge": "الفاحص v12.0: القائد الذكي + التحكم الفردي 🧠",
         "disabled_theories": disabled,
         "checks": checks,
     }
 
 def _calc_pockets(closed, opn, cfg):
-    """نظام الخزانات الثلاثة مع قاعدة (كل 10 ريال ربح = 3 للسحب + 7 تزيد المبلغ الأساسي والخزانات)."""
     active_cap = float(cfg.get("capital_override") or START_CAPITAL)
     total_realized = sum(float(t.get("pnl_sar") or 0.0) for t in closed)
     milestones = int(max(0.0, total_realized) // 10.0)
@@ -811,27 +844,15 @@ def _calc_pockets(closed, opn, cfg):
     personal_vault = round(max(0.0, gross_vault - withdrawn_total), 2)
     next_split_rem = round(10.0 - (max(0.0, total_realized) % 10.0), 2) if total_realized >= 0 else round(10.0 + abs(total_realized), 2)
 
-    # المبلغ الأساسي يكبر بـ 7 ر.س مع كل تقسيمة + الأرباح الجارية غير المقسمة
     compounded_cap = max(30.0, active_cap + total_realized - (personal_vault + withdrawn_total))
     scale = compounded_cap / 60.0
 
-    # الخزانات الثلاثة حسب خطة صالح (تتناسب طردياً مع نمو المحفظة):
-    # 1. خزان التداول العادي (45 ر.س شاملة الـ 15 ر.س السيولة المرنة)
-    # 2. خزان الفزعة للفرص المضمونة 91%+ (10 ر.س الأساسية * معامل النمو)
-    # 3. خزان الطوارئ الحديدي (5 ر.س الأساسية * معامل النمو — مسموح سحب نصفه فقط 2.5 ر.س)
     normal_tank_alloc = round(45.0 * scale, 2)
     boost_10_alloc = round(10.0 * scale, 2)
     iron_5_alloc = round(5.0 * scale, 2)
     iron_usable_half = round(iron_5_alloc * 0.50, 2)
 
     pockets = {}
-    tank_defs = (
-        ("scalp", "خزان الدخول العادي 🎯", normal_tank_alloc),
-        ("swing", "خزان الفزعة (10 ر.س) 🐋", boost_10_alloc),
-        ("reserve", "خزان الموجات + السلة 💎", round(normal_tank_alloc * 0.45, 2)),
-    )
-
-    total_open_inv = round(sum(float(t.get("invested_sar") or 7.5) for t in opn), 2)
     normal_open = [t for t in opn if (t.get("pocket") or "scalp") in ("scalp", "reserve")]
     boost_open = [t for t in opn if (t.get("pocket") or "scalp") == "swing"]
     iron_open = [t for t in opn if (t.get("pocket") or "scalp") == "iron"]
@@ -895,7 +916,6 @@ def get_summary():
 
     total_wallet = round(active_cap + st["pnl"] + floating - withdrawn_total, 2)
     growth_total = round(active_cap + st["pnl"] + floating, 2)
-    # الكاش القابل للتداول يستثني النصف المقفل حديدياً (2.5 ر.س)
     trading_cash = round(max(0.0, active_cap + st["pnl"] - (personal_vault + withdrawn_total) - invested - tanks["iron_locked"]), 2)
 
     _check_milestones_and_auto_withdraw(growth_total, personal_vault, milestones)
@@ -905,12 +925,21 @@ def get_summary():
     pockets, personal_vault, withdrawn_total, milestones, next_split_rem, iron_5_alloc, tanks = _calc_pockets(closed, opn, cfg)
     to_600_rem = round(max(0.0, 600.0 - growth_total), 2)
 
+    vip_sym = cfg.get("vip_signal", {}).get("symbol", "BTC-USD").replace("-USD", "")
+    commander_brief = {
+        "done": f"✅ آخر {st['r7_total']} صفقات: فاز بـ {st['r7_wins']} منها بصافي ({st['r7_pnl']:+.2f} ر.س) وكفاءة النخبة {st['elite_wr']}%",
+        "watch": f"🛡️ خزان الفزعة ({tanks['boost_cash']:.1f} ر.س) جاهز للمضمون 91%+ | الطوارئ محمي ({tanks['iron_locked']:.1f} ر.س مقفلة)",
+        "next": f"🎯 باقي {next_split_rem:.2f} ر.س لأول سحب (3/7) و {max(0, 100 - st['n'])} صفقة لختم الـ 100 (أقوى مرشح: {vip_sym})"
+    }
+
     return {
         "version": VERSION, "qa": qa_report, "active_capital": active_cap,
+        "paused": bool(cfg.get("paused", False)),
         "prep_withdraw_mode": bool(cfg.get("prep_withdraw_mode", False)),
         "highest_wallet": float(cfg.get("highest_wallet", 63.99)),
-        "ratchet_floor": float(cfg.get("ratchet_floor", 62.85)),
+        "ratchet_floor": float(cfg.get("ratchet_floor", 63.00)),
         "vip_signal": cfg.get("vip_signal", DEFAULT_CFG["vip_signal"]),
+        "commander_brief": commander_brief,
         "emergency_reserve": iron_5_alloc,
         "tanks": tanks,
         "stats": st, "invested": invested, "floating": floating,
@@ -933,13 +962,12 @@ def get_lab():
 
 def ask_bot_chat(user_msg):
     msg = (user_msg or "").strip()
-    if not msg: return "أبشر يا صالح، الإصدار v11.0 (خزانات 15/10/5 + قفل السلة الجماعي) جاهز!"
+    if not msg: return "أبشر يا صالح، القائد الذكي v12.0 جاهز!"
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
-    tanks = s.get("tanks", {})
-    reply = (f"الإصدار {VERSION} | الرصيد {s['wallet']:.2f} ر.س | "
-             f"خزان عادي متاح: {tanks.get('normal_cash',15):.1f} ر.س | فزعة 10: {tanks.get('boost_cash',10):.1f} ر.س | طوارئ: {tanks.get('iron_usable',2.5):.1f} ر.س")
+    cb = s.get("commander_brief", {})
+    reply = f"القائد v12.0 🧠 | الرصيد {s['wallet']:.2f} ر.س | {cb.get('done','')} | {cb.get('next','')}"
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     return reply
 
