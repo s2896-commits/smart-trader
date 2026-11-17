@@ -99,14 +99,14 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "working",
-      "bubble": "قنص ICP-USD (7.5 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "status": "scanning",
+      "bubble": "قناص القيعان (15+) 🎯",
+      "stage": "⚙️ شغال بالصفقات"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
       "status": "scanning",
-      "bubble": "خزان الفزعة (10 ر.س للمضمون) 🔥",
+      "bubble": "خزان الفزعة (10 ر.س) 🔥",
       "stage": "⏳ ينتظر 91%+"
     },
     "BRAVA": {
@@ -119,13 +119,13 @@
       "role": "طوارئ حديدي (5 ر.س)",
       "status": "working",
       "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️",
-      "stage": "🛡️ درع نشط"
+      "stage": "🛡️ يحرس الكاش"
     },
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم ICP-USD إلى KEST8",
-      "stage": "🧠 سلّم KEST8"
+      "bubble": "فحص سريع لـ 776 عملة",
+      "stage": "✅ تم الفحص السريع"
     }
   },
   "max_open_per_pocket": 2,
