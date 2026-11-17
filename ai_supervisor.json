@@ -1,9 +1,9 @@
 {
-  "version": "v11.0 (Build #110 • خزانات 15/10/5 + قفل السلة)",
+  "version": "v12.0 (Build #120 • القائد الذكي + التحكم الفردي)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 63.66,
-  "ratchet_floor": 62.81,
+  "highest_wallet": 63.69,
+  "ratchet_floor": 62.84,
   "rsi_min": 32,
   "rsi_max": 58,
   "tp_pct": 1.45,
@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "DOT-USD",
-    "name": "بولكادوت",
+    "symbol": "ICP-USD",
+    "name": "إنترنت كمبيوتر",
     "theory": "قناص القيعان المرتدة 🎯",
-    "score": 91,
-    "entry": 0.7272,
+    "score": 87,
+    "entry": 2.4089,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "13:38"
+    "updated_at": "14:34"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -83,12 +83,12 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
-    "ETH (-1%)",
-    "ZEC (+4%)",
-    "SOL (+1%)",
-    "HYPE (+2%)",
-    "XRP (+1%)"
+    "BTC (-0%)",
+    "ETH (+0%)",
+    "ZEC (+5%)",
+    "HYPE (+3%)",
+    "XRP (+1%)",
+    "NEAR (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
@@ -98,29 +98,34 @@
   "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
   "crew_state": {
     "KEST8": {
-      "role": "الخزان العادي (15+)",
+      "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص DOT-USD (9.0 ر.س)"
+      "bubble": "قنص ICP-USD (7.5 ر.س)",
+      "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
       "status": "scanning",
-      "bubble": "خزان الفزعة (10 ر.س للمضمون) 🔥"
+      "bubble": "خزان الفزعة (10 ر.س للمضمون) 🔥",
+      "stage": "⏳ ينتظر 91%+"
     },
     "BRAVA": {
-      "role": "قفل السلة الجماعي",
+      "role": "قفل السلة والموجات",
       "status": "working",
-      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺"
+      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺",
+      "stage": "⚙️ يراقب السلة"
     },
     "MIRAX": {
       "role": "طوارئ حديدي (5 ر.س)",
       "status": "working",
-      "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️"
+      "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️",
+      "stage": "🛡️ درع نشط"
     },
     "DUSKA": {
-      "role": "الفاحص v11.0 (100)",
+      "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "المرحلة النهائية (79/100) 🚀"
+      "bubble": "سلّم ICP-USD إلى KEST8",
+      "stage": "🧠 سلّم KEST8"
     }
   },
   "max_open_per_pocket": 2,
