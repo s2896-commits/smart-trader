@@ -2,8 +2,8 @@
   "version": "v12.0 (Build #120 • القائد الذكي + التحكم الفردي)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 63.69,
-  "ratchet_floor": 62.84,
+  "highest_wallet": 63.73,
+  "ratchet_floor": 62.88,
   "rsi_min": 32,
   "rsi_max": 58,
   "tp_pct": 1.45,
@@ -83,12 +83,12 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-0%)",
+    "BTC (+0%)",
     "ETH (+0%)",
-    "ZEC (+5%)",
     "HYPE (+3%)",
     "XRP (+1%)",
-    "NEAR (+2%)"
+    "DOGE (+1%)",
+    "ENA (+0%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
