@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "ICP-USD",
-    "name": "إنترنت كمبيوتر",
+    "symbol": "MKR-USD",
+    "name": "ميكر",
     "theory": "قناص القيعان المرتدة 🎯",
-    "score": 86,
-    "entry": 2.2596,
+    "score": 95,
+    "entry": 1180.598,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "12:37"
+    "updated_at": "21:25"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -46,7 +46,7 @@
     "SAND-USD": -4,
     "SOXLB-USD": -2,
     "ICP-USD": -5,
-    "INJ-USD": -2,
+    "INJ-USD": -4,
     "ATOM-USD": -2,
     "NEAR-USD": -2,
     "ETC-USD": -2,
@@ -72,7 +72,10 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {},
+  "banned": {
+    "INJ-USD": "2026-11-19 09:24",
+    "ICP-USD": "2026-11-19 09:24"
+  },
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -83,14 +86,14 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+0%)",
-    "ETH (+0%)",
-    "SOL (+4%)",
-    "ZEC (+4%)",
-    "XRP (+4%)",
-    "NEAR (+5%)"
+    "BTC (-1%)",
+    "ETH (-1%)",
+    "SOL (+2%)",
+    "XRP (+2%)",
+    "NEAR (+2%)",
+    "ZEC (-0%)"
   ],
-  "radar_total_scanned": 776,
+  "radar_total_scanned": 783,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (11) 🎯",
@@ -100,7 +103,7 @@
     "KEST8": {
       "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص ICP-USD (7.5 ر.س)",
+      "bubble": "قنص MKR-USD (9.0 ر.س)",
       "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
@@ -124,7 +127,7 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم ICP-USD إلى KEST8",
+      "bubble": "سلّم MKR-USD إلى KEST8",
       "stage": "🧠 سلّم KEST8"
     }
   },
