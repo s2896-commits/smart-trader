@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "FET-USD",
-    "name": "فيتش AI",
-    "theory": "قناص القيعان المرتدة 🎯",
-    "score": 87,
-    "entry": 0.1293,
-    "tp1_pct": 1.8,
-    "tp2_pct": 3.3,
-    "sl_pct": -1.14,
+    "symbol": "ADA-USD",
+    "name": "كاردانو",
+    "theory": "جدار الحيتان (Order Block) 🐋",
+    "score": 88,
+    "entry": 0.1531,
+    "tp1_pct": 1.4,
+    "tp2_pct": 2.4,
+    "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "22:25"
+    "updated_at": "04:50"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -86,24 +86,24 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-2%)",
-    "ETH (-2%)",
-    "SOL (+2%)",
-    "ZEC (+4%)",
-    "XRP (+0%)",
-    "UNI (+2%)"
+    "BTC (-0%)",
+    "ETH (-1%)",
+    "SOL (+4%)",
+    "ZEC (+5%)",
+    "NEAR (+7%)",
+    "XRP (+2%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "فرص قيعان (12) 🎯",
-  "last_win_toast": "🎯 DOT-USD حقق ربح صافي +0.06 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
+  "market_mood": "فرص قيعان (11) 🎯",
+  "last_win_toast": "🎯 FET-USD حقق ربح صافي +0.09 ر.س وعاد أصل المبلغ للخزان!",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.06 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص FET-USD (7.5 ر.س)",
+      "bubble": "قنص ADA-USD (7.5 ر.س)",
       "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
@@ -127,7 +127,7 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم FET-USD إلى KEST8",
+      "bubble": "سلّم ADA-USD إلى KEST8",
       "stage": "🧠 سلّم KEST8"
     }
   },
