@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "ADA-USD",
-    "name": "كاردانو",
-    "theory": "جدار الحيتان (Order Block) 🐋",
-    "score": 88,
-    "entry": 0.1531,
+    "symbol": "ICP-USD",
+    "name": "إنترنت كمبيوتر",
+    "theory": "قناص القيعان المرتدة 🎯",
+    "score": 86,
+    "entry": 2.2596,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "04:50"
+    "updated_at": "12:37"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -72,10 +72,7 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {
-    "ETH-USD": "2026-11-18 10:25",
-    "ICP-USD": "2026-11-18 10:25"
-  },
+  "banned": {},
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -86,24 +83,24 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-0%)",
-    "ETH (-1%)",
+    "BTC (+0%)",
+    "ETH (+0%)",
     "SOL (+4%)",
-    "ZEC (+5%)",
-    "NEAR (+7%)",
-    "XRP (+2%)"
+    "ZEC (+4%)",
+    "XRP (+4%)",
+    "NEAR (+5%)"
   ],
   "radar_total_scanned": 776,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (11) 🎯",
-  "last_win_toast": "🎯 FET-USD حقق ربح صافي +0.09 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.06 ر.س)",
+  "last_win_toast": "🎯 ADA-USD حقق ربح صافي +0.07 ر.س وعاد أصل المبلغ للخزان!",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص ADA-USD (7.5 ر.س)",
+      "bubble": "قنص ICP-USD (7.5 ر.س)",
       "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
@@ -127,7 +124,7 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم ADA-USD إلى KEST8",
+      "bubble": "سلّم ICP-USD إلى KEST8",
       "stage": "🧠 سلّم KEST8"
     }
   },
