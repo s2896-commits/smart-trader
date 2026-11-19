@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "MKR-USD",
-    "name": "ميكر",
+    "symbol": "XLM-USD",
+    "name": "ستيلر",
     "theory": "قناص القيعان المرتدة 🎯",
-    "score": 95,
-    "entry": 1180.598,
+    "score": 91,
+    "entry": 0.1373,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "21:25"
+    "updated_at": "03:41"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -57,7 +57,8 @@
     "AAVE-USD": -2,
     "MANA-USD": -2,
     "ARB11841-USD": -2,
-    "FIL-USD": -2
+    "FIL-USD": -2,
+    "MKR-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -74,7 +75,8 @@
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
     "INJ-USD": "2026-11-19 09:24",
-    "ICP-USD": "2026-11-19 09:24"
+    "ICP-USD": "2026-11-19 09:24",
+    "MKR-USD": "2026-11-19 15:41"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -86,24 +88,24 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
-    "ETH (-1%)",
-    "SOL (+2%)",
-    "XRP (+2%)",
-    "NEAR (+2%)",
-    "ZEC (-0%)"
+    "BTC (-3%)",
+    "ETH (-2%)",
+    "SOL (-2%)",
+    "XRP (-2%)",
+    "ENA (-4%)",
+    "HYPE (-3%)"
   ],
   "radar_total_scanned": 783,
   "scenarios_tested": 574224,
   "daily_score": 87,
-  "market_mood": "فرص قيعان (11) 🎯",
+  "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 ADA-USD حقق ربح صافي +0.07 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.15 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+2.01 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص MKR-USD (9.0 ر.س)",
+      "bubble": "قنص XLM-USD (9.0 ر.س)",
       "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
@@ -127,7 +129,7 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم MKR-USD إلى KEST8",
+      "bubble": "سلّم XLM-USD إلى KEST8",
       "stage": "🧠 سلّم KEST8"
     }
   },
