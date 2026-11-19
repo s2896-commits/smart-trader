@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "XLM-USD",
-    "name": "ستيلر",
-    "theory": "قناص القيعان المرتدة 🎯",
-    "score": 91,
-    "entry": 0.1373,
+    "symbol": "7010.SR",
+    "name": "اس تي سي (تاسي)",
+    "theory": "انفجار الحيتان 3x 💎",
+    "score": 93,
+    "entry": 41.24,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "03:41"
+    "updated_at": "10:59"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -74,8 +74,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "INJ-USD": "2026-11-19 09:24",
-    "ICP-USD": "2026-11-19 09:24",
     "MKR-USD": "2026-11-19 15:41"
   },
   "ban_ref": {},
@@ -88,25 +86,25 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-3%)",
-    "ETH (-2%)",
-    "SOL (-2%)",
+    "BTC (-2%)",
+    "ETH (-1%)",
+    "SOL (-0%)",
+    "ZEC (-1%)",
     "XRP (-2%)",
-    "ENA (-4%)",
-    "HYPE (-3%)"
+    "ENA (-2%)"
   ],
   "radar_total_scanned": 783,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
-  "last_win_toast": "🎯 ADA-USD حقق ربح صافي +0.07 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+2.01 ر.س)",
+  "last_win_toast": "🎯 XLM-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
+  "best_theory": "انفجار الحيتان 3x 💎 (+1.87 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "working",
-      "bubble": "قنص XLM-USD (9.0 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "status": "scanning",
+      "bubble": "قناص القيعان (15+) 🎯",
+      "stage": "⏳ ينتظر إشارة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -117,8 +115,8 @@
     "BRAVA": {
       "role": "قفل السلة والموجات",
       "status": "working",
-      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺",
-      "stage": "⚙️ يراقب السلة"
+      "bubble": "قنص 7010.SR (9.0 ر.س)",
+      "stage": "⚙️ يدير الصفقة"
     },
     "MIRAX": {
       "role": "طوارئ حديدي (5 ر.س)",
@@ -129,8 +127,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم XLM-USD إلى KEST8",
-      "stage": "🧠 سلّم KEST8"
+      "bubble": "سلّم 7010.SR إلى BRAVA",
+      "stage": "🧠 سلّم BRAVA"
     }
   },
   "max_open_per_pocket": 2,
