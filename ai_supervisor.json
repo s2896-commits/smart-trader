@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "7010.SR",
-    "name": "اس تي سي (تاسي)",
-    "theory": "انفجار الحيتان 3x 💎",
-    "score": 93,
-    "entry": 41.24,
+    "symbol": "ATOM-USD",
+    "name": "كوزموس",
+    "theory": "جدار الحيتان (Order Block) 🐋",
+    "score": 90,
+    "entry": 1.2615,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "10:59"
+    "updated_at": "02:40"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -84,14 +84,14 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
-    "ETH (-0%)",
-    "ZEC (-3%)",
-    "SOL (-0%)",
-    "XRP (-1%)",
-    "XAUT (-2%)"
+    "BTC (-2%)",
+    "ETH (-1%)",
+    "ZEC (-2%)",
+    "SOL (-1%)",
+    "NEAR (-4%)",
+    "XRP (-1%)"
   ],
-  "radar_total_scanned": 783,
+  "radar_total_scanned": 784,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
@@ -100,9 +100,9 @@
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (15+) 🎯",
-      "stage": "⏳ ينتظر إشارة"
+      "status": "working",
+      "bubble": "قنص ATOM-USD (7.5 ر.س)",
+      "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -125,8 +125,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "فحص سريع لـ 783 عملة",
-      "stage": "✅ تم الفحص السريع"
+      "bubble": "سلّم ATOM-USD إلى KEST8",
+      "stage": "🧠 سلّم KEST8"
     }
   },
   "max_open_per_pocket": 2,
