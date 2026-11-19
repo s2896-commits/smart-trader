@@ -73,9 +73,7 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {
-    "MKR-USD": "2026-11-19 15:41"
-  },
+  "banned": {},
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -86,19 +84,19 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-2%)",
-    "ETH (-1%)",
+    "BTC (-1%)",
+    "ETH (-0%)",
+    "ZEC (-3%)",
     "SOL (-0%)",
-    "ZEC (-1%)",
-    "XRP (-2%)",
-    "ENA (-2%)"
+    "XRP (-1%)",
+    "XAUT (-2%)"
   ],
   "radar_total_scanned": 783,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (10) 🎯",
   "last_win_toast": "🎯 XLM-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "انفجار الحيتان 3x 💎 (+1.87 ر.س)",
+  "best_theory": "قناص القيعان المرتدة 🎯 (+1.97 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
@@ -115,8 +113,8 @@
     "BRAVA": {
       "role": "قفل السلة والموجات",
       "status": "working",
-      "bubble": "قنص 7010.SR (9.0 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺",
+      "stage": "⚙️ يراقب السلة"
     },
     "MIRAX": {
       "role": "طوارئ حديدي (5 ر.س)",
@@ -127,8 +125,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم 7010.SR إلى BRAVA",
-      "stage": "🧠 سلّم BRAVA"
+      "bubble": "فحص سريع لـ 783 عملة",
+      "stage": "✅ تم الفحص السريع"
     }
   },
   "max_open_per_pocket": 2,
