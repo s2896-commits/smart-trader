@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "SEI-USD",
-    "name": "سي نتورك",
+    "symbol": "STX4847-USD",
+    "name": "ستاكس",
     "theory": "قناص القيعان المرتدة 🎯",
-    "score": 85,
-    "entry": 0.0373,
+    "score": 89,
+    "entry": 0.2488,
     "tp1_pct": 1.4,
-    "tp2_pct": 2.6,
-    "sl_pct": -0.91,
+    "tp2_pct": 2.4,
+    "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "07:21"
+    "updated_at": "16:25"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -52,7 +52,7 @@
     "ETC-USD": -2,
     "STX4847-USD": -2,
     "OP-USD": -2,
-    "SEI-USD": -4,
+    "SEI-USD": -5,
     "ADA-USD": -2,
     "AAVE-USD": -2,
     "MANA-USD": -2,
@@ -74,7 +74,8 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "ATOM-USD": "2026-11-20 19:21"
+    "ATOM-USD": "2026-11-20 19:21",
+    "SEI-USD": "2026-11-21 04:25"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -89,9 +90,7 @@
     "BTC (-3%)",
     "ETH (-4%)",
     "MMT (+11%)",
-    "SOL (-3%)",
-    "XRP (-1%)",
-    "HYPE (-3%)"
+    "TRX (-2%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
@@ -103,7 +102,7 @@
     "KEST8": {
       "role": "قناص القيعان (15+)",
       "status": "working",
-      "bubble": "قنص SEI-USD (7.5 ر.س)",
+      "bubble": "قنص STX4847-USD (7.5 ر.س)",
       "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
@@ -127,7 +126,7 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم SEI-USD إلى KEST8",
+      "bubble": "سلّم STX4847-USD إلى KEST8",
       "stage": "🧠 سلّم KEST8"
     }
   },
