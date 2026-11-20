@@ -50,7 +50,7 @@
     "ATOM-USD": -4,
     "NEAR-USD": -2,
     "ETC-USD": -2,
-    "STX4847-USD": -2,
+    "STX4847-USD": -4,
     "OP-USD": -2,
     "SEI-USD": -5,
     "ADA-USD": -2,
@@ -74,8 +74,8 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "ATOM-USD": "2026-11-20 19:21",
-    "SEI-USD": "2026-11-21 04:25"
+    "SEI-USD": "2026-11-21 04:25",
+    "STX4847-USD": "2026-11-21 12:28"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -87,23 +87,21 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (-3%)",
-    "ETH (-4%)",
-    "MMT (+11%)",
-    "TRX (-2%)"
+    "XAUT (-3%)",
+    "TRX (-3%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (12) 🎯",
   "last_win_toast": "🎯 XLM-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+1.97 ر.س)",
+  "best_theory": "انفجار الحيتان 3x 💎 (+1.93 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "working",
-      "bubble": "قنص STX4847-USD (7.5 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "status": "scanning",
+      "bubble": "قناص القيعان (15+) 🎯",
+      "stage": "⏳ ينتظر إشارة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -126,8 +124,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم STX4847-USD إلى KEST8",
-      "stage": "🧠 سلّم KEST8"
+      "bubble": "فحص سريع لـ 784 عملة",
+      "stage": "✅ تم الفحص السريع"
     }
   },
   "max_open_per_pocket": 2,
