@@ -73,9 +73,7 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {
-    "STX4847-USD": "2026-11-21 12:28"
-  },
+  "banned": {},
   "ban_ref": {},
   "elite_assets": [
     "PLTR",
@@ -86,9 +84,7 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "LINK (-4%)",
     "TRX (-2%)",
-    "MMT (+3%)",
     "XAUT (-1%)"
   ],
   "radar_total_scanned": 784,
