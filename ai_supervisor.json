@@ -84,8 +84,12 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "TRX (-2%)",
-    "XAUT (-1%)"
+    "BTC (+2%)",
+    "ETH (+3%)",
+    "ZEC (+4%)",
+    "SOL (+2%)",
+    "UNI (+7%)",
+    "TAO (+7%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
