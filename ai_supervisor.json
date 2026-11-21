@@ -74,7 +74,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "SEI-USD": "2026-11-21 04:25",
     "STX4847-USD": "2026-11-21 12:28"
   },
   "ban_ref": {},
@@ -87,8 +86,10 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "XAUT (-3%)",
-    "TRX (-3%)"
+    "LINK (-4%)",
+    "TRX (-2%)",
+    "MMT (+3%)",
+    "XAUT (-1%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
