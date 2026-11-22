@@ -27,16 +27,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "HBAR-USD",
-    "name": "هيديرا",
-    "theory": "انفجار الحيتان 3x 💎",
-    "score": 91,
-    "entry": 0.0514,
+    "symbol": "XLM-USD",
+    "name": "ستيلر",
+    "theory": "جدار الحيتان (Order Block) 🐋",
+    "score": 94,
+    "entry": 0.1274,
     "tp1_pct": 1.4,
     "tp2_pct": 2.4,
     "sl_pct": -0.8,
     "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "20:57"
+    "updated_at": "02:32"
   },
   "coin_reputation": {
     "SOL-USD": -4,
@@ -86,25 +86,25 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+1%)",
+    "BTC (+2%)",
     "ETH (+2%)",
-    "NEAR (+6%)",
-    "SOL (-0%)",
-    "ZEC (+1%)",
-    "XRP (-1%)"
+    "SOL (+1%)",
+    "NEAR (+3%)",
+    "ZEC (+2%)",
+    "HYPE (+3%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (11) 🎯",
-  "last_win_toast": "🎯 ZEC-USD حقق ربح صافي +0.27 ر.س وعاد أصل المبلغ للخزان!",
+  "last_win_toast": "🎯 HBAR-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
   "best_theory": "قناص القيعان المرتدة 🎯 (+1.95 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (15+) 🎯",
-      "stage": "⏳ ينتظر إشارة"
+      "status": "working",
+      "bubble": "قنص XLM-USD (9.0 ر.س)",
+      "stage": "⚙️ يدير الصفقة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -115,8 +115,8 @@
     "BRAVA": {
       "role": "قفل السلة والموجات",
       "status": "working",
-      "bubble": "قنص HBAR-USD (9.0 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺",
+      "stage": "⚙️ يراقب السلة"
     },
     "MIRAX": {
       "role": "طوارئ حديدي (5 ر.س)",
@@ -127,8 +127,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم HBAR-USD إلى BRAVA",
-      "stage": "🧠 سلّم BRAVA"
+      "bubble": "سلّم XLM-USD إلى KEST8",
+      "stage": "🧠 سلّم KEST8"
     }
   },
   "max_open_per_pocket": 2,
