@@ -89,25 +89,25 @@
     "SOL-USD"
   ],
   "radar_discovered": [
-    "BTC (+2%)",
-    "ETH (+3%)",
-    "ZEC (+6%)",
-    "SOL (+2%)",
-    "NEAR (+5%)",
-    "XRP (+2%)"
+    "BTC (+5%)",
+    "ETH (+5%)",
+    "ZEC (+8%)",
+    "SOL (+4%)",
+    "UNI (+8%)",
+    "XRP (+5%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 574224,
   "daily_score": 87,
   "market_mood": "فرص قيعان (11) 🎯",
-  "last_win_toast": "🎯 XLM-USD حقق ربح صافي +0.05 ر.س وعاد أصل المبلغ للخزان!",
+  "last_win_toast": "🎯 ZEC-USD حقق ربح صافي +0.27 ر.س وعاد أصل المبلغ للخزان!",
   "best_theory": "انفجار الحيتان 3x 💎 (+1.93 ر.س)",
   "crew_state": {
     "KEST8": {
       "role": "قناص القيعان (15+)",
-      "status": "working",
-      "bubble": "قنص ZEC-USD (7.5 ر.س)",
-      "stage": "⚙️ يدير الصفقة"
+      "status": "scanning",
+      "bubble": "قناص القيعان (15+) 🎯",
+      "stage": "⏳ ينتظر إشارة"
     },
     "ORVEN": {
       "role": "خزان الفزعة (10 ر.س)",
@@ -130,8 +130,8 @@
     "DUSKA": {
       "role": "القائد الذكي v12.0",
       "status": "working",
-      "bubble": "سلّم ZEC-USD إلى KEST8",
-      "stage": "🧠 سلّم KEST8"
+      "bubble": "فحص سريع لـ 784 عملة",
+      "stage": "✅ تم الفحص السريع"
     }
   },
   "max_open_per_pocket": 2,
