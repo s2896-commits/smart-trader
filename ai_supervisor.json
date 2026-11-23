@@ -1,67 +1,46 @@
 {
-  "version": "v12.0 (Build #120 • القائد الذكي + التحكم الفردي)",
+  "version": "v13.0 (امتحان التخرج النظيف • 20 ر.س باينانس)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 63.73,
-  "ratchet_floor": 62.88,
-  "rsi_min": 32,
-  "rsi_max": 58,
-  "tp_pct": 1.45,
-  "sl_pct": -0.95,
-  "trail_trigger": 0.55,
-  "trail_gap": 0.2,
-  "breakeven_trigger": 0.45,
-  "breakeven_lock": 0.25,
-  "trade_size": 5.0,
-  "max_open": 5,
+  "highest_wallet": 60.0,
+  "ratchet_floor": 59.2,
+  "rsi_min": 20,
+  "rsi_max": 56,
+  "tp_pct": 1.85,
+  "sl_pct": -1.05,
+  "trail_trigger": 1.0,
+  "trail_gap": 0.35,
+  "breakeven_trigger": 0.95,
+  "breakeven_lock": 0.55,
+  "trade_size": 20.0,
+  "max_open": 3,
   "max_entries_per_scan": 2,
-  "max_hold_h": 3.5,
+  "max_hold_h": 5.0,
   "cooldown_min": 25,
   "risk_mode": "medium",
   "paused": false,
-  "stoploss_guard_until": "2026-11-12 20:13",
+  "exam_target": 10,
+  "stoploss_guard_until": "",
   "disabled_theories": [
+    "جدار الحيتان (Order Block) 🐋",
     "خطف السيولة السريع ⚡",
     "زخم Aroon + فريم 1H 🌊",
     "قناص اختراق القمم 🚀",
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "XLM-USD",
-    "name": "ستيلر",
-    "theory": "جدار الحيتان (Order Block) 🐋",
+    "symbol": "BTC-USD",
+    "name": "بيتكوين (BTC)",
+    "theory": "انفجار الحيتان 3x 💎",
     "score": 94,
-    "entry": 0.1274,
-    "tp1_pct": 1.4,
-    "tp2_pct": 2.4,
-    "sl_pct": -0.8,
-    "status": "🟢 البوت دخلها الآن — متاحة لك!",
-    "updated_at": "02:32"
+    "entry": 0.0,
+    "tp1_pct": 1.9,
+    "tp2_pct": 3.5,
+    "sl_pct": -1.05,
+    "status": "🟢 جاهز لامتحان الـ 10 صفقات (باينانس فقط)",
+    "updated_at": ""
   },
-  "coin_reputation": {
-    "SOL-USD": -4,
-    "FET-USD": -4,
-    "ETH-USD": -4,
-    "ALGO-USD": -2,
-    "SAND-USD": -4,
-    "SOXLB-USD": -2,
-    "ICP-USD": -5,
-    "INJ-USD": -4,
-    "ATOM-USD": -4,
-    "NEAR-USD": -2,
-    "ETC-USD": -2,
-    "STX4847-USD": -4,
-    "OP-USD": -2,
-    "SEI-USD": -5,
-    "ADA-USD": -2,
-    "AAVE-USD": -2,
-    "MANA-USD": -2,
-    "ARB11841-USD": -2,
-    "FIL-USD": -2,
-    "MKR-USD": -2,
-    "XLM-USD": -4,
-    "LINK-USD": -2
-  },
+  "coin_reputation": {},
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -75,68 +54,61 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {
-    "XLM-USD": "2026-11-23 18:59"
-  },
+  "banned": {},
   "ban_ref": {},
   "elite_assets": [
-    "PLTR",
-    "2222.SR",
-    "LINK-USD",
+    "BTC-USD",
+    "SOL-USD",
     "ETH-USD",
-    "ADA-USD",
-    "SOL-USD"
+    "BNB-USD",
+    "XRP-USD",
+    "SUI20947-USD",
+    "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+3%)",
-    "ETH (+4%)",
-    "SOL (+3%)",
-    "NEAR (+5%)",
-    "ZEC (+3%)",
-    "HYPE (+4%)"
+    "BTC (+0%)",
+    "ETH (+0%)",
+    "SOL (+2%)",
+    "ZEC (-1%)",
+    "NEAR (+1%)",
+    "HYPE (+3%)"
   ],
   "radar_total_scanned": 784,
-  "scenarios_tested": 574224,
-  "daily_score": 87,
+  "scenarios_tested": 602952,
+  "daily_score": 100,
   "market_mood": "فرص قيعان (11) 🎯",
-  "last_win_toast": "🎯 ARB11841-USD حقق ربح صافي +0.06 ر.س وعاد أصل المبلغ للخزان!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (+1.95 ر.س)",
+  "last_win_toast": "🏁 بدأ امتحان الـ 10 صفقات النظيف بـ 60.00 ر.س (قوانين باينانس 20 ر.س)",
+  "best_theory": "انفجار الحيتان 3x 💎",
   "crew_state": {
-    "KEST8": {
-      "role": "قناص القيعان (15+)",
-      "status": "scanning",
-      "bubble": "قناص القيعان (15+) 🎯",
-      "stage": "⏳ ينتظر إشارة"
-    },
-    "ORVEN": {
-      "role": "خزان الفزعة (10 ر.س)",
-      "status": "scanning",
-      "bubble": "خزان الفزعة (10 ر.س) 🔥",
-      "stage": "⏳ ينتظر 91%+"
+    "DUSKA": {
+      "role": "القائد الذكي v13.0",
+      "status": "working",
+      "stage": "✅ تم الفحص السريع",
+      "bubble": "فحص سريع لـ 784 عملة"
     },
     "BRAVA": {
-      "role": "قفل السلة والموجات",
+      "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺",
-      "stage": "⚙️ يراقب السلة"
+      "stage": "⚙️ يراقب السلة",
+      "bubble": "قفل ربح السلة (+0.45 ر.س) 🧺"
+    },
+    "KEST8": {
+      "role": "قناص القيعان المشدد",
+      "status": "scanning",
+      "stage": "⏳ ينتظر إشارة",
+      "bubble": "قناص القيعان (15+) 🎯"
+    },
+    "ORVEN": {
+      "role": "فزعة الطوارئ (20 ر.س)",
+      "status": "scanning",
+      "stage": "⏳ ينتظر 91%+",
+      "bubble": "خزان الفزعة (10 ر.س) 🔥"
     },
     "MIRAX": {
-      "role": "طوارئ حديدي (5 ر.س)",
+      "role": "درع باينانس + قفل السلة",
       "status": "working",
-      "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️",
-      "stage": "🛡️ يحرس الكاش"
-    },
-    "DUSKA": {
-      "role": "القائد الذكي v12.0",
-      "status": "working",
-      "bubble": "فحص سريع لـ 784 عملة",
-      "stage": "✅ تم الفحص السريع"
+      "stage": "🛡️ يحرس الكاش",
+      "bubble": "طوارئ (5 ر.س • نصفها مقفل) 🛡️"
     }
-  },
-  "max_open_per_pocket": 2,
-  "min_size": 5.0,
-  "med_size": 10.0,
-  "max_size": 15.0,
-  "max_per_class": 3,
-  "ai_report": "منظومة Grok Crew والجيوب الثلاثة نشطة."
+  }
 }
