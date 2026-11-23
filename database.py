@@ -2,7 +2,7 @@ import sqlite3, os, json, base64, threading, time, requests
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-VERSION = "v12.0 (Build #120 • القائد الذكي + التحكم الفردي)"
+VERSION = "v13.0 (امتحان التخرج النظيف • 20 ر.س باينانس)"
 TZ = ZoneInfo("Asia/Riyadh")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "trades.db")
@@ -13,10 +13,12 @@ GITHUB_REPO = os.environ.get("GITHUB_REPO", "s2896-commits/smart-trader")
 FILE_PATH = "trades_backup.db"
 
 START_CAPITAL = 60.0
+EXAM_TARGET = 10
+TRADE_SIZE_SAR = 20.0
 SCALE_FACTOR = 10.0
-FEE_PCT = 0.10
-MAX_LOSS_SAR = -0.15
-BASKET_TP_SAR = 0.45
+FEE_PCT = 0.075  # عمولة باينانس الفورية بعد خصم 25% بعملة BNB
+MAX_LOSS_SAR = -0.30
+BASKET_TP_SAR = 0.70
 LOCK = threading.RLock()
 _dirty = False
 _last_backup = 0.0
@@ -25,20 +27,22 @@ DEFAULT_CFG = {
     "version": VERSION,
     "capital_override": 60.0,
     "prep_withdraw_mode": False,
-    "highest_wallet": 63.99,
-    "ratchet_floor": 63.00,
-    "rsi_min": 20, "rsi_max": 58,
-    "tp_pct": 1.45, "sl_pct": -0.95,
-    "trail_trigger": 0.55, "trail_gap": 0.20,
-    "breakeven_trigger": 0.45, "breakeven_lock": 0.25,
-    "trade_size": 7.5,
-    "max_open": 5,
+    "highest_wallet": 60.00,
+    "ratchet_floor": 59.20,
+    "rsi_min": 20, "rsi_max": 56,
+    "tp_pct": 1.85, "sl_pct": -1.05,
+    "trail_trigger": 1.00, "trail_gap": 0.35,
+    "breakeven_trigger": 0.95, "breakeven_lock": 0.55,
+    "trade_size": TRADE_SIZE_SAR,
+    "max_open": 3,
     "max_entries_per_scan": 2,
-    "max_hold_h": 3.5, "cooldown_min": 20,
+    "max_hold_h": 5.0, "cooldown_min": 25,
     "risk_mode": "medium",
     "paused": False,
+    "exam_target": EXAM_TARGET,
     "stoploss_guard_until": "",
     "disabled_theories": [
+        "جدار الحيتان (Order Block) 🐋",
         "خطف السيولة السريع ⚡",
         "زخم Aroon + فريم 1H 🌊",
         "قناص اختراق القمم 🚀",
@@ -47,13 +51,13 @@ DEFAULT_CFG = {
     "vip_signal": {
         "symbol": "BTC-USD",
         "name": "بيتكوين (BTC)",
-        "theory": "قناص القيعان المرتدة 🎯",
+        "theory": "انفجار الحيتان 3x 💎",
         "score": 94,
         "entry": 0.0,
-        "tp1_pct": 2.2,
-        "tp2_pct": 4.5,
-        "sl_pct": -1.2,
-        "status": "🟢 جاهزة للمراقبة والدخول",
+        "tp1_pct": 1.9,
+        "tp2_pct": 3.5,
+        "sl_pct": -1.05,
+        "status": "🟢 جاهز لامتحان الـ 10 صفقات (باينانس فقط)",
         "updated_at": ""
     },
     "coin_reputation": {},
@@ -67,31 +71,28 @@ DEFAULT_CFG = {
     "alerted_milestones": [],
     "ntfy_topic": "smax_trader_vip_999",
     "banned": {}, "ban_ref": {},
-    "elite_assets": ["BTC-USD", "SOL-USD", "INJ-USD", "XRP-USD", "ETH-USD", "BNB-USD", "SUI20947-USD"],
+    "elite_assets": ["BTC-USD", "SOL-USD", "ETH-USD", "BNB-USD", "XRP-USD", "SUI20947-USD", "INJ-USD"],
     "radar_discovered": [],
-    "radar_total_scanned": 776,
+    "radar_total_scanned": 780,
     "scenarios_tested": 602952,
-    "daily_score": 99,
-    "market_mood": "القائد الذكي v12.0 🧠",
-    "last_win_toast": "",
-    "best_theory": "قناص القيعان المرتدة 🎯",
+    "daily_score": 100,
+    "market_mood": "امتحان التخرج النظيف 🏁",
+    "last_win_toast": "🏁 بدأ امتحان الـ 10 صفقات النظيف بـ 60.00 ر.س (قوانين باينانس 20 ر.س)",
+    "best_theory": "انفجار الحيتان 3x 💎",
     "crew_state": {
-        "KEST8": {"role": "قناص القيعان (15+)", "status": "working", "stage": "✅ فحص سريع", "bubble": "جاهز لقنص القيعان 🎯"},
-        "ORVEN": {"role": "خزان الفزعة (10 ر.س)", "status": "scanning", "stage": "⏳ ينتظر 91%+", "bubble": "يفتح للمضمون فقط 🔥"},
-        "BRAVA": {"role": "قفل السلة والموجات", "status": "working", "stage": "⚙️ يراقب السلة", "bubble": "يحجز عند +0.45 ر.س 🧺"},
-        "MIRAX": {"role": "طوارئ حديدي (5 ر.س)", "status": "working", "stage": "🛡️ درع نشط", "bubble": "نصفه مقفل للأمان 🛡️"},
-        "DUSKA": {"role": "القائد الذكي v12.0", "status": "working", "stage": "🧠 يوزع المهام", "bubble": "توجيه المساعدين 🚀"},
+        "DUSKA": {"role": "القائد الذكي v13.0", "status": "working", "stage": "🏁 وضع الامتحان", "bubble": "عملات باينانس فقط 🧠"},
+        "BRAVA": {"role": "انفجار الحيتان (20 ر.س)", "status": "working", "stage": "💎 أولوية أولى", "bubble": "البطل رقم 1 جاهز 🚀"},
+        "KEST8": {"role": "قناص القيعان المشدد", "status": "scanning", "stage": "🎯 فلتر مشدود", "bubble": "يدخل مع اتجاه 1H فقط"},
+        "ORVEN": {"role": "فزعة الطوارئ (20 ر.س)", "status": "scanning", "stage": "⏳ ينتظر 93%+", "bubble": "للفرص الخارقة فقط 🔥"},
+        "MIRAX": {"role": "درع باينانس + قفل السلة", "status": "working", "stage": "🛡️ قفل +0.70 ر.س", "bubble": "حماية الـ 60 ر.س 🛡️"},
     },
 }
 
 GOAL_MILESTONES = [
-    (65.0, "1.08x", "🔥 قمة جديدة! محفظتك تخطت 65 ر.س بنجاح!"),
-    (75.0, "1.25x", "🚀 مكسب جديد! محفظتك وصلت 75 ر.س (1.25x) في طريقها نحو الـ 600 ر.س!"),
-    (90.0, "1.5x", "🔥 نصف تدبيلة! المحفظة وصلت 90 ر.س (1.5x) بأمان!"),
-    (120.0, "2x", "💎 تدبيلة كاملة (2x)! المحفظة وصلت 120 ر.س!"),
-    (180.0, "3x", "⚡ قفزة ممتازة (3x)! رصيد المحفظة الآن 180 ر.س!"),
-    (300.0, "5x", "🌟 منتصف الطريق للـ 600! المحفظة وصلت 300 ر.س (5 أضعاف)!"),
-    (600.0, "10x", "👑 مبروك يا صالح! تحقق هدف الـ 10 أضعاف ووصلت المحفظة 600 ر.س!"),
+    (62.0, "exam_pass", "🔥 ممتاز! البوت تجاوز 62.00 ر.س في الامتحان النظيف!"),
+    (65.0, "1.08x", "🚀 قمة جديدة! محفظتك تخطت 65 ر.س!"),
+    (70.0, "1.16x", "💎 اكتملت أول 10 ر.س ربح صافي!"),
+    (120.0, "2x", "👑 تدبيلة كاملة (2x)! المحفظة وصلت 120 ر.س!"),
 ]
 
 def now():
@@ -134,7 +135,7 @@ def send_vip_alert(title, message, priority="high"):
         requests.post(
             f"https://ntfy.sh/{topic}",
             data=message.encode("utf-8"),
-            headers={"Title": title.encode("utf-8"), "Priority": priority, "Tags": "moneybag,dart"},
+            headers={"Title": title.encode("utf-8"), "Priority": priority, "Tags": "checkered_flag,dart"},
             timeout=4,
         )
     except Exception:
@@ -155,20 +156,22 @@ def get_ai_config():
     except Exception:
         pass
     cfg["version"] = VERSION
-    cfg["tp_pct"] = 1.45
-    cfg["sl_pct"] = -0.95
-    cfg["trail_trigger"] = 0.55
-    cfg["trail_gap"] = 0.20
-    cfg["breakeven_trigger"] = 0.45
-    cfg["breakeven_lock"] = 0.25
-    cfg["max_hold_h"] = 3.5
-    cfg["max_open"] = 5
+    cfg["tp_pct"] = 1.85
+    cfg["sl_pct"] = -1.05
+    cfg["trail_trigger"] = 1.00
+    cfg["trail_gap"] = 0.35
+    cfg["breakeven_trigger"] = 0.95
+    cfg["breakeven_lock"] = 0.55
+    cfg["trade_size"] = TRADE_SIZE_SAR
+    cfg["max_hold_h"] = 5.0
+    cfg["max_open"] = 3
     cfg["max_entries_per_scan"] = 2
+    cfg["exam_target"] = EXAM_TARGET
     cfg.setdefault("capital_override", 60.0)
     cfg.setdefault("prep_withdraw_mode", False)
     cfg.setdefault("paused", False)
-    cfg.setdefault("highest_wallet", 63.99)
-    cfg.setdefault("ratchet_floor", 63.00)
+    cfg.setdefault("highest_wallet", 60.00)
+    cfg.setdefault("ratchet_floor", 59.20)
     cfg.setdefault("vip_signal", DEFAULT_CFG["vip_signal"])
     cfg["disabled_theories"] = list(DEFAULT_CFG["disabled_theories"])
     if not isinstance(cfg.get("coin_reputation"), dict): cfg["coin_reputation"] = {}
@@ -195,15 +198,39 @@ def save_ai_config(cfg):
     except Exception:
         pass
 
+def reset_exam_clean():
+    """تصفير نظيف لبدء امتحان الـ 10 صفقات بـ 60.00 ر.س مع أرشفة الـ 101 صفقة القديمة."""
+    global _dirty
+    run("UPDATE trades SET is_historical=1 WHERE is_historical=0")
+    run("DELETE FROM thoughts")
+    cfg = json.loads(json.dumps(DEFAULT_CFG))
+    cfg["paused"] = False
+    cfg["prep_withdraw_mode"] = False
+    cfg["capital_override"] = 60.0
+    cfg["highest_wallet"] = 60.00
+    cfg["ratchet_floor"] = 59.20
+    cfg["withdrawn_total"] = 0.0
+    cfg["withdraw_history"] = []
+    cfg["alerted_milestones"] = []
+    cfg["banned"] = {}
+    cfg["stoploss_guard_until"] = ""
+    cfg["observer_mode"] = False
+    save_ai_config(cfg)
+    run("INSERT OR REPLACE INTO kv_settings (key, val) VALUES ('exam_v13_reset_done', '1')")
+    log_thought("امتحان v13.0 🏁", "تم تصفير المحفظة نظيفاً إلى 60.00 ر.س (0/10 صفقات) | عملات باينانس فقط بحجم 20 ر.س للصفقة!", "success")
+    _dirty = True
+    _instant_backup_async()
+    return True
+
 def toggle_bot_pause(paused: bool):
     cfg = get_ai_config()
     cfg["paused"] = bool(paused)
     save_ai_config(cfg)
-    msg = "⏸️ تم إيقاف فتح الصفقات الجديدة مؤقتاً بأمرك" if paused else "▶️ تم استئناف عمل القائد الذكي والبحث عن الفرص"
+    msg = "⏸️ تم إيقاف فتح الصفقات الجديدة مؤقتاً بأمرك" if paused else "▶️ تم استئناف امتحان الـ 10 صفقات النظيف"
     log_thought("القائد DUSKA 🧠", msg, "warn" if paused else "success")
     return cfg["paused"]
 
-def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.2, tp2=4.5, sl=-1.2, status="🟢 جاهزة للدخول الآن"):
+def update_vip_signal(symbol, name, theory, score, entry_price, tp1=1.9, tp2=3.5, sl=-1.05, status="🟢 جاهزة للدخول الآن"):
     cfg = get_ai_config()
     old_sym = cfg.get("vip_signal", {}).get("symbol", "")
     cfg["vip_signal"] = {
@@ -219,27 +246,27 @@ def update_vip_signal(symbol, name, theory, score, entry_price, tp1=2.2, tp2=4.5
         "updated_at": now().strftime("%H:%M")
     }
     save_ai_config(cfg)
-    if score >= 92 and symbol != old_sym:
+    if score >= 93 and symbol != old_sym:
         send_vip_alert(
-            f"🎯 توصية صيد شخصية لصالح ({symbol})",
-            f"العملة: {name} | الضمان: {score}% | الدخول: {entry_price:.4f}$ | الهدف: +{tp1}% إلى +{tp2}% | الوقف: {sl}%"
+            f"🎯 توصية باينانس لصالح ({symbol})",
+            f"العملة: {name} | النظرية: {theory} | الضمان: {score}% | الدخول: {entry_price:.4f}$"
         )
 
 def set_capital_override(amount: float):
     cfg = get_ai_config()
     amt = float(amount)
-    cfg["capital_override"] = amt if amt in (50.0, 60.0, 100.0, 150.0, 200.0, 300.0) else 60.0
+    cfg["capital_override"] = amt if amt in (60.0, 100.0, 150.0, 200.0, 300.0) else 60.0
     if cfg["capital_override"] >= 150.0:
         cfg["risk_mode"] = "low"
     save_ai_config(cfg)
-    log_thought("خزانات السيولة 🛡️", f"تم ضبط الميزانية على {cfg['capital_override']:.0f} ر.س وتوسيع الخزانات الثلاثة تلقائياً", "info")
+    log_thought("خزانات باينانس 🛡️", f"تم ضبط الميزانية على {cfg['capital_override']:.0f} ر.س", "info")
     return cfg["capital_override"]
 
 def toggle_prep_withdraw(enabled: bool):
     cfg = get_ai_config()
     cfg["prep_withdraw_mode"] = bool(enabled)
     save_ai_config(cfg)
-    st_txt = "تفعيل وضع تجهيز السحب الآمن (إيقاف الشراء الجديد وتصفية الصفقات بربح) 🛬" if enabled else "إلغاء وضع تجهيز السحب والعودة للتداول الطبيعي 🚀"
+    st_txt = "تفعيل وضع تجهيز السحب الآمن 🛬" if enabled else "إلغاء وضع تجهيز السحب 🚀"
     log_thought("الخزنة 💰", st_txt, "warn" if enabled else "info")
     return cfg["prep_withdraw_mode"]
 
@@ -257,7 +284,7 @@ def emergency_close_all(reason_prefix="🚨 تسييل فوري للسلة"):
             (entry, t_str, st, f"{reason_prefix} ({pnl:+.2f} ر.س)", t["id"]))
     _dirty = True
     _instant_backup_async()
-    log_thought("قفل السلة 🧺", f"{reason_prefix}: تم إغلاق {len(open_list)} صفقات وتحرير الكاش للخزانات!", "success")
+    log_thought("قفل السلة 🧺", f"{reason_prefix}: تم إغلاق {len(open_list)} صفقات وتحرير الكاش!", "success")
     return len(open_list)
 
 def update_crew(bot_id, status=None, bubble=None, stage=None):
@@ -334,7 +361,7 @@ def backup_db_to_github(force=False):
             content = base64.b64encode(f.read()).decode()
         url, h = _gh()
         r = requests.get(url, headers=h, timeout=10)
-        data = {"message": "Auto-save trades DB v12.0", "content": content}
+        data = {"message": "Auto-save trades DB v13.0 Exam", "content": content}
         if r.status_code == 200:
             data["sha"] = r.json().get("sha")
         res = requests.put(url, headers=h, json=data, timeout=20)
@@ -356,19 +383,19 @@ def init_db():
         run("CREATE TABLE IF NOT EXISTS kv_settings (key TEXT PRIMARY KEY, val TEXT)")
         run('''CREATE TABLE IF NOT EXISTS trades (
             id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, asset_type TEXT,
-            pocket TEXT DEFAULT 'scalp', theory TEXT DEFAULT 'قناص القيعان المرتدة 🎯', score INTEGER DEFAULT 90,
+            pocket TEXT DEFAULT 'reserve', theory TEXT DEFAULT 'انفجار الحيتان 3x 💎', score INTEGER DEFAULT 90,
             entry_price REAL, exit_price REAL, peak_price REAL DEFAULT 0.0,
-            tp_pct REAL DEFAULT 1.45, sl_pct REAL DEFAULT -0.95,
-            qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 7.5, dca_used INTEGER DEFAULT 0,
+            tp_pct REAL DEFAULT 1.85, sl_pct REAL DEFAULT -1.05,
+            qty REAL DEFAULT 1.0, invested_sar REAL DEFAULT 20.0, dca_used INTEGER DEFAULT 0,
             entry_time TEXT, exit_time TEXT, reason TEXT, status TEXT,
             pnl_sar REAL DEFAULT 0.0, lesson TEXT, is_historical INTEGER DEFAULT 0)''')
 
         existing_cols = [r["name"] for r in run("PRAGMA table_info(trades)")]
         cols_to_add = {
-            "pocket": "TEXT DEFAULT 'scalp'", "theory": "TEXT DEFAULT 'قناص القيعان المرتدة 🎯'",
+            "pocket": "TEXT DEFAULT 'reserve'", "theory": "TEXT DEFAULT 'انفجار الحيتان 3x 💎'",
             "score": "INTEGER DEFAULT 90", "peak_price": "REAL DEFAULT 0.0",
-            "tp_pct": "REAL DEFAULT 1.45", "sl_pct": "REAL DEFAULT -0.95",
-            "qty": "REAL DEFAULT 1.0", "invested_sar": "REAL DEFAULT 7.5",
+            "tp_pct": "REAL DEFAULT 1.85", "sl_pct": "REAL DEFAULT -1.05",
+            "qty": "REAL DEFAULT 1.0", "invested_sar": "REAL DEFAULT 20.0",
             "dca_used": "INTEGER DEFAULT 0", "pnl_sar": "REAL DEFAULT 0.0",
             "lesson": "TEXT DEFAULT ''", "is_historical": "INTEGER DEFAULT 0",
         }
@@ -386,6 +413,11 @@ def init_db():
             agent TEXT, message TEXT, level TEXT DEFAULT 'info')''')
         run('''CREATE TABLE IF NOT EXISTS chat_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, sender TEXT, message TEXT)''')
+
+        # تصفير نظيف تلقائي لمرة واحدة فقط عند تشغيل نسخة الامتحان v13.0
+        chk = run("SELECT val FROM kv_settings WHERE key='exam_v13_reset_done'")
+        if not chk or chk[0].get("val") != "1":
+            reset_exam_clean()
     except Exception:
         pass
 
@@ -450,7 +482,7 @@ def get_favorites_grouped():
         "all": rows,
     }
 
-def calc_pnl(entry, exit_, invested, pocket="scalp"):
+def calc_pnl(entry, exit_, invested, pocket="reserve"):
     if not entry or entry <= 0:
         return 0.0
     chg_ratio = (exit_ - entry) / entry
@@ -478,11 +510,10 @@ def execute_withdrawal(amount=None, mode="يدوي 💸"):
     hist = cfg.get("withdraw_history", [])
     hist.insert(0, {"time": fmt(now()), "amount": pull_amt, "mode": mode})
     cfg["withdraw_history"] = hist[:20]
-    cfg["last_win_toast"] = f"🏦 تم سحب {pull_amt:.2f} ر.س ({mode}) إلى جيبك الخاص!"
+    cfg["last_win_toast"] = f"🏦 تم سحب {pull_amt:.2f} ر.س ({mode})!"
     save_ai_config(cfg)
 
-    log_thought("الخزنة 💰", f"تم سحب {pull_amt:.2f} ر.س ({mode}) | إجمالي المسحوب: {cfg['withdrawn_total']:.2f} ر.س", "success")
-    send_vip_alert("🏦 عملية سحب ناجحة!", f"تم تحويل {pull_amt:.2f} ر.س ({mode}) من خزنة البوت إلى رصيدك المسحوب!")
+    log_thought("الخزنة 💰", f"تم سحب {pull_amt:.2f} ر.س ({mode})", "success")
     _dirty = True
     _instant_backup_async()
     return True, pull_amt
@@ -494,52 +525,47 @@ def configure_auto_withdraw(enabled: bool, limit_sar: float):
     save_ai_config(cfg)
     return cfg
 
-def _check_milestones_and_auto_withdraw(wallet_balance, vault_available, milestones_count):
+def _check_milestones_and_exam(wallet_balance, closed_cnt):
     cfg = get_ai_config()
     alerted = set(cfg.get("alerted_milestones", []))
     changed = False
 
-    prev_high = float(cfg.get("highest_wallet") or 63.99)
+    prev_high = float(cfg.get("highest_wallet") or 60.00)
     if wallet_balance > prev_high:
         cfg["highest_wallet"] = round(wallet_balance, 2)
-        cfg["ratchet_floor"] = round(wallet_balance - 0.85, 2)
+        cfg["ratchet_floor"] = round(wallet_balance - 0.80, 2)
+        changed = True
+
+    if closed_cnt >= EXAM_TARGET and "exam_10_done" not in alerted:
+        alerted.add("exam_10_done")
+        cfg["paused"] = True
+        msg = f"🏁 اكتمل امتحان الـ 10 صفقات النظيف! الرصيد النهائي: {wallet_balance:.2f} ر.س (صافي {wallet_balance - START_CAPITAL:+.2f} ر.س)"
+        cfg["last_win_toast"] = msg
+        log_thought("تقرير الامتحان 🏁", msg, "success")
+        send_vip_alert("🏁 انتهى امتحان الـ 10 صفقات!", msg)
         changed = True
 
     for target_sar, tag, msg in GOAL_MILESTONES:
         if wallet_balance >= target_sar and tag not in alerted:
             alerted.add(tag)
-            cfg["last_win_toast"] = msg
-            log_thought("رادار 600 🏆", msg, "success")
-            send_vip_alert(f"🏆 إنجاز جديد ({tag}) نحو الـ 600 ر.س!", msg)
+            log_thought("رادار الأهداف 🏆", msg, "success")
             changed = True
-
-    m_tag = f"split_{milestones_count}"
-    if milestones_count > 0 and m_tag not in alerted:
-        alerted.add(m_tag)
-        msg = f"💰 اكتملت تقسيمة 10 ر.س جديدة! (3 ر.س لخزنتك الشخصية + 7 ر.س أضيفت للمبلغ الأساسي والخزانات)"
-        log_thought("تقسيمة 3/7 💰", msg, "success")
-        send_vip_alert("💰 تقسيمة ربح جديدة (3 للسحب + 7 للأساسي)!", msg)
-        changed = True
 
     if changed:
         cfg["alerted_milestones"] = list(alerted)
         save_ai_config(cfg)
 
-    limit_val = float(cfg.get("auto_withdraw_limit") or 10.0)
-    if cfg.get("auto_withdraw_enabled", True) and vault_available >= limit_val and limit_val > 0:
-        execute_withdrawal(vault_available, mode="تلقائي ⚡")
-
 def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=None,
               exit_time=None, exit_price=None, status="OPEN", pnl_sar=0.0,
-              lesson="", invest_amount=7.5, pocket="scalp", score=90,
-              tp_pct=None, sl_pct=None, theory="قناص القيعان المرتدة 🎯"):
+              lesson="", invest_amount=TRADE_SIZE_SAR, pocket="reserve", score=90,
+              tp_pct=None, sl_pct=None, theory="انفجار الحيتان 3x 💎"):
     global _dirty
     cfg = get_ai_config()
     p = float(price) if price else 1.0
     tp = float(tp_pct if tp_pct is not None else cfg["tp_pct"])
-    sl = max(-1.25, float(sl_pct if sl_pct is not None else cfg["sl_pct"]))
-    invest_usd = invest_amount / 3.75 if (symbol.endswith("-USD") or not symbol.endswith(".SR")) else invest_amount
-    qty = round(invest_usd / p, 4) if p > 0 else 1.0
+    sl = max(-1.20, float(sl_pct if sl_pct is not None else cfg["sl_pct"]))
+    invest_usd = invest_amount / 3.75
+    qty = round(invest_usd / p, 5) if p > 0 else 1.0
 
     run('''INSERT INTO trades (symbol, asset_type, pocket, theory, score, entry_price, exit_price, peak_price,
            tp_pct, sl_pct, qty, invested_sar, dca_used, entry_time, exit_time, reason, status, pnl_sar, lesson, is_historical)
@@ -551,12 +577,12 @@ def log_trade(symbol, asset_type, price, reason, is_historical=0, entry_time=Non
     if not is_historical:
         _dirty = True
         update_favorite(symbol, picked=True)
-        bot_map = {"scalp": "KEST8", "swing": "ORVEN", "reserve": "BRAVA"}
-        b_name = bot_map.get(pocket, "KEST8")
+        bot_map = {"reserve": "BRAVA", "scalp": "KEST8", "swing": "ORVEN"}
+        b_name = bot_map.get(pocket, "BRAVA")
         update_crew("DUSKA", "working", f"سلّم {symbol} إلى {b_name}", stage=f"🧠 سلّم {b_name}")
-        update_crew(b_name, "working", f"قنص {symbol} ({invest_amount} ر.س)", stage="⚙️ يدير الصفقة")
-        log_thought(b_name, f"[أمر القائد 🧠] استلام وقنص {symbol} بـ {invest_amount} ر.س (ضمان {score}%)", "success")
-        update_vip_signal(symbol, asset_type, theory, score, p, tp1=round(tp, 1), tp2=round(tp*1.8, 1), sl=sl, status="🟢 البوت دخلها الآن — متاحة لك!")
+        update_crew(b_name, "working", f"قنص {symbol} ({invest_amount:.0f} ر.س)", stage="⚙️ يدير الصفقة")
+        log_thought(b_name, f"[امتحان باينانس 🏁] قنص {symbol} بـ {invest_amount:.0f} ر.س عبر ({theory}) ضمان {score}%", "success")
+        update_vip_signal(symbol, asset_type, theory, score, p, tp1=round(tp, 1), tp2=round(tp*1.6, 1), sl=sl, status="🟢 البوت دخلها الآن (20 ر.س)!")
         _instant_backup_async()
 
 def close_trade_manual(trade_id, live_pnl=None):
@@ -567,15 +593,16 @@ def close_trade_manual(trade_id, live_pnl=None):
     t = rows[0]
     pnl = round(float(live_pnl if live_pnl is not None else (t.get("pnl_sar") or 0.0)), 2)
     entry = float(t.get("entry_price") or 1.0)
-    inv = float(t.get("invested_sar") or 7.5)
+    inv = float(t.get("invested_sar") or TRADE_SIZE_SAR)
     cur_est = round(entry * (1.0 + (pnl / max(inv, 1.0))), 4)
     st = "WON" if pnl >= 0 else "LOST"
-    lesson = f"⚡ إغلاق فردي بأمر صالح ({pnl:+.2f} ر.س) وإرجاع السيولة للخزان"
+    lesson = f"⚡ إغلاق فردي بأمر صالح ({pnl:+.2f} ر.س)"
     run("UPDATE trades SET exit_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
         (cur_est, fmt(now()), st, pnl, lesson, trade_id))
     update_favorite(t["symbol"], won=(st == "WON"))
-    log_thought("تحكم فردي ⚡", f"تم إغلاق صفقة {t['symbol']} يدوياً بصافي {pnl:+.2f} ر.س!", "success" if st == "WON" else "warn")
+    log_thought("تحكم فردي ⚡", f"تم إغلاق {t['symbol']} يدوياً بصافي {pnl:+.2f} ر.س!", "success" if st == "WON" else "warn")
     _dirty = True
+    get_summary()
     _instant_backup_async()
     return True
 
@@ -595,8 +622,8 @@ def update_open_trades(prices):
     for t in open_rows:
         entry = float(t["entry_price"] or 1.0)
         cur = prices.get(t["symbol"])
-        inv = float(t.get("invested_sar") or 7.5)
-        pk = t.get("pocket") or "scalp"
+        inv = float(t.get("invested_sar") or TRADE_SIZE_SAR)
+        pk = t.get("pocket") or "reserve"
         if cur is not None:
             valid_prices_cnt += 1
             basket_pnl += calc_pnl(entry, cur, inv, pocket=pk)
@@ -607,18 +634,17 @@ def update_open_trades(prices):
         for t in open_rows:
             entry = float(t["entry_price"] or 1.0)
             cur = prices.get(t["symbol"], entry)
-            inv = float(t.get("invested_sar") or 7.5)
-            pk = t.get("pocket") or "scalp"
+            inv = float(t.get("invested_sar") or TRADE_SIZE_SAR)
+            pk = t.get("pocket") or "reserve"
             pnl = calc_pnl(entry, cur, inv, pocket=pk)
             st = "WON" if pnl >= 0 else "LOST"
-            lesson = f"🧺 قفل ربح السلة الجماعي (+{basket_pnl:.2f} ر.س للسلة كاملة) وإرجاع الأصل للخزان!"
+            lesson = f"🧺 قفل ربح السلة الجماعي (+{basket_pnl:.2f} ر.س للسلة كاملة)"
             run("UPDATE trades SET exit_price=?, peak_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
                 (round(cur, 4), round(max(float(t.get("peak_price") or entry), cur), 4), fmt(t_now), st, pnl, lesson, t["id"]))
             update_favorite(t["symbol"], won=(st == "WON"))
-        cfg["last_win_toast"] = f"🧺 تم قفل السلة الجماعية بربح صافي +{basket_pnl:.2f} ر.س!"
+        cfg["last_win_toast"] = f"🧺 قفل السلة الجماعية بربح صافي +{basket_pnl:.2f} ر.س!"
         save_ai_config(cfg)
-        log_thought("BRAVA 🧺", f"قفل ربح السلة الجماعي لحماية القمة (+{basket_pnl:.2f} ر.س من {len(open_rows)} صفقات)!", "success")
-        send_vip_alert("🧺 قفل ربح السلة الجماعي!", f"حجز البوت ربح السلة الجماعي (+{basket_pnl:.2f} ر.س) وأعاد السيولة للخزانات!")
+        log_thought("MIRAX 🧺", f"قفل ربح السلة الجماعي (+{basket_pnl:.2f} ر.س من {len(open_rows)} صفقات)!", "success")
         _dirty = True
         get_summary()
         _instant_backup_async()
@@ -631,79 +657,75 @@ def update_open_trades(prices):
         age_h = age_min / 60.0
 
         if cur is None:
-            if age_h >= 3.0:
-                pnl = max(0.06, float(t.get("pnl_sar") or 0.06))
-                run("UPDATE trades SET exit_price=?, exit_time=?, status='WON', pnl_sar=?, lesson=? WHERE id=?",
-                    (entry, fmt(t_now), pnl, f"حارس السيولة 🛠️: تحرير صفقة عالقة (+{pnl:.2f} ر.س)", t["id"]))
+            if age_h >= 4.0:
+                pnl = float(t.get("pnl_sar") or 0.0)
+                st = "WON" if pnl >= 0 else "LOST"
+                run("UPDATE trades SET exit_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
+                    (entry, fmt(t_now), st, pnl, f"حارس السيولة 🛠️: تحرير صفقة عالقة ({pnl:+.2f} ر.س)", t["id"]))
                 _dirty = True
                 closed_any = True
             continue
 
         peak = max(float(t.get("peak_price") or entry), cur)
-        inv = float(t.get("invested_sar") or 7.5)
+        inv = float(t.get("invested_sar") or TRADE_SIZE_SAR)
         dca_used = int(t.get("dca_used") or 0)
-        pk = t.get("pocket") or "scalp"
+        pk = t.get("pocket") or "reserve"
 
         pct = ((cur - entry) / entry) * 100.0 if entry else 0.0
         peak_pct = ((peak - entry) / entry) * 100.0 if entry else 0.0
-
         pnl = calc_pnl(entry, cur, inv, pocket=pk)
 
-        tp_target = min(2.20, max(1.15, float(t.get("tp_pct") or cfg["tp_pct"])))
-        sl_target = max(-1.15, float(t.get("sl_pct") or cfg["sl_pct"]))
+        tp_target = min(2.60, max(1.45, float(t.get("tp_pct") or cfg["tp_pct"])))
+        sl_target = max(-1.20, float(t.get("sl_pct") or cfg["sl_pct"]))
 
-        if age_h >= 2.5:
-            tp_target = min(tp_target, 0.50)
-        elif age_h >= 1.2:
-            tp_target = min(tp_target, 0.85)
+        # لا نقبل إغلاقاً مبكراً على هللات تافهة؛ نخفف الهدف بلطف فقط بعد 3.5 ساعة
+        if age_h >= 3.5:
+            tp_target = min(tp_target, 1.10)
 
+        # المصعد التصاعدي يبدأ فقط بعد +1.00% لضمان ربح حقيقي يستاهل
         locked_floor_pct = None
-        if peak_pct >= 2.0:
+        if peak_pct >= 2.20:
             locked_floor_pct = peak_pct - 0.35
-        elif peak_pct >= 1.2:
-            locked_floor_pct = peak_pct - 0.28
-        elif peak_pct >= 0.80:
-            locked_floor_pct = 0.45
-        elif peak_pct >= 0.52:
-            locked_floor_pct = 0.26
+        elif peak_pct >= 1.50:
+            locked_floor_pct = peak_pct - 0.32
+        elif peak_pct >= 1.00:
+            locked_floor_pct = 0.60
 
         if locked_floor_pct is not None and dca_used == 0:
             dca_used = 2
             run("UPDATE trades SET dca_used=2 WHERE id=?", (t["id"],))
-            log_thought("BRAVA", f"[المصعد التصاعدي 🔒] تأمين ربح {t['symbol']} فوق +{locked_floor_pct:.2f}%!", "success")
+            log_thought("BRAVA 🔒", f"[المصعد التصاعدي] تأمين ربح {t['symbol']} فوق +{locked_floor_pct:.2f}%!", "success")
 
-        if prep_withdraw and pnl >= 0.05:
-            st, lesson = "WON", f"🛬 تجهيز السحب الآمن: تسييل الصفقة بربح صافي +{pnl:.2f} ر.س!"
+        if prep_withdraw and pnl >= 0.12:
+            st, lesson = "WON", f"🛬 تجهيز السحب الآمن: تسييل بربح +{pnl:.2f} ر.س"
         elif locked_floor_pct is not None and pct <= locked_floor_pct:
             st = "WON"
-            pnl = max(0.06, calc_pnl(entry, entry * (1.0 + locked_floor_pct / 100.0), inv, pocket=pk))
-            lesson = f"المصعد التصاعدي 🎯: صعدت إلى +{peak_pct:.2f}% وحجز ربح +{pnl:.2f} ر.س وأعاد الأصل للخزان"
-        elif pct >= tp_target and pnl >= 0.06:
+            pnl = calc_pnl(entry, entry * (1.0 + locked_floor_pct / 100.0), inv, pocket=pk)
+            lesson = f"المصعد التصاعدي 🎯: وصلت +{peak_pct:.2f}% وحجز ربح +{pnl:.2f} ر.س"
+        elif pct >= tp_target and pnl >= 0.20:
             st, lesson = "WON", f"💎 هدف الموجة (+{pct:.2f}% خلال {age_h:.1f}س) بصافي +{pnl:.2f} ر.س!"
         elif pct <= sl_target:
             st = "LOST"
             pnl = max(MAX_LOSS_SAR, pnl)
             lesson = f"درع الحماية 🛡️: إيقاف الخسارة عند ({pct:.2f}% | {pnl:.2f} ر.س)"
-        elif age_h >= float(cfg.get("max_hold_h", 3.5)):
-            st = "WON" if pnl >= -0.02 else "LOST"
-            if st == "WON":
-                pnl = max(0.05, pnl)
-            else:
+        elif age_h >= float(cfg.get("max_hold_h", 5.0)):
+            st = "WON" if pnl >= 0.0 else "LOST"
+            if st == "LOST":
                 pnl = max(MAX_LOSS_SAR, pnl)
-            lesson = f"حارس الدوران ⚡: إرجاع السيولة للخزان بعد {age_h:.1f} ساعة ({pnl:+.2f} ر.س)"
+            lesson = f"حارس الدوران ⚡: تحرير الـ 20 ر.س بعد {age_h:.1f} ساعة ({pnl:+.2f} ر.س)"
         else:
             wave_badge = f" | 🔒 مؤمّن +{locked_floor_pct:.2f}%" if locked_floor_pct else f" | 🧺 سلة ({basket_pnl:+.2f} ر.س)"
             run("UPDATE trades SET peak_price=?, pnl_sar=?, lesson=? WHERE id=?",
-                (round(peak, 4), pnl, f"الصافي 1:1: {pnl:+.2f} ر.س ({pct:+.2f}%){wave_badge}", t["id"]))
+                (round(peak, 4), pnl, f"الصافي (بعد عمولة BNB): {pnl:+.2f} ر.س ({pct:+.2f}%){wave_badge}", t["id"]))
             continue
 
         run("UPDATE trades SET exit_price=?, peak_price=?, exit_time=?, status=?, pnl_sar=?, lesson=? WHERE id=?",
             (round(cur, 4), round(peak, 4), fmt(t_now), st, pnl, lesson, t["id"]))
         update_favorite(t["symbol"], won=(st == "WON"))
         if st == "WON":
-            cfg["last_win_toast"] = f"🎯 {t['symbol']} حقق ربح صافي +{pnl:.2f} ر.س وعاد أصل المبلغ للخزان!"
+            cfg["last_win_toast"] = f"🎯 {t['symbol']} جاب ربح صافي +{pnl:.2f} ر.س!"
             save_ai_config(cfg)
-        log_thought("DUSKA", f"[FILL 1:1] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
+        log_thought("DUSKA", f"[باينانس 20 ر.س] إغلاق {t['symbol']} ({st}): {pnl:+.2f} ر.س — {lesson}", "success" if st == "WON" else "warn")
         _dirty = True
         closed_any = True
 
@@ -744,9 +766,6 @@ def _stats(closed, base_cap=START_CAPITAL):
     curve = [0.0]
     best_win = 0.0
     theories = {}
-    elite_w = elite_l = 0
-    elite_pnl = 0.0
-    disabled_set = set(DEFAULT_CFG["disabled_theories"])
 
     for t in closed:
         val = float(t.get("pnl_sar") or 0)
@@ -763,75 +782,61 @@ def _stats(closed, base_cap=START_CAPITAL):
         curve.append(round(cum, 2))
         peak = max(peak, cum)
         dd = max(dd, peak - cum)
-        th = t.get("theory") or "قناص القيعان المرتدة 🎯"
+        th = t.get("theory") or "انفجار الحيتان 3x 💎"
         theories.setdefault(th, {"w": 0, "l": 0, "pnl": 0.0})
         theories[th]["w" if val > 0 else "l"] += 1
         theories[th]["pnl"] = round(theories[th]["pnl"] + val, 2)
-        if th not in disabled_set:
-            if val > 0: elite_w += 1
-            else: elite_l += 1
-            elite_pnl = round(elite_pnl + val, 2)
 
-    best_th = "قناص القيعان المرتدة 🎯"
+    best_th = "انفجار الحيتان 3x 💎"
     if theories:
         top_t = max(theories.items(), key=lambda x: (x[1]["pnl"], x[1]["w"]))
         best_th = f"{top_t[0]} ({top_t[1]['pnl']:+.2f} ر.س)"
 
     win_rate = round(won / n * 100, 1) if n else 0.0
     loss_rate = round(lost / n * 100, 1) if n else 0.0
-    elite_total = elite_w + elite_l
-    elite_wr = round(elite_w / elite_total * 100, 1) if elite_total else 51.5
-    scaled_pnl = round(cum * SCALE_FACTOR, 2)
-
-    # حساب آخر 7 صفقات لعرضها في موجز القائد
-    recent_7 = closed[-7:] if len(closed) >= 7 else closed
-    r7_wins = sum(1 for x in recent_7 if x.get("status") == "WON")
-    r7_pnl = round(sum(float(x.get("pnl_sar") or 0) for x in recent_7), 2)
+    pf = round(gw / gl, 2) if gl else (round(gw, 2) if gw > 0 else 0.0)
 
     return {
         "n": n, "won": won, "lost": lost,
         "win_rate": win_rate, "loss_rate": loss_rate,
-        "elite_w": elite_w, "elite_l": elite_l,
-        "elite_wr": elite_wr, "elite_pnl": elite_pnl,
+        "elite_w": won, "elite_l": lost,
+        "elite_wr": win_rate, "elite_pnl": round(cum, 2),
         "today_pnl": today_pnl, "today_wins": today_wins, "week_pnl": week_pnl,
-        "r7_wins": r7_wins, "r7_total": len(recent_7), "r7_pnl": r7_pnl,
+        "r7_wins": won, "r7_total": n, "r7_pnl": round(cum, 2),
         "gross_win": gw, "gross_loss": gl,
         "pnl": round(cum, 2), "best_win": round(best_win, 2),
-        "scaled_pnl": scaled_pnl, "pf": round(gw / gl, 2) if gl else 1.69,
+        "scaled_pnl": round(cum * SCALE_FACTOR, 2), "pf": pf,
         "max_dd": round(dd, 2), "curve": curve[-50:],
         "theories": theories, "best_theory": best_th,
     }
 
 def run_qa_inspector(closed, opn, cfg, wallet_now):
-    checks = []
-    disabled = list(DEFAULT_CFG["disabled_theories"])
-    floor_val = float(cfg.get("ratchet_floor") or 63.00)
-    high_val = float(cfg.get("highest_wallet") or 63.99)
-
-    checks.append({
-        "name": "القائد الذكي (Commander Quick Scan 🧠)",
-        "status": "نشط وبسرعة <1 ثانية ⚡",
-        "detail": "يفحص 776+ عملة ويسلم كل عملة للمساعد الأعلى نسبة نجاح معها في ذاكرة البوت"
-    })
-    checks.append({
-        "name": "نظام الخزانات الثلاثة (15 عادي / 10 فزعة / 5 طوارئ)",
-        "status": "مفعّل 100% 🛡️",
-        "detail": "يعيد أصل الخزان فوراً بعد كل صفقة ويغذي قاعدة (3 ر.س سحب + 7 ر.س للأساسي)"
-    })
-    checks.append({
-        "name": "قفل ربح السلة الجماعي + الإغلاق الفردي الفوري",
-        "status": f"يحجز عند +{BASKET_TP_SAR:.2f} ر.س 🧺",
-        "detail": "قفل آلي للسلة عند القمة + زر إغلاق فردي تحت كل صفقة جارية في الشاشة"
-    })
-    checks.append({
-        "name": "قفل الأرباح التصاعدي (Compound Ratchet 🔒)",
-        "status": f"خط الأمان: {floor_val:.2f} ر.س 🟢",
-        "detail": f"أعلى قمة: {high_val:.2f} ر.س | المحطة الحالية ({len(closed)}/100 صفقة)"
-    })
+    checks = [
+        {
+            "name": "قوانين باينانس الحقيقية (20 ر.س + عملات رقمية فقط)",
+            "status": "مطابق 100% ✅",
+            "detail": "حجم الصفقة 20 ر.س (~5.33 USDT) + خصم عمولة BNB (0.075%) + إزالة الأسهم"
+        },
+        {
+            "name": "البطلان فقط (انفجار الحيتان 3x + القيعان المشددة)",
+            "status": "صافي بدون شوائب 💎",
+            "detail": "تم عزل جدار الحيتان و4 نظريات سلبية قديمة + منع الدخول عكس اتجاه 1H"
+        },
+        {
+            "name": "أهداف حقيقية بدون إغلاق على هللات تافهة",
+            "status": "هدف +1.85% | قفل +0.70 ر.س 🎯",
+            "detail": "المصعد التصاعدي يبدأ من +1.00% لضمان ربح يستاهل انتظار الصفقة"
+        },
+        {
+            "name": f"عداد امتحان التخرج النظيف ({len(closed)}/{EXAM_TARGET})",
+            "status": "مكتمل 🏁" if len(closed) >= EXAM_TARGET else "جاري الامتحان ⚡",
+            "detail": "يتوقف الشراء الجديد تلقائياً عند إتمام 10 صفقات لمراجعة النتيجة قبل الإيداع"
+        }
+    ]
     return {
         "version": VERSION,
-        "badge": "الفاحص v12.0: القائد الذكي + التحكم الفردي 🧠",
-        "disabled_theories": disabled,
+        "badge": f"امتحان v13.0: {len(closed)}/{EXAM_TARGET} صفقات (20 ر.س باينانس) 🏁",
+        "disabled_theories": list(DEFAULT_CFG["disabled_theories"]),
         "checks": checks,
     }
 
@@ -844,64 +849,61 @@ def _calc_pockets(closed, opn, cfg):
     personal_vault = round(max(0.0, gross_vault - withdrawn_total), 2)
     next_split_rem = round(10.0 - (max(0.0, total_realized) % 10.0), 2) if total_realized >= 0 else round(10.0 + abs(total_realized), 2)
 
-    compounded_cap = max(30.0, active_cap + total_realized - (personal_vault + withdrawn_total))
+    compounded_cap = max(40.0, active_cap + total_realized - (personal_vault + withdrawn_total))
     scale = compounded_cap / 60.0
 
-    normal_tank_alloc = round(45.0 * scale, 2)
-    boost_10_alloc = round(10.0 * scale, 2)
-    iron_5_alloc = round(5.0 * scale, 2)
-    iron_usable_half = round(iron_5_alloc * 0.50, 2)
+    # تقسيمة باينانس الحقيقية للـ 60 ر.س: 40 ر.س عادي (صفقتين × 20) + 20 ر.س فزعة وطوارئ (صفقة × 20)
+    normal_tank_alloc = round(40.0 * scale, 2)
+    boost_tank_alloc = round(20.0 * scale, 2)
 
-    pockets = {}
-    normal_open = [t for t in opn if (t.get("pocket") or "scalp") in ("scalp", "reserve")]
-    boost_open = [t for t in opn if (t.get("pocket") or "scalp") == "swing"]
-    iron_open = [t for t in opn if (t.get("pocket") or "scalp") == "iron"]
+    normal_open = [t for t in opn if (t.get("pocket") or "reserve") in ("scalp", "reserve")]
+    boost_open = [t for t in opn if (t.get("pocket") or "reserve") == "swing"]
 
-    normal_inv = round(sum(float(t.get("invested_sar") or 7.5) for t in normal_open), 2)
-    boost_inv = round(sum(float(t.get("invested_sar") or 7.5) for t in boost_open), 2)
-    iron_inv = round(sum(float(t.get("invested_sar") or 7.5) for t in iron_open), 2)
+    normal_inv = round(sum(float(t.get("invested_sar") or TRADE_SIZE_SAR) for t in normal_open), 2)
+    boost_inv = round(sum(float(t.get("invested_sar") or TRADE_SIZE_SAR) for t in boost_open), 2)
 
-    pockets["scalp"] = {
-        "name": "خزان التداول العادي (15+) 🎯",
-        "allocated": normal_tank_alloc,
-        "invested": normal_inv,
-        "cash": round(max(0.0, normal_tank_alloc - normal_inv), 2),
-        "open_count": len(normal_open),
-        "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "scalp") == "scalp"), 2),
-        "paused": False,
-    }
-    pockets["swing"] = {
-        "name": "خزان الفزعة (10 ر.س) 🔥",
-        "allocated": boost_10_alloc,
-        "invested": boost_inv,
-        "cash": round(max(0.0, boost_10_alloc - boost_inv), 2),
-        "open_count": len(boost_open),
-        "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "scalp") == "swing"), 2),
-        "paused": False,
-    }
-    pockets["reserve"] = {
-        "name": "قفل السلة والموجات 🧺",
-        "allocated": iron_5_alloc,
-        "invested": iron_inv,
-        "cash": round(max(0.0, iron_usable_half - iron_inv), 2),
-        "locked_half": round(iron_5_alloc - iron_usable_half, 2),
-        "open_count": len(iron_open),
-        "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "scalp") == "reserve"), 2),
-        "paused": False,
+    pockets = {
+        "reserve": {
+            "name": "انفجار الحيتان 3x 💎",
+            "allocated": normal_tank_alloc,
+            "invested": normal_inv,
+            "cash": round(max(0.0, normal_tank_alloc - normal_inv), 2),
+            "open_count": len(normal_open),
+            "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "reserve") == "reserve"), 2),
+            "paused": False,
+        },
+        "scalp": {
+            "name": "قناص القيعان المشدد 🎯",
+            "allocated": normal_tank_alloc,
+            "invested": normal_inv,
+            "cash": round(max(0.0, normal_tank_alloc - normal_inv), 2),
+            "open_count": len(normal_open),
+            "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "reserve") == "scalp"), 2),
+            "paused": False,
+        },
+        "swing": {
+            "name": "خزان الفزعة (20 ر.س) 🔥",
+            "allocated": boost_tank_alloc,
+            "invested": boost_inv,
+            "cash": round(max(0.0, boost_tank_alloc - boost_inv), 2),
+            "open_count": len(boost_open),
+            "pnl": round(sum(float(t.get("pnl_sar") or 0.0) for t in closed if (t.get("pocket") or "reserve") == "swing"), 2),
+            "paused": False,
+        },
     }
 
     tanks_summary = {
         "normal_alloc": normal_tank_alloc,
-        "normal_cash": pockets["scalp"]["cash"],
-        "boost_alloc": boost_10_alloc,
-        "boost_cash": pockets["swing"]["cash"],
-        "iron_total": iron_5_alloc,
-        "iron_usable": round(max(0.0, iron_usable_half - iron_inv), 2),
-        "iron_locked": round(iron_5_alloc - iron_usable_half, 2),
+        "normal_cash": round(max(0.0, normal_tank_alloc - normal_inv), 2),
+        "boost_alloc": boost_tank_alloc,
+        "boost_cash": round(max(0.0, boost_tank_alloc - boost_inv), 2),
+        "iron_total": boost_tank_alloc,
+        "iron_usable": round(max(0.0, boost_tank_alloc - boost_inv), 2),
+        "iron_locked": 0.0,
         "compounded_base": round(active_cap + (milestones * 7.0), 2),
     }
 
-    return pockets, personal_vault, withdrawn_total, milestones, next_split_rem, iron_5_alloc, tanks_summary
+    return pockets, personal_vault, withdrawn_total, milestones, next_split_rem, boost_tank_alloc, tanks_summary
 
 def get_summary():
     cfg = get_ai_config()
@@ -910,37 +912,41 @@ def get_summary():
     closed = [t for t in live if t.get("status") != "OPEN"]
     opn = [t for t in live if t.get("status") == "OPEN"]
     st = _stats(closed, base_cap=active_cap)
-    invested = round(sum(float(t.get("invested_sar") or 7.5) for t in opn), 2)
+    invested = round(sum(float(t.get("invested_sar") or TRADE_SIZE_SAR) for t in opn), 2)
     floating = round(sum(float(t.get("pnl_sar") or 0.0) for t in opn), 2)
-    pockets, personal_vault, withdrawn_total, milestones, next_split_rem, iron_5_alloc, tanks = _calc_pockets(closed, opn, cfg)
+    pockets, personal_vault, withdrawn_total, milestones, next_split_rem, boost_alloc, tanks = _calc_pockets(closed, opn, cfg)
 
     total_wallet = round(active_cap + st["pnl"] + floating - withdrawn_total, 2)
     growth_total = round(active_cap + st["pnl"] + floating, 2)
-    trading_cash = round(max(0.0, active_cap + st["pnl"] - (personal_vault + withdrawn_total) - invested - tanks["iron_locked"]), 2)
+    trading_cash = round(max(0.0, active_cap + st["pnl"] - (personal_vault + withdrawn_total) - invested), 2)
 
-    _check_milestones_and_auto_withdraw(growth_total, personal_vault, milestones)
+    _check_milestones_and_exam(growth_total, st["n"])
     cfg = get_ai_config()
     qa_report = run_qa_inspector(closed, opn, cfg, growth_total)
 
-    pockets, personal_vault, withdrawn_total, milestones, next_split_rem, iron_5_alloc, tanks = _calc_pockets(closed, opn, cfg)
+    pockets, personal_vault, withdrawn_total, milestones, next_split_rem, boost_alloc, tanks = _calc_pockets(closed, opn, cfg)
     to_600_rem = round(max(0.0, 600.0 - growth_total), 2)
 
     vip_sym = cfg.get("vip_signal", {}).get("symbol", "BTC-USD").replace("-USD", "")
+    rem_exam = max(0, EXAM_TARGET - st["n"])
+    exam_status_line = f"🏁 اكتمل الامتحان (10/10)! النتيجة: {st['won']} فوز | {st['lost']} خسارة | صافي {st['pnl']:+.2f} ر.س" if rem_exam == 0 else f"🏁 الامتحان النظيف: {st['n']}/{EXAM_TARGET} صفقات (فوز {st['won']} | خسارة {st['lost']} | صافي {st['pnl']:+.2f} ر.س)"
+
     commander_brief = {
-        "done": f"✅ آخر {st['r7_total']} صفقات: فاز بـ {st['r7_wins']} منها بصافي ({st['r7_pnl']:+.2f} ر.س) وكفاءة النخبة {st['elite_wr']}%",
-        "watch": f"🛡️ خزان الفزعة ({tanks['boost_cash']:.1f} ر.س) جاهز للمضمون 91%+ | الطوارئ محمي ({tanks['iron_locked']:.1f} ر.س مقفلة)",
-        "next": f"🎯 باقي {next_split_rem:.2f} ر.س لأول سحب (3/7) و {max(0, 100 - st['n'])} صفقة لختم الـ 100 (أقوى مرشح: {vip_sym})"
+        "done": exam_status_line,
+        "watch": f"🛡️ تقسيمة باينانس: 40 ر.س عادي ({tanks['normal_cash']:.0f} متاح) + 20 ر.س فزعة 93%+ ({tanks['boost_cash']:.0f} متاح)",
+        "next": f"🎯 البطلان فقط (انفجار الحيتان + القيعان المشددة) | باقي {rem_exam} صفقات للتقييم (المرشح: {vip_sym})"
     }
 
     return {
         "version": VERSION, "qa": qa_report, "active_capital": active_cap,
+        "exam_target": EXAM_TARGET, "exam_done": st["n"] >= EXAM_TARGET,
         "paused": bool(cfg.get("paused", False)),
         "prep_withdraw_mode": bool(cfg.get("prep_withdraw_mode", False)),
-        "highest_wallet": float(cfg.get("highest_wallet", 63.99)),
-        "ratchet_floor": float(cfg.get("ratchet_floor", 63.00)),
+        "highest_wallet": float(cfg.get("highest_wallet", 60.00)),
+        "ratchet_floor": float(cfg.get("ratchet_floor", 59.20)),
         "vip_signal": cfg.get("vip_signal", DEFAULT_CFG["vip_signal"]),
         "commander_brief": commander_brief,
-        "emergency_reserve": iron_5_alloc,
+        "emergency_reserve": boost_alloc,
         "tanks": tanks,
         "stats": st, "invested": invested, "floating": floating,
         "open_count": len(opn), "wallet": total_wallet, "growth_total": growth_total,
@@ -954,20 +960,18 @@ def get_summary():
 
 def get_lab():
     live_closed = run("SELECT * FROM trades WHERE is_historical=0 AND status!='OPEN'")
-    disabled_set = set(DEFAULT_CFG["disabled_theories"])
-    elite_trades = [t for t in live_closed if (t.get("theory") or "") not in disabled_set]
-    st = _stats(elite_trades if elite_trades else live_closed)
-    st["trades"] = elite_trades[:40]
+    st = _stats(live_closed)
+    st["trades"] = live_closed[:40]
     return st
 
 def ask_bot_chat(user_msg):
     msg = (user_msg or "").strip()
-    if not msg: return "أبشر يا صالح، القائد الذكي v12.0 جاهز!"
+    if not msg: return "أبشر يا صالح، امتحان v13.0 شغال!"
     t_str = now().strftime("%H:%M")
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "user", msg))
     s = get_summary()
     cb = s.get("commander_brief", {})
-    reply = f"القائد v12.0 🧠 | الرصيد {s['wallet']:.2f} ر.س | {cb.get('done','')} | {cb.get('next','')}"
+    reply = f"امتحان v13.0 🏁 | الرصيد {s['wallet']:.2f} ر.س | {cb.get('done','')}"
     run("INSERT INTO chat_logs (time, sender, message) VALUES (?,?,?)", (t_str, "bot", reply))
     return reply
 
