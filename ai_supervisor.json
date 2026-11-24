@@ -66,11 +66,12 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+1%)",
-    "ETH (+1%)",
-    "NEAR (+1%)",
-    "XRP (+1%)",
-    "ZEC (-0%)"
+    "BTC (+0%)",
+    "ETH (-0%)",
+    "SOL (+2%)",
+    "ZEC (-2%)",
+    "XRP (+3%)",
+    "SUI (+4%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 602952,
