@@ -29,18 +29,21 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "DOT-USD",
-    "name": "بولكادوت",
+    "symbol": "BCH-USD",
+    "name": "بيتكوين كاش",
     "theory": "انفجار الحيتان 3x 💎",
-    "score": 93,
-    "entry": 0.671,
+    "score": 95,
+    "entry": 196.71,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "14:58"
+    "updated_at": "01:19"
   },
-  "coin_reputation": {},
+  "coin_reputation": {
+    "INJ-USD": -2,
+    "DOT-USD": -2
+  },
   "paused_pockets": {
     "scalp": false,
     "swing": false,
@@ -54,7 +57,10 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {},
+  "banned": {
+    "INJ-USD": "2026-11-25 13:19",
+    "DOT-USD": "2026-11-25 13:19"
+  },
   "ban_ref": {},
   "elite_assets": [
     "BTC-USD",
@@ -67,11 +73,10 @@
   ],
   "radar_discovered": [
     "BTC (-2%)",
-    "ETH (-1%)",
-    "SOL (-2%)",
-    "XRP (-1%)",
-    "NEAR (-2%)",
-    "HYPE (-2%)"
+    "ETH (-2%)",
+    "NEAR (-3%)",
+    "XRP (-2%)",
+    "DOGE (-2%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 602952,
@@ -84,19 +89,19 @@
       "role": "القائد الذكي v13.0",
       "status": "working",
       "stage": "🧠 سلّم BRAVA",
-      "bubble": "سلّم DOT-USD إلى BRAVA"
+      "bubble": "سلّم BCH-USD إلى BRAVA"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
       "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص DOT-USD (20 ر.س)"
+      "bubble": "قنص BCH-USD (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
-      "status": "working",
-      "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص INJ-USD (20 ر.س)"
+      "status": "scanning",
+      "stage": "🎯 فلتر مشدود",
+      "bubble": "قيعان مشددة مع 1H 🎯"
     },
     "ORVEN": {
       "role": "فزعة الطوارئ (20 ر.س)",
