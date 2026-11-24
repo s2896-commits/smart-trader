@@ -29,16 +29,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "BTC-USD",
-    "name": "بيتكوين (BTC)",
+    "symbol": "DOT-USD",
+    "name": "بولكادوت",
     "theory": "انفجار الحيتان 3x 💎",
-    "score": 94,
-    "entry": 0.0,
-    "tp1_pct": 1.9,
-    "tp2_pct": 3.5,
-    "sl_pct": -1.05,
-    "status": "🟢 جاهز لامتحان الـ 10 صفقات (باينانس فقط)",
-    "updated_at": ""
+    "score": 93,
+    "entry": 0.671,
+    "tp1_pct": 1.6,
+    "tp2_pct": 2.5,
+    "sl_pct": -0.85,
+    "status": "🟢 البوت دخلها الآن (20 ر.س)!",
+    "updated_at": "14:58"
   },
   "coin_reputation": {},
   "paused_pockets": {
@@ -66,12 +66,12 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+0%)",
-    "ETH (-0%)",
-    "SOL (+2%)",
-    "ZEC (-2%)",
-    "XRP (+3%)",
-    "SUI (+4%)"
+    "BTC (-2%)",
+    "ETH (-1%)",
+    "SOL (-2%)",
+    "XRP (-1%)",
+    "NEAR (-2%)",
+    "HYPE (-2%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 602952,
@@ -83,20 +83,20 @@
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🏁 امتحان 0/10",
-      "bubble": "فحص 784 عملة باينانس"
+      "stage": "🧠 سلّم BRAVA",
+      "bubble": "سلّم DOT-USD إلى BRAVA"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "stage": "💎 أولوية أولى",
-      "bubble": "انفجار الحيتان 3x (20 ر.س)"
+      "stage": "⚙️ يدير الصفقة",
+      "bubble": "قنص DOT-USD (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
-      "status": "scanning",
-      "stage": "🎯 فلتر مشدود",
-      "bubble": "قيعان مشددة مع 1H 🎯"
+      "status": "working",
+      "stage": "⚙️ يدير الصفقة",
+      "bubble": "قنص INJ-USD (20 ر.س)"
     },
     "ORVEN": {
       "role": "فزعة الطوارئ (20 ر.س)",
