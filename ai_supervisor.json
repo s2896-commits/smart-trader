@@ -59,8 +59,6 @@
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
-    "INJ-USD": "2026-11-25 13:19",
-    "DOT-USD": "2026-11-25 13:19",
     "BCH-USD": "2026-11-25 19:57"
   },
   "ban_ref": {},
@@ -74,11 +72,12 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (-2%)",
-    "ETH (-2%)",
-    "XRP (-3%)"
+    "BTC (-3%)",
+    "ETH (-3%)",
+    "SOL (-3%)",
+    "XRP (-2%)"
   ],
-  "radar_total_scanned": 784,
+  "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
   "market_mood": "قيعان باينانس (13) 🎯",
@@ -89,7 +88,7 @@
       "role": "القائد الذكي v13.0",
       "status": "working",
       "stage": "🏁 امتحان 3/10",
-      "bubble": "فحص 784 عملة باينانس"
+      "bubble": "فحص 789 عملة باينانس"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
