@@ -29,16 +29,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "BCH-USD",
-    "name": "بيتكوين كاش",
+    "symbol": "FET-USD",
+    "name": "فيتش AI",
     "theory": "انفجار الحيتان 3x 💎",
-    "score": 95,
-    "entry": 196.71,
+    "score": 96,
+    "entry": 0.108,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "01:19"
+    "updated_at": "02:46"
   },
   "coin_reputation": {
     "INJ-USD": -2,
@@ -58,9 +58,7 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {
-    "BCH-USD": "2026-11-25 19:57"
-  },
+  "banned": {},
   "ban_ref": {},
   "elite_assets": [
     "BTC-USD",
@@ -72,10 +70,12 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (-3%)",
-    "ETH (-3%)",
-    "SOL (-3%)",
-    "XRP (-2%)"
+    "SOL (+1%)",
+    "ZEC (+3%)",
+    "NEAR (+5%)",
+    "XRP (+1%)",
+    "HYPE (+2%)",
+    "TRX (-1%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
@@ -87,14 +87,14 @@
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🏁 امتحان 3/10",
-      "bubble": "فحص 789 عملة باينانس"
+      "stage": "🧠 سلّم BRAVA",
+      "bubble": "سلّم FET-USD إلى BRAVA"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "stage": "💎 أولوية أولى",
-      "bubble": "انفجار الحيتان 3x (20 ر.س)"
+      "stage": "⚙️ يدير الصفقة",
+      "bubble": "قنص FET-USD (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
