@@ -42,7 +42,8 @@
   },
   "coin_reputation": {
     "INJ-USD": -2,
-    "DOT-USD": -2
+    "DOT-USD": -2,
+    "BCH-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -59,7 +60,8 @@
   "ntfy_topic": "smax_trader_vip_999",
   "banned": {
     "INJ-USD": "2026-11-25 13:19",
-    "DOT-USD": "2026-11-25 13:19"
+    "DOT-USD": "2026-11-25 13:19",
+    "BCH-USD": "2026-11-25 19:57"
   },
   "ban_ref": {},
   "elite_assets": [
@@ -74,28 +76,26 @@
   "radar_discovered": [
     "BTC (-2%)",
     "ETH (-2%)",
-    "NEAR (-3%)",
-    "XRP (-2%)",
-    "DOGE (-2%)"
+    "XRP (-3%)"
   ],
   "radar_total_scanned": 784,
   "scenarios_tested": 602952,
   "daily_score": 100,
-  "market_mood": "قيعان باينانس (11) 🎯",
+  "market_mood": "قيعان باينانس (13) 🎯",
   "last_win_toast": "🏁 بدأ امتحان الـ 10 صفقات النظيف بـ 60.00 ر.س (قوانين باينانس 20 ر.س)",
-  "best_theory": "انفجار الحيتان 3x 💎",
+  "best_theory": "قناص القيعان المرتدة 🎯 (-0.30 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🧠 سلّم BRAVA",
-      "bubble": "سلّم BCH-USD إلى BRAVA"
+      "stage": "🏁 امتحان 3/10",
+      "bubble": "فحص 784 عملة باينانس"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص BCH-USD (20 ر.س)"
+      "stage": "💎 أولوية أولى",
+      "bubble": "انفجار الحيتان 3x (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
