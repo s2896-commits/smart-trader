@@ -29,16 +29,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "FET-USD",
-    "name": "فيتش AI",
-    "theory": "انفجار الحيتان 3x 💎",
-    "score": 96,
-    "entry": 0.108,
+    "symbol": "LINK-USD",
+    "name": "تشين لينك",
+    "theory": "قناص القيعان المرتدة 🎯",
+    "score": 88,
+    "entry": 9.143,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "02:46"
+    "updated_at": "18:45"
   },
   "coin_reputation": {
     "INJ-USD": -2,
@@ -70,25 +70,25 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+3%)",
+    "BTC (+4%)",
     "ETH (+3%)",
-    "SOL (+4%)",
-    "ZEC (+4%)",
-    "NEAR (+8%)",
-    "MMT (+7%)"
+    "SOL (+5%)",
+    "XRP (+5%)",
+    "ZEC (+0%)",
+    "SUI (+6%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
   "market_mood": "قيعان باينانس (11) 🎯",
   "last_win_toast": "🎯 FET-USD جاب ربح صافي +0.73 ر.س!",
-  "best_theory": "قناص القيعان المرتدة 🎯 (-0.30 ر.س)",
+  "best_theory": "انفجار الحيتان 3x 💎 (+0.35 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🏁 امتحان 4/10",
-      "bubble": "فحص 789 عملة باينانس"
+      "stage": "🧠 سلّم KEST8",
+      "bubble": "سلّم LINK-USD إلى KEST8"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
@@ -98,9 +98,9 @@
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
-      "status": "scanning",
-      "stage": "🎯 فلتر مشدود",
-      "bubble": "قيعان مشددة مع 1H 🎯"
+      "status": "working",
+      "stage": "⚙️ يدير الصفقة",
+      "bubble": "قنص LINK-USD (20 ر.س)"
     },
     "ORVEN": {
       "role": "فزعة الطوارئ (20 ر.س)",
