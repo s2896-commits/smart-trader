@@ -2,8 +2,8 @@
   "version": "v13.0 (امتحان التخرج النظيف • 20 ر.س باينانس)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 60.0,
-  "ratchet_floor": 59.2,
+  "highest_wallet": 60.05,
+  "ratchet_floor": 59.25,
   "rsi_min": 20,
   "rsi_max": 56,
   "tp_pct": 1.85,
@@ -70,31 +70,31 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "SOL (+1%)",
-    "ZEC (+3%)",
-    "NEAR (+5%)",
-    "XRP (+1%)",
-    "HYPE (+2%)",
-    "TRX (-1%)"
+    "BTC (+3%)",
+    "ETH (+3%)",
+    "SOL (+4%)",
+    "ZEC (+4%)",
+    "NEAR (+8%)",
+    "MMT (+7%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
-  "market_mood": "قيعان باينانس (13) 🎯",
-  "last_win_toast": "🏁 بدأ امتحان الـ 10 صفقات النظيف بـ 60.00 ر.س (قوانين باينانس 20 ر.س)",
+  "market_mood": "قيعان باينانس (11) 🎯",
+  "last_win_toast": "🎯 FET-USD جاب ربح صافي +0.73 ر.س!",
   "best_theory": "قناص القيعان المرتدة 🎯 (-0.30 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🧠 سلّم BRAVA",
-      "bubble": "سلّم FET-USD إلى BRAVA"
+      "stage": "🏁 امتحان 4/10",
+      "bubble": "فحص 789 عملة باينانس"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص FET-USD (20 ر.س)"
+      "stage": "💎 أولوية أولى",
+      "bubble": "انفجار الحيتان 3x (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
