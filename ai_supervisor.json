@@ -2,8 +2,8 @@
   "version": "v13.0 (امتحان التخرج النظيف • 20 ر.س باينانس)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 60.35,
-  "ratchet_floor": 59.55,
+  "highest_wallet": 60.4,
+  "ratchet_floor": 59.6,
   "rsi_min": 20,
   "rsi_max": 56,
   "tp_pct": 1.85,
@@ -70,24 +70,24 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+0%)",
-    "ETH (+0%)",
-    "SOL (+1%)",
-    "XRP (+1%)",
-    "NEAR (+0%)"
+    "ETH (+3%)",
+    "ZEC (+1%)",
+    "HYPE (+8%)",
+    "XRP (+3%)",
+    "NEAR (+2%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
   "market_mood": "قيعان باينانس (12) 🎯",
-  "last_win_toast": "🎯 LINK-USD جاب ربح صافي +0.30 ر.س!",
+  "last_win_toast": "🎯 SEI-USD جاب ربح صافي +0.05 ر.س!",
   "best_theory": "انفجار الحيتان 3x 💎 (+0.35 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🧠 سلّم KEST8",
-      "bubble": "سلّم SEI-USD إلى KEST8"
+      "stage": "🏁 امتحان 6/10",
+      "bubble": "فحص 789 عملة باينانس"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
@@ -97,9 +97,9 @@
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
-      "status": "working",
-      "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص SEI-USD (20 ر.س)"
+      "status": "scanning",
+      "stage": "🎯 فلتر مشدود",
+      "bubble": "قيعان مشددة مع 1H 🎯"
     },
     "ORVEN": {
       "role": "فزعة الطوارئ (20 ر.س)",
