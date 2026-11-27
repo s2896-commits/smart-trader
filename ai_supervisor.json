@@ -2,8 +2,8 @@
   "version": "v13.0 (امتحان التخرج النظيف • 20 ر.س باينانس)",
   "capital_override": 60.0,
   "prep_withdraw_mode": false,
-  "highest_wallet": 60.05,
-  "ratchet_floor": 59.25,
+  "highest_wallet": 60.35,
+  "ratchet_floor": 59.55,
   "rsi_min": 20,
   "rsi_max": 56,
   "tp_pct": 1.85,
@@ -29,16 +29,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "LINK-USD",
-    "name": "تشين لينك",
+    "symbol": "SEI-USD",
+    "name": "سي نتورك",
     "theory": "قناص القيعان المرتدة 🎯",
-    "score": 88,
-    "entry": 9.143,
+    "score": 90,
+    "entry": 0.0387,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "18:45"
+    "updated_at": "03:06"
   },
   "coin_reputation": {
     "INJ-USD": -2,
@@ -70,25 +70,24 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (+4%)",
-    "ETH (+3%)",
-    "SOL (+5%)",
-    "XRP (+5%)",
-    "ZEC (+0%)",
-    "SUI (+6%)"
+    "BTC (+0%)",
+    "ETH (+0%)",
+    "SOL (+1%)",
+    "XRP (+1%)",
+    "NEAR (+0%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
-  "market_mood": "قيعان باينانس (11) 🎯",
-  "last_win_toast": "🎯 FET-USD جاب ربح صافي +0.73 ر.س!",
+  "market_mood": "قيعان باينانس (12) 🎯",
+  "last_win_toast": "🎯 LINK-USD جاب ربح صافي +0.30 ر.س!",
   "best_theory": "انفجار الحيتان 3x 💎 (+0.35 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
       "stage": "🧠 سلّم KEST8",
-      "bubble": "سلّم LINK-USD إلى KEST8"
+      "bubble": "سلّم SEI-USD إلى KEST8"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
@@ -100,7 +99,7 @@
       "role": "قناص القيعان المشدد",
       "status": "working",
       "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص LINK-USD (20 ر.س)"
+      "bubble": "قنص SEI-USD (20 ر.س)"
     },
     "ORVEN": {
       "role": "فزعة الطوارئ (20 ر.س)",
