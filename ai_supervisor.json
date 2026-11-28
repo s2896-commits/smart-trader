@@ -29,21 +29,23 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "SOL-USD",
-    "name": "سولانا",
+    "symbol": "HBAR-USD",
+    "name": "هيديرا",
     "theory": "انفجار الحيتان 3x 💎",
-    "score": 96,
-    "entry": 72.0,
+    "score": 98,
+    "entry": 0.0534,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "04:36"
+    "updated_at": "12:27"
   },
   "coin_reputation": {
     "INJ-USD": -2,
     "DOT-USD": -2,
-    "BCH-USD": -2
+    "BCH-USD": -2,
+    "ETH-USD": -2,
+    "SOL-USD": -2
   },
   "paused_pockets": {
     "scalp": false,
@@ -58,7 +60,10 @@
   "withdraw_history": [],
   "alerted_milestones": [],
   "ntfy_topic": "smax_trader_vip_999",
-  "banned": {},
+  "banned": {
+    "ETH-USD": "2026-11-29 00:27",
+    "SOL-USD": "2026-11-29 00:27"
+  },
   "ban_ref": {},
   "elite_assets": [
     "BTC-USD",
@@ -70,12 +75,11 @@
     "INJ-USD"
   ],
   "radar_discovered": [
-    "BTC (-1%)",
-    "ETH (-2%)",
-    "ZEC (+8%)",
-    "SOL (+1%)",
-    "UNI (+4%)",
-    "XRP (+1%)"
+    "BTC (-3%)",
+    "ZEC (-3%)",
+    "NEAR (-3%)",
+    "TRX (-2%)",
+    "XAUT (-1%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
@@ -88,13 +92,13 @@
       "role": "القائد الذكي v13.0",
       "status": "working",
       "stage": "🧠 سلّم BRAVA",
-      "bubble": "سلّم SOL-USD إلى BRAVA"
+      "bubble": "سلّم HBAR-USD إلى BRAVA"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
       "stage": "⚙️ يدير الصفقة",
-      "bubble": "قنص SOL-USD (20 ر.س)"
+      "bubble": "قنص HBAR-USD (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
