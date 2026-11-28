@@ -29,16 +29,16 @@
     "Aroon Momentum"
   ],
   "vip_signal": {
-    "symbol": "SEI-USD",
-    "name": "سي نتورك",
-    "theory": "قناص القيعان المرتدة 🎯",
-    "score": 90,
-    "entry": 0.0387,
+    "symbol": "SOL-USD",
+    "name": "سولانا",
+    "theory": "انفجار الحيتان 3x 💎",
+    "score": 96,
+    "entry": 72.0,
     "tp1_pct": 1.6,
     "tp2_pct": 2.5,
     "sl_pct": -0.85,
     "status": "🟢 البوت دخلها الآن (20 ر.س)!",
-    "updated_at": "03:06"
+    "updated_at": "04:36"
   },
   "coin_reputation": {
     "INJ-USD": -2,
@@ -72,29 +72,29 @@
   "radar_discovered": [
     "BTC (-1%)",
     "ETH (-2%)",
-    "ZEC (+5%)",
+    "ZEC (+8%)",
     "SOL (+1%)",
-    "HYPE (+4%)",
-    "XRP (-1%)"
+    "UNI (+4%)",
+    "XRP (+1%)"
   ],
   "radar_total_scanned": 789,
   "scenarios_tested": 602952,
   "daily_score": 100,
-  "market_mood": "قيعان باينانس (12) 🎯",
+  "market_mood": "قيعان باينانس (10) 🎯",
   "last_win_toast": "🎯 SEI-USD جاب ربح صافي +0.05 ر.س!",
   "best_theory": "انفجار الحيتان 3x 💎 (+0.35 ر.س)",
   "crew_state": {
     "DUSKA": {
       "role": "القائد الذكي v13.0",
       "status": "working",
-      "stage": "🏁 امتحان 6/10",
-      "bubble": "فحص 789 عملة باينانس"
+      "stage": "🧠 سلّم BRAVA",
+      "bubble": "سلّم SOL-USD إلى BRAVA"
     },
     "BRAVA": {
       "role": "انفجار الحيتان (20 ر.س)",
       "status": "working",
-      "stage": "💎 أولوية أولى",
-      "bubble": "انفجار الحيتان 3x (20 ر.س)"
+      "stage": "⚙️ يدير الصفقة",
+      "bubble": "قنص SOL-USD (20 ر.س)"
     },
     "KEST8": {
       "role": "قناص القيعان المشدد",
